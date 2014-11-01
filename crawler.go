@@ -7,8 +7,8 @@ import (
 
 func main() {
 	usertest := &lib.User{
-		Code: "DUPJ29039206",
-		Nip:  "81330",
+		Code: "*",
+		Nip:  "*",
 		Classes: []lib.Class{
 			lib.Class{
 				Name:  "mat1600",
