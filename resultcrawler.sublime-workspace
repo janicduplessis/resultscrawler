@@ -1,0 +1,1300 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"prin",
+				"Println	 ƒ"
+			],
+			[
+				"fi",
+				"fieldGroup	 Ɩ"
+			],
+			[
+				"con",
+				"config	ServerConfig ν"
+			],
+			[
+				"S3",
+				"S3AccessKey	string ν"
+			],
+			[
+				"config",
+				"configFile	 Ɩ"
+			],
+			[
+				"Gete",
+				"Getenv	string ƒ"
+			],
+			[
+				"fun",
+				"function"
+			],
+			[
+				"M",
+				"MessageRepository	interface ¡"
+			],
+			[
+				"Ser",
+				"ServerRepository	interface ¡"
+			],
+			[
+				"ima",
+				"image	image.Image ν"
+			],
+			[
+				"Re",
+				"ReadFile	[]byte, error ƒ"
+			],
+			[
+				"L",
+				"List	result *s3.ListResp, err error ƒ"
+			],
+			[
+				"W",
+				"Write	int, error ƒ"
+			],
+			[
+				"s3",
+				"s3WriteCloser	struct ʈ"
+			],
+			[
+				"DbP",
+				"DbPort	string ν"
+			],
+			[
+				"DbU",
+				"DbUrl	string ν"
+			],
+			[
+				"confi",
+				"config	serverConfig ν"
+			],
+			[
+				"e",
+				"envConfig	*bool ν"
+			],
+			[
+				"Web",
+				"WebsocketHandler	struct ʈ"
+			],
+			[
+				"CL",
+				"client	*WebsocketClientHandler ν"
+			],
+			[
+				"r",
+				"RemoteAddr	net.Addr ƒ"
+			],
+			[
+				"don",
+				"doneChs	[]chan bool ν"
+			],
+			[
+				"d",
+				"doneChs	[]chan bool ν"
+			],
+			[
+				"Webso",
+				"WebsocketCommandHandler	struct ʈ"
+			],
+			[
+				"C",
+				"Config	*websocket.Config ƒ"
+			],
+			[
+				"cli",
+				"client	*domain.Client ν"
+			],
+			[
+				"_",
+				"_channels"
+			],
+			[
+				"_c",
+				"_channels"
+			],
+			[
+				"ch",
+				"channelId"
+			],
+			[
+				"ex",
+				"executeCommand"
+			],
+			[
+				"Err",
+				"ErrInvalidClientId	error ν"
+			],
+			[
+				"GetC",
+				"GetClient	*domain.Client ƒ"
+			],
+			[
+				"F",
+				"FormValue	string ƒ"
+			],
+			[
+				"scr",
+				"scrollToTop"
+			],
+			[
+				"ct-",
+				"ct-navigator"
+			],
+			[
+				"j",
+				"JSON"
+			],
+			[
+				"au",
+				"authService"
+			],
+			[
+				"goo",
+				"googleButton"
+			],
+			[
+				"url",
+				"UrlOAuth2Login	 Ɩ"
+			],
+			[
+				"No",
+				"Now	time.Time ƒ"
+			],
+			[
+				"S",
+				"Secure	bool ν"
+			],
+			[
+				"userM",
+				"userModelJSON	[]byte ν"
+			],
+			[
+				"R",
+				"Redirect	 ƒ"
+			],
+			[
+				"plus",
+				"plusUser	*plus.Person ν"
+			],
+			[
+				"Response",
+				"ModelResponse	struct ʈ"
+			],
+			[
+				"O",
+				"OAuth2	OAuth2 ν"
+			],
+			[
+				"in",
+				"infrastructure	 package ρ"
+			],
+			[
+				"io",
+				"ioutil	 package ρ"
+			],
+			[
+				"N",
+				"NewTransportWithCode	*oauth2.Transport, error ƒ"
+			],
+			[
+				"Res",
+				"ResponseWriter	interface ¡"
+			],
+			[
+				"Sp",
+				"Sprintf	string ƒ"
+			],
+			[
+				"Print",
+				"Println	 ƒ"
+			],
+			[
+				"P",
+				"SitePort	string ν"
+			],
+			[
+				"Si",
+				"SiteUrl	string ν"
+			],
+			[
+				"conf",
+				"config	serverConfig ν"
+			],
+			[
+				"font-s",
+				"font-size"
+			],
+			[
+				"bac",
+				"background-color"
+			],
+			[
+				"Pro",
+				"ProfileImage"
+			],
+			[
+				"backg",
+				"background-image"
+			],
+			[
+				"inl",
+				"inline-block"
+			],
+			[
+				"mar",
+				"margin-top"
+			],
+			[
+				"tex",
+				"text-align"
+			],
+			[
+				"Get",
+				"GetClientProfileModelResponse	struct ʈ"
+			],
+			[
+				"st",
+				"string	built-in ʈ"
+			],
+			[
+				"dis",
+				"disconnected"
+			],
+			[
+				"chann",
+				"channels"
+			],
+			[
+				"cha",
+				"channelId	int64 ν"
+			],
+			[
+				"cl",
+				"clientsMutex	sync.RWMutex ν"
+			],
+			[
+				"err",
+				"errors	 package ρ"
+			],
+			[
+				"User",
+				"User	struct ʈ"
+			],
+			[
+				"Us",
+				"User	struct ʈ"
+			],
+			[
+				"AU",
+				"authInteractor	*usecases.AuthentificationInteractor ν"
+			],
+			[
+				"Fo",
+				"FormValue	string ƒ"
+			],
+			[
+				"fil",
+				"file	multipart.File ν"
+			],
+			[
+				"Image",
+				"ProfileImage"
+			],
+			[
+				"togg",
+				"toggleColapse"
+			],
+			[
+				"chan",
+				"chanTitles"
+			],
+			[
+				"pa",
+				"padding-left"
+			],
+			[
+				"cur",
+				"curChan"
+			],
+			[
+				"for",
+				"for	for (…) {…}"
+			],
+			[
+				"RF",
+				"RFC3339	 Ɩ"
+			],
+			[
+				"dbH",
+				"dbHandlers	map[string]DbHandler ν"
+			],
+			[
+				"l",
+				"leaveCh	chan clientErr ν"
+			],
+			[
+				"int64",
+				"int64	built-in ʈ"
+			],
+			[
+				"se",
+				"sendCh	chan *Message ν"
+			],
+			[
+				"lea",
+				"leave	error ƒ"
+			],
+			[
+				"joi",
+				"join	error ƒ"
+			],
+			[
+				"s",
+				"sendCh	chan *Message ν"
+			],
+			[
+				"creat",
+				"createDialog"
+			],
+			[
+				"Joi",
+				"JoinChannelResponse	struct ʈ"
+			],
+			[
+				"E",
+				"Error	 ƒ"
+			],
+			[
+				"urlLo",
+				"urlLogout	 Ɩ"
+			],
+			[
+				"cu",
+				"currentPage"
+			],
+			[
+				"clie",
+				"client	 ν"
+			],
+			[
+				"curC",
+				"curClient	 ν"
+			],
+			[
+				"modu",
+				"modulePath"
+			],
+			[
+				"rou",
+				"route"
+			],
+			[
+				"main",
+				"mainModule"
+			],
+			[
+				"login",
+				"loginSubmit"
+			],
+			[
+				"bor",
+				"border-bottom"
+			],
+			[
+				"Sen",
+				"SendMessageResponse	struct ʈ"
+			],
+			[
+				"cmd",
+				"cmdData	*WebsocketCommandHandler ν"
+			],
+			[
+				"Is",
+				"IsValid	bool ƒ"
+			],
+			[
+				"Fi",
+				"FieldByName	reflect.Value ƒ"
+			],
+			[
+				"Va",
+				"ValueOf	reflect.Value ƒ"
+			],
+			[
+				"Chann",
+				"CreateChannelRequest	struct ʈ"
+			],
+			[
+				"_cha",
+				"_channels"
+			],
+			[
+				"SendMessage",
+				"SendMessage"
+			],
+			[
+				"Cha",
+				"ChannelRepository	domain.ChannelRepository ν"
+			],
+			[
+				"user",
+				"username	string ν"
+			],
+			[
+				"clien",
+				"clientHandler	*WebsocketClientHandler ν"
+			],
+			[
+				"log",
+				"logger	*infrastructure.LoggerHandler ν"
+			],
+			[
+				"We",
+				"WebsocketCommandHandler	struct ʈ"
+			],
+			[
+				"c",
+				"commandCh	chan *WebsocketCommand ν"
+			],
+			[
+				"int",
+				"int64	built-in ʈ"
+			],
+			[
+				"Cli",
+				"Client	struct ʈ"
+			],
+			[
+				"Se",
+				"ServerRepository	ServerRepository ν"
+			],
+			[
+				"Clien",
+				"ClientSender	interface ¡"
+			],
+			[
+				"A",
+				"AddHandler	 ƒ"
+			],
+			[
+				"Webs",
+				"Websocket	interface ¡"
+			],
+			[
+				"Wr",
+				"WriteHeader	 ƒ"
+			],
+			[
+				"imp",
+				"import	import (...) ʂ"
+			],
+			[
+				"Q",
+				"QueryRow	*sql.Row ƒ"
+			],
+			[
+				"dbHa",
+				"dbHandler	DbHandler ν"
+			],
+			[
+				"Db",
+				"DbUserRepo	DbRepo ʈ"
+			],
+			[
+				"dbHan",
+				"DbHandler	interface ¡"
+			],
+			[
+				"sen",
+				"sendJSON	 ƒ"
+			],
+			[
+				"join",
+				"joinChannelCh	chan ChannelUser ν"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "README.md",
+			"settings":
+			{
+				"buffer_size": 54,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "crawler/main.go",
+			"settings":
+			{
+				"buffer_size": 309,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "lib/store.go",
+			"settings":
+			{
+				"buffer_size": 12,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "lib/user.go",
+			"settings":
+			{
+				"buffer_size": 200,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "lib/class.go",
+			"settings":
+			{
+				"buffer_size": 76,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "webserver/public/index.html",
+			"settings":
+			{
+				"buffer_size": 0,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "crawler/crawler.go",
+			"settings":
+			{
+				"buffer_size": 1036,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "crawler/scheduler.go",
+			"settings":
+			{
+				"buffer_size": 534,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "lib/crypto.go",
+			"settings":
+			{
+				"buffer_size": 12,
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"selected_items":
+		[
+			[
+				"pack",
+				"Package Control: Install Package"
+			],
+			[
+				"inst",
+				"Package Control: Install Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"SublimeL",
+				"SublimeLinter: Lint This View"
+			],
+			[
+				"Create lin",
+				"SublimeLinter: Create Linter Plugin"
+			],
+			[
+				"package",
+				"Package Control: Install Package"
+			],
+			[
+				"PACKAGE",
+				"Package Control: Install Package"
+			],
+			[
+				"tab",
+				"Indentation: Convert to Tabs"
+			],
+			[
+				"tabs",
+				"Indentation: Convert to Tabs"
+			],
+			[
+				"inden",
+				"Indentation: Convert to Tabs"
+			],
+			[
+				"packagecontrolin",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: In",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: ins",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: Ins",
+				"Package Control: Install Package"
+			],
+			[
+				"Gopack",
+				"Package Control: Install Package"
+			],
+			[
+				"Package",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 424.0
+	},
+	"console":
+	{
+		"height": 153.0,
+		"history":
+		[
+			"Package Control: Install Package",
+			"import urllib.request,os,hashlib; h = '7183a2d3e96f11eeadd761d777e62404' + 'e330c659d4bb41d3bdf022e94cab3cd0'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://sublime.wbond.net/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/C/Users/Janic/Documents/resultscrawler",
+		"/C/Users/Janic/Documents/resultscrawler/crawler",
+		"/C/Users/Janic/Documents/resultscrawler/lib",
+		"/C/Users/Janic/Documents/resultscrawler/webserver",
+		"/C/Users/Janic/Documents/resultscrawler/webserver/public"
+	],
+	"file_history":
+	[
+		"/C/Users/Janic/AppData/Roaming/Sublime Text 3/Packages/SublimeLinter/SublimeLinter.sublime-settings",
+		"/C/Users/Janic/AppData/Roaming/Sublime Text 3/Packages/CTags/CTags.sublime-settings",
+		"/C/Users/Janic/AppData/Roaming/Sublime Text 3/Packages/Default/Preferences.sublime-settings",
+		"/C/Users/Janic/Documents/chromium/src/.gitattributes",
+		"/C/Users/Janic/AppData/Roaming/Sublime Text 3/Packages/User/C++.sublime-settings",
+		"/C/Users/Janic/AppData/Roaming/Sublime Text 3/Packages/User/Plain text.sublime-settings",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/usecases/test/fakeuserrepository.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/usecases/test/fakecryptohandler.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/usecases/authentification_test.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/pages/ct-sidebar-chat.html",
+		"/C/Users/Janic/AppData/Roaming/Sublime Text 3/Packages/User/Preferences.sublime-settings",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/pages/ct-page-feedback.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/pages/ct-page-help.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/pages/ct-page-home.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/pages/ct-page-login.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/pages/ct-page-logout.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/pages/ct-pages.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/lib/google-signin/google-signin.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/js/utils.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/interfaces/databaseinitializer.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/interfaces/chatmodels.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/interfaces/chatwebservice.go",
+		"/C/Users/Janic/AppData/Roaming/Sublime Text 3/Packages/User/GoSublime.sublime-settings",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/interfaces/database.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/usecases/home.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/main.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/usecases/errors.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/interfaces/clientrepository.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/pages/ct-page-profile.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/pages/ct-page-register.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/pages/ct-page-settings.html",
+		"/C/Users/Janic/AppData/Roaming/Sublime Text 3/Packages/GoSublime/GoSublime.sublime-settings",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/pages/ct-sidebar-home.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/ct-navigator.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/ct-app.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/bower.json",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/index.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/ct-module.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/ct-message-list.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/ct-message.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/.jshintrc",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/ct-controller.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/interfaces/authentificationwebservice.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/interfaces/webservice.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/usecases/authentification.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/interfaces/userrepository.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/interfaces/authentificationmodels.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/interfaces/oauth2.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/usecases/chat.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/infrastructure/websockethandler.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/interfaces/websocket.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/domain/server.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/interfaces/messagerepository.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/interfaces/imageutils.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/infrastructure/oauth2handler.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/domain/message.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/domain/client.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/infrastructure/imageutilshandler.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/disintegration/imaging/helpers.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/infrastructure/webservicehandler.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/infrastructure/s3filestoragehandler.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/config/config.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/.buildpacks",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/server.json",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/interfaces/homewebservice.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/interfaces/homemodels.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/ct-channel-box.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/ct-send-box.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/interfaces/filestore.go",
+		"/C/Users/Janic/Documents/golang/src/launchpad.net/goamz/s3/s3.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/infrastructure/localfilestorehandler.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/services/ct-msg-service.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/services/ct-auth-service.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/README.md",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/css/main.css",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/Gruntfile.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/.travis.yml",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/.godir",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/package.json",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/Procfile",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/app/index.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/app/index-async.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/app/components/version/version_test.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/ct-profile-dialog.html",
+		"/C/Go/src/pkg/net/http/server.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/disintegration/imaging/README.md",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/node_modules/glob/test/new-glob-optional-options.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/lib/core-toolbar/core-toolbar.css",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/android/test.rb",
+		"/C/Users/Janic/AppData/Roaming/Sublime Text 3/Packages/User/SublimeLinter.sublime-settings",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/node_modules/mout/lang/isNull.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/lib/commands/install.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/android/[path",
+		"/C/Users/Janic/AppData/Roaming/Sublime Text 3/Packages/Tag/Tag Package.sublime-settings",
+		"/C/Users/Janic/AppData/Roaming/Sublime Text 3/Packages/Default/Default (Windows).sublime-keymap",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/pages/ct-page-chat.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/pages/ct-page-common.css",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/components/pages/ct-page-error.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/test/assets/package-tar.tar.gz",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/node_modules/update-notifier/node_modules/latest-version/node_modules/package-json/node_modules/registry-url/node_modules/npmconf/lib/get-credentials-by-uri.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/node_modules/update-notifier/node_modules/latest-version/node_modules/package-json/node_modules/registry-url/node_modules/npmconf/config-defs.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/node_modules/update-notifier/node_modules/latest-version/node_modules/package-json/node_modules/registry-url/node_modules/npmconf/node_modules/config-chain/test/broken.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/node_modules/update-notifier/node_modules/latest-version/node_modules/package-json/node_modules/registry-url/node_modules/npmconf/node_modules/config-chain/test/ignore-unfound-file.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/node_modules/inquirer/node_modules/rx/dist/rx.all.compat.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/node_modules/insight/node_modules/lodash.debounce/node_modules/lodash.isobject/node_modules/lodash._objecttypes/package.json",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/interfaces/serverrepository.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/go-sql-driver/mysql/rows.go",
+		"/C/Go/src/pkg/database/sql/sql.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/lib/paper-menu-button/paper-menu-button.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/lib/paper-button/paper-button.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/.bowerrc",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/lib/core-input/core-input.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/lib/core-menu/core-submenu.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/web/lib/core-menu/core-menu.html",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/infrastructure/mysqlhandler.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/interfaces/channelrepository.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/ct/domain/channel.go",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/node_modules/handlebars/node_modules/optimist/node_modules/wordwrap/index.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/node_modules/handlebars/node_modules/optimist/example/xup.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/node_modules/handlebars/node_modules/optimist/example/usage-options.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/node_modules/handlebars/node_modules/optimist/example/string.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/node_modules/handlebars/node_modules/optimist/example/short.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/node_modules/handlebars/node_modules/optimist/example/reflect.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/node_modules/handlebars/node_modules/optimist/example/nonopt.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/node_modules/handlebars/node_modules/optimist/example/line_count_wrap.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/node_modules/handlebars/node_modules/optimist/example/line_count_options.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/node_modules/handlebars/node_modules/optimist/example/line_count.js",
+		"/C/Users/Janic/Documents/golang/src/github.com/janicduplessis/projectgo/node_modules/bower/node_modules/handlebars/node_modules/optimist/example/divide.js"
+	],
+	"find":
+	{
+		"height": 28.0
+	},
+	"find_in_files":
+	{
+		"height": 93.0,
+		"where_history":
+		[
+			"C:\\Users\\Janic\\Documents\\golang\\src\\github.com\\go-sql-driver",
+			"C:\\Users\\Janic\\Documents\\golang"
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"ServeFile",
+			"buildError",
+			"prepare",
+			"ct",
+			"Clients",
+			"user",
+			"route",
+			"NewHomeInteractor",
+			"auto_indent",
+			"indent",
+			"connect",
+			"openMenu",
+			"email",
+			"init",
+			"console.log",
+			"MessageModel",
+			"unmarshal",
+			"handleInitChat",
+			"CompareHashAndPassword",
+			"handleCreateChan",
+			"LeaveChannel",
+			"route",
+			"handleLogout",
+			"urlLogout",
+			"urlProfileModel",
+			"urlLogin",
+			"Del",
+			"handleInitChat",
+			"Handle",
+			"Log",
+			"tab"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"ct.utils.log"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "README.md",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 54,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"is_xml": false,
+							"syntax": "Packages/Markdown/Markdown.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "crawler/main.go",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 309,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								251,
+								251
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/GoSublime/syntax/GoSublime-Go.tmLanguage",
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "lib/store.go",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 12,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								12,
+								12
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/GoSublime/syntax/GoSublime-Go.tmLanguage",
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "lib/user.go",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 200,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								200,
+								200
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/GoSublime/syntax/GoSublime-Go.tmLanguage",
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "lib/class.go",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 76,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								73,
+								73
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/GoSublime/syntax/GoSublime-Go.tmLanguage",
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "webserver/public/index.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 0,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "crawler/crawler.go",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1036,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								160,
+								160
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/GoSublime/syntax/GoSublime-Go.tmLanguage",
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 300.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "crawler/scheduler.go",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 534,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								73,
+								73
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/GoSublime/syntax/GoSublime-Go.tmLanguage",
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "lib/crypto.go",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 12,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								12,
+								12
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/GoSublime/syntax/GoSublime-Go.tmLanguage",
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 28.0
+	},
+	"input":
+	{
+		"height": 35.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.9o://C:\\Users\\Janic\\AppData\\Roaming\\Sublime Text 3\\Packages\\User":
+	{
+		"height": 124.0
+	},
+	"output.9o://C:\\Users\\Janic\\Documents\\golang\\src\\github.com\\janicduplessis\\projectgo":
+	{
+		"height": 124.0
+	},
+	"output.9o://C:\\Users\\Janic\\Documents\\golang\\src\\github.com\\janicduplessis\\projectgo\\android":
+	{
+		"height": 130.0
+	},
+	"output.9o://C:\\Users\\Janic\\Documents\\golang\\src\\github.com\\janicduplessis\\projectgo\\ct":
+	{
+		"height": 124.0
+	},
+	"output.9o://C:\\Users\\Janic\\Documents\\golang\\src\\github.com\\janicduplessis\\projectgo\\ct\\domain":
+	{
+		"height": 130.0
+	},
+	"output.9o://C:\\Users\\Janic\\Documents\\golang\\src\\github.com\\janicduplessis\\projectgo\\ct\\infrastructure":
+	{
+		"height": 130.0
+	},
+	"output.9o://C:\\Users\\Janic\\Documents\\golang\\src\\github.com\\janicduplessis\\projectgo\\ct\\usecases":
+	{
+		"height": 130.0
+	},
+	"output.9o://C:\\Users\\Janic\\Documents\\golang\\src\\github.com\\janicduplessis\\projectgo\\public":
+	{
+		"height": 124.0
+	},
+	"output.9o://C:\\Users\\Janic\\Documents\\golang\\src\\github.com\\janicduplessis\\projectgo\\public\\components\\pages":
+	{
+		"height": 124.0
+	},
+	"output.9o://C:\\Users\\Janic\\Documents\\golang\\src\\github.com\\janicduplessis\\projectgo\\public\\services":
+	{
+		"height": 471.0
+	},
+	"output.GoSublime-main-output":
+	{
+		"height": 130.0
+	},
+	"output.exec":
+	{
+		"height": 130.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"project": "resultcrawler.sublime-project",
+	"replace":
+	{
+		"height": 52.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+			[
+				"google",
+				"web\\lib\\google-signin\\google-signin.html"
+			],
+			[
+				"home",
+				"node_modules\\bower\\node_modules\\handlebars\\node_modules\\optimist\\node_modules\\wordwrap\\index.js"
+			],
+			[
+				"",
+				"web\\components\\pages\\ct-sidebar-home.html"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"selected_items":
+		[
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 255.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
