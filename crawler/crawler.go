@@ -24,28 +24,39 @@ const (
 	fieldYear    = "owa_annee"
 )
 
+type runResult struct {
+	ClassIndex int
+	Results    []lib.Result
+}
+
 type Crawler struct {
 }
 
-func (c *Crawler) Run(user *lib.User) error {
+func (c *Crawler) Run(user *lib.User) ([]lib.Class, error) {
 	log.Println("Start looking for results")
 
-	doneCh := make(chan bool)
-	for _, class := range user.Classes {
-		c.runClass(user, &class, doneCh)
+	// Request results
+	doneCh := make(chan runResult)
+	for i := range user.Classes {
+		go c.runClass(user, i, doneCh)
 	}
 
-	for i := 0; i < len(user.Classes); i++ {
-		<-doneCh
+	// Wait for all results to be done
+	classes := make([]lib.Class, len(user.Classes))
+	copy(classes, user.Classes)
+	for _ = range user.Classes {
+		result := <-doneCh
+		classes[result.ClassIndex].Results = result.Results
 	}
 
 	log.Println("done")
 
-	return nil
+	return classes, nil
 }
 
-func (c *Crawler) runClass(user *lib.User, class *lib.Class, doneCh chan bool) {
+func (c *Crawler) runClass(user *lib.User, classIndex int, doneCh chan runResult) {
 	client := &http.Client{}
+	class := user.Classes[classIndex]
 	params := url.Values{
 		fieldCode:  {user.Code},
 		fieldNip:   {user.Nip},
@@ -56,22 +67,38 @@ func (c *Crawler) runClass(user *lib.User, class *lib.Class, doneCh chan bool) {
 	requestString := fmt.Sprintf("%s?%s", urlResultats, params.Encode())
 	req, err := http.NewRequest("POST", requestString, nil)
 	if err != nil {
-		doneCh <- false
+		doneCh <- runResult{
+			ClassIndex: classIndex,
+			Results:    nil,
+		}
+		log.Println(err.Error())
 	}
 
 	req.Header.Set("User-Agent", userAgent)
 
 	resp, err := client.Do(req)
 	if err != nil {
-		doneCh <- false
+		doneCh <- runResult{
+			ClassIndex: classIndex,
+			Results:    nil,
+		}
+		log.Println(err.Error())
+		return
 	}
 
-	_, err = c.parseResponse(resp.Body)
+	results, err := c.parseResponse(resp.Body)
 	if err != nil {
-		doneCh <- false
+		doneCh <- runResult{
+			ClassIndex: classIndex,
+			Results:    nil,
+		}
+		log.Println(err.Error())
+		return
 	}
-
-	doneCh <- true
+	doneCh <- runResult{
+		ClassIndex: classIndex,
+		Results:    results,
+	}
 }
 
 func (c *Crawler) parseResponse(resp io.Reader) ([]lib.Result, error) {
@@ -100,15 +127,7 @@ func (c *Crawler) parseResponse(resp io.Reader) ([]lib.Result, error) {
 	}
 	f(doc)
 	if !done {
-		log.Println("Could not find any results")
 		return nil, errors.New("No results")
-	}
-
-	for i, res := range results {
-		log.Println(fmt.Sprintf("Result %v", i))
-		log.Println(fmt.Sprintf("  Name: %v", res.Name))
-		log.Println(fmt.Sprintf("  Result: %v", res.Result))
-		log.Println(fmt.Sprintf("  Average: %v", res.Average))
 	}
 
 	return results, nil
