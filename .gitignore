@@ -24,3 +24,5 @@ _testmain.go
 *.prof
 
 crawler.json
+*.sublime-workspace
+*.sublime-project
