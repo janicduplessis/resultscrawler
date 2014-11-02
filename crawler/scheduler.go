@@ -13,7 +13,7 @@ const (
 	// Time between checks to see if a user needs an update in seconds
 	checkIntervalSec time.Duration = 30
 	// Time between updates for each user in minutes
-	updateIntervalMin time.Duration = 30
+	updateIntervalMin time.Duration = 1
 )
 
 type userInfo struct {
@@ -23,19 +23,22 @@ type userInfo struct {
 
 // Scheduler handles scheduling crawler runs for every users.
 type Scheduler struct {
-	userStore lib.UserStore
+	Crawlers  []*Crawler
+	UserStore lib.UserStore
+
 	usersInfo []*userInfo
 	queueCh   chan *lib.User
 	doneCh    chan bool
 }
 
 // NewScheduler creates a new scuduler object.
-func NewScheduler(userStore lib.UserStore) *Scheduler {
+func NewScheduler(crawlers []*Crawler, userStore lib.UserStore) *Scheduler {
 	queueCh := make(chan *lib.User)
 	doneCh := make(chan bool)
 
 	return &Scheduler{
-		userStore: userStore,
+		Crawlers:  crawlers,
+		UserStore: userStore,
 
 		queueCh: queueCh,
 		doneCh:  doneCh,
@@ -44,8 +47,7 @@ func NewScheduler(userStore lib.UserStore) *Scheduler {
 
 // Start starts the scheduler
 func (s *Scheduler) Start() {
-
-	users, err := s.userStore.FindAll()
+	users, err := s.UserStore.FindAll()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -57,9 +59,24 @@ func (s *Scheduler) Start() {
 		}
 	}
 
-	go s.mainLoop()
+	for _, crawler := range s.Crawlers {
+		go s.crawlerLoop(crawler)
+	}
 
-	crawler := new(Crawler)
+	s.mainLoop()
+}
+
+// Queue tells the scheduler do a run for a user
+func (s *Scheduler) Queue(userID bson.ObjectId) {
+	user, err := s.UserStore.FindByID(userID)
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	s.queueCh <- user
+}
+
+func (s *Scheduler) crawlerLoop(crawler *Crawler) {
 	for {
 		select {
 		case user := <-s.queueCh:
@@ -67,33 +84,19 @@ func (s *Scheduler) Start() {
 			res, err := crawler.Run(user)
 			if err != nil {
 				log.Println(err.Error())
-				break
 			}
 			// Check if results changed
 			if s.hasNewResults(user, res) {
 				log.Println("New results")
 				// Update results
 				user.Classes = res
-				err := s.userStore.Update(user)
+				err := s.UserStore.Update(user)
 				if err != nil {
 					log.Println(err.Error())
 				}
 			}
-		// Stop the program
-		case <-s.doneCh:
-			return
 		}
 	}
-}
-
-// Queue tells the scheduler do a run for a user
-func (s *Scheduler) Queue(userID bson.ObjectId) {
-	user, err := s.userStore.FindByID(userID)
-	if err != nil {
-		log.Println(err.Error())
-		return
-	}
-	s.queueCh <- user
 }
 
 // The scheduler main loop
@@ -109,6 +112,9 @@ func (s *Scheduler) mainLoop() {
 					userInfo.LastUpdate = time.Now()
 				}
 			}
+		case <-s.doneCh:
+			// Stop the program
+			return
 		}
 	}
 }

@@ -29,6 +29,8 @@ type ServerConfig struct {
 
 	EmailUser     string
 	EmailPassword string
+
+	AESSecretKey string // 16 bytes
 }
 
 // ReadEnv sets the values of fields in obj using the env variables with the same name

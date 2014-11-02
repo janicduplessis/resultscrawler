@@ -1,5 +1,8 @@
 package lib
 
-// CryptoHandler is an utility for various crypto algorithms.
-type CryptoHandler struct {
+// The Crypto interface exposes various cryto algorithms and utilities.
+type Crypto interface {
+	AESEncrypt(data []byte) ([]byte, error)
+	AESDecrypt(data []byte) ([]byte, error)
+	GenerateRandomKey(strength int) []byte
 }

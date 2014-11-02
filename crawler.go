@@ -24,14 +24,22 @@ func main() {
 	config.Print(conf)
 
 	// Inject dependencies
+	crypto := lib.NewCryptoHandler(config.Config.AESSecretKey)
 	store := lib.NewMongoStore()
+
 	userStore := lib.NewUserStoreHandler(store)
-	scheduler := crawler.NewScheduler(userStore)
+
+	crawlers := []*crawler.Crawler{
+		crawler.NewCrawler(crypto),
+	}
+	scheduler := crawler.NewScheduler(crawlers, userStore)
 
 	log.Println("Server started")
-	/*err := userStore.Insert(&lib.User{
-		Code: "*",
-		Nip:  "*",
+	/*code, _ := crypto.AESEncrypt([]byte("*"))
+	nip, _ := crypto.AESEncrypt([]byte("*"))
+	err := userStore.Insert(&lib.User{
+		Code: string(code),
+		Nip:  string(nip),
 		Classes: []lib.Class{
 			lib.Class{
 				Name:  "mat1600",
@@ -50,7 +58,7 @@ func main() {
 			},
 			lib.Class{
 				Name:  "eco1081",
-				Group: "51",
+				Group: "50",
 				Year:  "20143",
 			},
 		},
