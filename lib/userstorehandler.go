@@ -4,17 +4,20 @@ import "labix.org/v2/mgo/bson"
 
 const userKey = "user"
 
+// UserStoreHandler implements the UserStore interface.
 type UserStoreHandler struct {
 	store Store
 }
 
+// NewUserStoreHandler creates a new UserStoreHandler.
 func NewUserStoreHandler(store Store) *UserStoreHandler {
 	return &UserStoreHandler{
 		store: store,
 	}
 }
 
-func (hndl *UserStoreHandler) FindById(id bson.ObjectId) (*User, error) {
+// FindByID returns a user with the specified id.
+func (hndl *UserStoreHandler) FindByID(id bson.ObjectId) (*User, error) {
 	db, conn := hndl.store.Get()
 	defer conn.Close()
 
@@ -23,6 +26,7 @@ func (hndl *UserStoreHandler) FindById(id bson.ObjectId) (*User, error) {
 	return &user, err
 }
 
+// FindAll returns all users.
 func (hndl *UserStoreHandler) FindAll() ([]*User, error) {
 	db, conn := hndl.store.Get()
 	defer conn.Close()
@@ -32,6 +36,7 @@ func (hndl *UserStoreHandler) FindAll() ([]*User, error) {
 	return users, err
 }
 
+// Update updates a user.
 func (hndl *UserStoreHandler) Update(user *User) error {
 	db, conn := hndl.store.Get()
 	defer conn.Close()
@@ -40,6 +45,7 @@ func (hndl *UserStoreHandler) Update(user *User) error {
 	return err
 }
 
+// Insert adds a user.
 func (hndl *UserStoreHandler) Insert(user *User) error {
 	db, conn := hndl.store.Get()
 	defer conn.Close()

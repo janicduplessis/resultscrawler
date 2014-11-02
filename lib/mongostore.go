@@ -10,14 +10,17 @@ import (
 	"github.com/janicduplessis/resultscrawler/config"
 )
 
+// MongoStore handles connection to a mongodb database.
 type MongoStore struct {
 	mongoSession *mgo.Session
 }
 
+// The ConnCloser interface provides an abstraction to close a db connection.
 type ConnCloser interface {
 	Close()
 }
 
+// NewMongoStore creates a new MongoStore object.
 func NewMongoStore() *MongoStore {
 	// We need this object to establish a session to our MongoDB.
 	mongoDBDialInfo := &mgo.DialInfo{
@@ -47,6 +50,9 @@ func NewMongoStore() *MongoStore {
 	}
 }
 
+// Get returns a connection from the connection pool using the database
+// in the configuration. It is the caller's responsability to close the
+// connection using the ConnCloser.
 func (hndl *MongoStore) Get() (*mgo.Database, ConnCloser) {
 	sessionCopy := hndl.mongoSession.Copy()
 	return sessionCopy.DB(config.Config.DbName), sessionCopy
