@@ -29,9 +29,11 @@ type runResult struct {
 	Results    []lib.Result
 }
 
+// Crawler for getting all grades of a user on resultats uqam
 type Crawler struct {
 }
 
+// Run returns the results of all classes for the user
 func (c *Crawler) Run(user *lib.User) ([]lib.Class, error) {
 	log.Println("Start looking for results")
 

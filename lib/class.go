@@ -1,9 +1,8 @@
 package lib
 
 type Class struct {
-	ID      int64
-	Name    string
-	Group   string
-	Year    string
-	Results []Result
+	Name    string   `bson:"name"`
+	Group   string   `bson:"group"`
+	Year    string   `bson:"year"`
+	Results []Result `bson:"results"`
 }

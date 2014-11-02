@@ -1,7 +1,7 @@
 package lib
 
 type Result struct {
-	Name    string
-	Result  string
-	Average string
+	Name    string `bson:"name"`
+	Result  string `bson:"result"`
+	Average string `bson:"average"`
 }
