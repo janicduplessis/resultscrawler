@@ -10,8 +10,10 @@ import (
 )
 
 const (
-	checkIntervalSec  time.Duration = 30
-	updateIntervalMin time.Duration = 1
+	// Time between checks to see if a user needs an update in seconds
+	checkIntervalSec time.Duration = 30
+	// Time between updates for each user in minutes
+	updateIntervalMin time.Duration = 30
 )
 
 type userInfo struct {
@@ -19,6 +21,7 @@ type userInfo struct {
 	LastUpdate time.Time
 }
 
+// Scheduler handles scheduling crawler runs for every users.
 type Scheduler struct {
 	userStore lib.UserStore
 	usersInfo []*userInfo
@@ -26,6 +29,7 @@ type Scheduler struct {
 	doneCh    chan bool
 }
 
+// NewScheduler creates a new scuduler object.
 func NewScheduler(userStore lib.UserStore) *Scheduler {
 	queueCh := make(chan *lib.User)
 	doneCh := make(chan bool)
@@ -38,6 +42,7 @@ func NewScheduler(userStore lib.UserStore) *Scheduler {
 	}
 }
 
+// Start starts the scheduler
 func (s *Scheduler) Start() {
 
 	users, err := s.userStore.FindAll()
@@ -81,8 +86,9 @@ func (s *Scheduler) Start() {
 	}
 }
 
-func (s *Scheduler) Queue(userId bson.ObjectId) {
-	user, err := s.userStore.FindById(userId)
+// Queue tells the scheduler do a run for a user
+func (s *Scheduler) Queue(userID bson.ObjectId) {
+	user, err := s.userStore.FindByID(userID)
 	if err != nil {
 		log.Println(err.Error())
 		return
@@ -90,6 +96,7 @@ func (s *Scheduler) Queue(userId bson.ObjectId) {
 	s.queueCh <- user
 }
 
+// The scheduler main loop
 func (s *Scheduler) mainLoop() {
 	ticker := time.NewTicker(checkIntervalSec * time.Second)
 	for {
@@ -106,6 +113,8 @@ func (s *Scheduler) mainLoop() {
 	}
 }
 
+// Compare the user results with a new set of results and check if they are
+// different.
 func (s *Scheduler) hasNewResults(user *lib.User, newClasses []lib.Class) bool {
 	if len(user.Classes) != len(newClasses) {
 		return true

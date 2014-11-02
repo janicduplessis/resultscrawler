@@ -1,3 +1,6 @@
+// Package config handles an application configuration and provides
+// a global object to read it. The configuration can be provided by
+// a json config file or environment variables.
 package config
 
 import (

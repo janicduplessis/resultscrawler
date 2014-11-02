@@ -137,7 +137,7 @@ func (c *Crawler) parseResponse(resp io.Reader) ([]lib.Result, error) {
 
 func (c *Crawler) parseResultsTable(node *html.Node) []lib.Result {
 	// Get all rows from the table
-	rows := make([]*html.Node, 0)
+	var rows []*html.Node
 	tBody := node.FirstChild.NextSibling
 	for c := tBody.FirstChild; c != nil; c = c.NextSibling {
 		if c.Type == html.ElementNode && c.Data == "tr" {
@@ -157,7 +157,7 @@ func (c *Crawler) parseResultsTable(node *html.Node) []lib.Result {
 }
 
 func (c *Crawler) parseResultRow(node *html.Node) lib.Result {
-	cols := make([]*html.Node, 0)
+	var cols []*html.Node
 	for c := node.FirstChild; c != nil; c = c.NextSibling {
 		if c.Type == html.ElementNode && c.Data == "td" {
 			cols = append(cols, c)
