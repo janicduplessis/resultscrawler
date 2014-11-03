@@ -160,7 +160,7 @@ func (s *Scheduler) getNewResults(user *lib.User, newClasses []lib.Class) []lib.
 		results[i] = class
 		results[i].Results = nil
 		for j, res := range class.Results {
-			if len(user.Classes[i].Results) > j {
+			if len(user.Classes[i].Results) <= j {
 				// If the is a new result
 				results[i].Results = append(results[i].Results, res)
 			} else {
@@ -181,7 +181,7 @@ func (s *Scheduler) sendEmail(user *lib.User, newResults []lib.Class) error {
 	var msg bytes.Buffer
 	data := struct {
 		User       *lib.User
-		NewResults []lib.Class
+		NewClasses []lib.Class
 	}{
 		user,
 		newResults,

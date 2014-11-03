@@ -1,7 +1,9 @@
+<html>
+<body>
 <h2>Hello {{.User.UserName}}</h2>
 
 {{range .NewClasses}}
-  {{if len .Results gt 0}}
+  {{if gt (len .Results) 0}}
     <h3>{{.Name}}</h3>
     <table>
       <tr>
@@ -12,10 +14,12 @@
       {{range .Results}}
         <tr>
           <td>{{.Name}}</td>
-          <td>{{.Score}}</td>
+          <td>{{.Result}}</td>
           <td>{{.Average}}</td>
         </tr>
       {{end}}
     </table>
   {{end}}
 {{end}}
+</body>
+</html>

@@ -80,7 +80,7 @@ func (c *Crawler) runClass(user *lib.User, classIndex int, doneCh chan runResult
 	client := &http.Client{}
 	class := user.Classes[classIndex]
 	// Decrypt the user code and nip
-	data, err := c.Crypto.AESDecrypt([]byte(user.Code))
+	data, err := c.Crypto.AESDecrypt(user.Code)
 	if err != nil {
 		doneCh <- runResult{
 			Err: err,
@@ -88,7 +88,7 @@ func (c *Crawler) runClass(user *lib.User, classIndex int, doneCh chan runResult
 		return
 	}
 	userCode := string(data)
-	data, err = c.Crypto.AESDecrypt([]byte(user.Nip))
+	data, err = c.Crypto.AESDecrypt(user.Nip)
 	if err != nil {
 		doneCh <- runResult{
 			Err: err,
