@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 
 	"github.com/janicduplessis/resultscrawler/config"
@@ -9,6 +10,11 @@ import (
 )
 
 func main() {
+	log.SetFlags(log.Lshortfile)
+
+	envConfig := flag.Bool("useenv", false, "Use environnement variables config")
+	flag.Parse()
+
 	// Default config
 	conf := &config.ServerConfig{
 		ServerURL:  "localhost",
@@ -18,6 +24,12 @@ func main() {
 		DbPassword: "***",
 		DbURL:      "localhost",
 		DbPort:     "7777",
+	}
+
+	if *envConfig {
+		config.ReadEnv(conf)
+	} else {
+		config.ReadFile("crawler.json", conf)
 	}
 
 	config.ReadFile("crawler.json", conf)

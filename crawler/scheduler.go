@@ -15,7 +15,7 @@ const (
 	// Time between checks to see if a user needs an update in seconds
 	checkIntervalSec time.Duration = 30
 	// Time between updates for each user in minutes
-	updateIntervalMin time.Duration = 1
+	updateIntervalMin time.Duration = 30
 )
 
 var msgTemplate = template.Must(template.New("msgtemplate.html").ParseFiles("crawler/msgtemplate.html"))
