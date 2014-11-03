@@ -25,6 +25,7 @@ func main() {
 
 	// Inject dependencies
 	crypto := lib.NewCryptoHandler(config.Config.AESSecretKey)
+	emailSender := &lib.EmailSender{}
 	store := lib.NewMongoStore()
 
 	userStore := lib.NewUserStoreHandler(store)
@@ -32,52 +33,9 @@ func main() {
 	crawlers := []*crawler.Crawler{
 		crawler.NewCrawler(crypto),
 	}
-	scheduler := crawler.NewScheduler(crawlers, userStore)
+	scheduler := crawler.NewScheduler(crawlers, userStore, emailSender)
 
 	log.Println("Server started")
-	/*code, _ := crypto.AESEncrypt([]byte("*"))
-	nip, _ := crypto.AESEncrypt([]byte("*"))
-	err := userStore.Insert(&lib.User{
-		Code: string(code),
-		Nip:  string(nip),
-		Classes: []lib.Class{
-			lib.Class{
-				Name:  "mat1600",
-				Group: "20",
-				Year:  "20143",
-			},
-			lib.Class{
-				Name:  "inf1130",
-				Group: "20",
-				Year:  "20143",
-			},
-			lib.Class{
-				Name:  "met1105",
-				Group: "11",
-				Year:  "20143",
-			},
-			lib.Class{
-				Name:  "eco1081",
-				Group: "50",
-				Year:  "20143",
-			},
-		},
-	})
-	if err != nil {
-		log.Println(err)
-	}*/
-
 	scheduler.Start()
 	log.Println("Server stopped")
-
-	/*for _, class := range classes {
-		log.Println("----------------------------------")
-		log.Println(fmt.Sprintf("Results %v", class.Name))
-		log.Println("----------------------------------")
-		for _, res := range class.Results {
-			log.Println(res.Name)
-			log.Println(fmt.Sprintf("  Result:  %v", res.Result))
-			log.Println(fmt.Sprintf("  Average: %v", res.Average))
-		}
-	}*/
 }

@@ -1,7 +1,9 @@
 package crawler
 
 import (
+	"bytes"
 	"log"
+	"text/template"
 	"time"
 
 	"labix.org/v2/mgo/bson"
@@ -16,6 +18,8 @@ const (
 	updateIntervalMin time.Duration = 1
 )
 
+var msgTemplate = template.Must(template.New("msgtemplate.html").ParseFiles("crawler/msgtemplate.html"))
+
 type userInfo struct {
 	ID         bson.ObjectId
 	LastUpdate time.Time
@@ -25,20 +29,23 @@ type userInfo struct {
 type Scheduler struct {
 	Crawlers  []*Crawler
 	UserStore lib.UserStore
+	Sender    lib.Sender
 
-	usersInfo []*userInfo
-	queueCh   chan *lib.User
-	doneCh    chan bool
+	usersInfo       []*userInfo
+	queueCh         chan *lib.User
+	doneCh          chan bool
+	messageTemplate *template.Template
 }
 
 // NewScheduler creates a new scuduler object.
-func NewScheduler(crawlers []*Crawler, userStore lib.UserStore) *Scheduler {
+func NewScheduler(crawlers []*Crawler, userStore lib.UserStore, sender lib.Sender) *Scheduler {
 	queueCh := make(chan *lib.User)
 	doneCh := make(chan bool)
 
 	return &Scheduler{
 		Crawlers:  crawlers,
 		UserStore: userStore,
+		Sender:    sender,
 
 		queueCh: queueCh,
 		doneCh:  doneCh,
@@ -88,9 +95,14 @@ func (s *Scheduler) crawlerLoop(crawler *Crawler) {
 			// Check if results changed
 			if s.hasNewResults(user, res) {
 				log.Println("New results")
+				newRes := s.getNewResults(user, res)
+				err := s.sendEmail(user, newRes)
+				if err != nil {
+					log.Println(err.Error())
+				}
 				// Update results
 				user.Classes = res
-				err := s.UserStore.Update(user)
+				err = s.UserStore.Update(user)
 				if err != nil {
 					log.Println(err.Error())
 				}
@@ -139,4 +151,45 @@ func (s *Scheduler) hasNewResults(user *lib.User, newClasses []lib.Class) bool {
 		}
 	}
 	return false
+}
+
+func (s *Scheduler) getNewResults(user *lib.User, newClasses []lib.Class) []lib.Class {
+	results := make([]lib.Class, len(newClasses))
+	for i, class := range newClasses {
+		// Copy class info
+		results[i] = class
+		results[i].Results = nil
+		for j, res := range class.Results {
+			if len(user.Classes[i].Results) > j {
+				// If the is a new result
+				results[i].Results = append(results[i].Results, res)
+			} else {
+				// Check if a result changed
+				oldRes := user.Classes[i].Results[j]
+				if oldRes.Name != res.Name ||
+					oldRes.Average != res.Average ||
+					oldRes.Result != res.Result {
+					results[i].Results = append(results[i].Results, res)
+				}
+			}
+		}
+	}
+	return results
+}
+
+func (s *Scheduler) sendEmail(user *lib.User, newResults []lib.Class) error {
+	var msg bytes.Buffer
+	data := struct {
+		User       *lib.User
+		NewResults []lib.Class
+	}{
+		user,
+		newResults,
+	}
+	err := msgTemplate.Execute(&msg, data)
+	if err != nil {
+		return err
+	}
+
+	return s.Sender.Send(user.Email, "You have new results!", string(msg.Bytes()))
 }

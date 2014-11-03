@@ -1,0 +1,21 @@
+<h2>Hello {{.User.UserName}}</h2>
+
+{{range .NewClasses}}
+  {{if len .Results gt 0}}
+    <h3>{{.Name}}</h3>
+    <table>
+      <tr>
+        <td>Name</td>
+        <td>Score</td>
+        <td>Average</td>
+      </tr>
+      {{range .Results}}
+        <tr>
+          <td>{{.Name}}</td>
+          <td>{{.Score}}</td>
+          <td>{{.Average}}</td>
+        </tr>
+      {{end}}
+    </table>
+  {{end}}
+{{end}}

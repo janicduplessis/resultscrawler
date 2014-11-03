@@ -29,6 +29,8 @@ type ServerConfig struct {
 
 	EmailUser     string
 	EmailPassword string
+	EmailHost     string
+	EmailPort     string
 
 	AESSecretKey string // 16 bytes
 }
