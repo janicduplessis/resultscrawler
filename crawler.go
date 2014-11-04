@@ -32,7 +32,6 @@ func main() {
 		config.ReadFile("crawler.json", conf)
 	}
 
-	config.ReadFile("crawler.json", conf)
 	config.Print(conf)
 
 	// Inject dependencies
