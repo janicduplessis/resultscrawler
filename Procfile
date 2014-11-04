@@ -1,1 +1,1 @@
-web: resultscrawler -useenv=true
+worker: resultscrawler -useenv=true
