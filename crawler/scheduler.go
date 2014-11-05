@@ -88,20 +88,23 @@ func (s *Scheduler) crawlerLoop(crawler *Crawler) {
 		select {
 		case user := <-s.queueCh:
 			// Get results
-			res, err := crawler.Run(user)
-			if err != nil {
-				log.Println(err.Error())
-			}
+			results := crawler.Run(user)
 			// Check if results changed
-			if s.hasNewResults(user, res) {
+			newRes := s.getNewResults(user, results)
+			if len(newRes) > 0 {
 				log.Println("New results")
-				newRes := s.getNewResults(user, res)
+
 				err := s.sendEmail(user, newRes)
 				if err != nil {
 					log.Println(err.Error())
 				}
 				// Update results
-				user.Classes = res
+				for _, res := range results {
+					// Ignore results with errors
+					if res.Err == nil {
+						user.Classes[res.ClassIndex].Results = res.Results
+					}
+				}
 				err = s.UserStore.Update(user)
 				if err != nil {
 					log.Println(err.Error())
@@ -131,50 +134,39 @@ func (s *Scheduler) mainLoop() {
 	}
 }
 
-// Compare the user results with a new set of results and check if they are
-// different.
-func (s *Scheduler) hasNewResults(user *lib.User, newClasses []lib.Class) bool {
-	if len(user.Classes) != len(newClasses) {
-		return true
-	}
-	for i, class := range user.Classes {
-		if len(class.Results) != len(newClasses[i].Results) {
-			return true
+func (s *Scheduler) getNewResults(user *lib.User, newResults []runResult) []lib.Class {
+	var resClasses []lib.Class
+	for i, resInfo := range newResults {
+		if resInfo.Err != nil {
+			continue
 		}
-		for j, res := range class.Results {
-			newRes := newClasses[i].Results[j]
-			if newRes.Name != res.Name ||
-				newRes.Average != res.Average ||
-				newRes.Result != res.Result {
-				return true
-			}
-		}
-	}
-	return false
-}
 
-func (s *Scheduler) getNewResults(user *lib.User, newClasses []lib.Class) []lib.Class {
-	results := make([]lib.Class, len(newClasses))
-	for i, class := range newClasses {
-		// Copy class info
-		results[i] = class
-		results[i].Results = nil
-		for j, res := range class.Results {
+		var curResults []lib.Result
+		for j, res := range resInfo.Results {
 			if len(user.Classes[i].Results) <= j {
 				// If the is a new result
-				results[i].Results = append(results[i].Results, res)
+				curResults = append(curResults, res)
 			} else {
 				// Check if a result changed
 				oldRes := user.Classes[i].Results[j]
 				if oldRes.Name != res.Name ||
 					oldRes.Average != res.Average ||
 					oldRes.Result != res.Result {
-					results[i].Results = append(results[i].Results, res)
+					curResults = append(curResults, res)
 				}
 			}
 		}
+		if len(curResults) > 0 {
+			classInfo := user.Classes[i]
+			resClasses = append(resClasses, lib.Class{
+				Name:    classInfo.Name,
+				Group:   classInfo.Group,
+				Year:    classInfo.Year,
+				Results: curResults,
+			})
+		}
 	}
-	return results
+	return resClasses
 }
 
 func (s *Scheduler) sendEmail(user *lib.User, newResults []lib.Class) error {

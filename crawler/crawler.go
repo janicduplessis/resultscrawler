@@ -50,7 +50,7 @@ func NewCrawler(crypto lib.Crypto) *Crawler {
 }
 
 // Run returns the results of all classes for the user
-func (c *Crawler) Run(user *lib.User) ([]lib.Class, error) {
+func (c *Crawler) Run(user *lib.User) []runResult {
 	log.Println(fmt.Sprintf("Start looking for results for user %s. User has %v classes.",
 		user.UserName, len(user.Classes)))
 
@@ -61,19 +61,18 @@ func (c *Crawler) Run(user *lib.User) ([]lib.Class, error) {
 	}
 
 	// Wait for all results to be done
-	classes := make([]lib.Class, len(user.Classes))
-	copy(classes, user.Classes)
+	results := make([]runResult, len(user.Classes))
 	for _ = range user.Classes {
 		result := <-doneCh
 		if result.Err != nil {
 			log.Println(result.Err.Error())
 		}
-		classes[result.ClassIndex].Results = result.Results
+		results[result.ClassIndex] = result
 	}
 
 	log.Printf("Done looking for results for user %s.\n", user.UserName)
 
-	return classes, nil
+	return results
 }
 
 func (c *Crawler) runClass(user *lib.User, classIndex int, doneCh chan runResult) {
