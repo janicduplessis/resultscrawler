@@ -17,6 +17,7 @@ func main() {
 	log.SetFlags(log.Lshortfile)
 
 	envConfig := flag.Bool("useenv", false, "Use environnement variables config")
+	envPort := flag.String("port", "8080", "Webserver port")
 	flag.Parse()
 
 	// Default config
@@ -32,6 +33,7 @@ func main() {
 
 	if *envConfig {
 		config.ReadEnv(conf)
+		conf.ServerPort = *envPort
 	} else {
 		config.ReadFile("webserver.config.json", conf)
 	}
