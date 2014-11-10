@@ -6,8 +6,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gorilla/context"
-
 	"github.com/janicduplessis/resultscrawler/config"
 	"github.com/janicduplessis/resultscrawler/lib"
 	"github.com/janicduplessis/resultscrawler/webserver/webserver"
@@ -46,13 +44,11 @@ func main() {
 	logger := &lib.ConsoleLogger{}
 
 	userStore := lib.NewUserStoreHandler(store)
-	ws := webserver.NewWebserverHandler(logger)
+	ws := webserver.NewWebserver(logger)
 
 	webserver.NewResultsWebserver(ws, userStore, crypto)
 
-	http.Handle("/", http.FileServer(http.Dir("webserver/public")))
-
 	log.Println("Server started")
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", config.Config.ServerPort), context.ClearHandler(http.DefaultServeMux)))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", config.Config.ServerPort), nil))
 	log.Println("Server stopped")
 }

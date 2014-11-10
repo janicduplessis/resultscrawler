@@ -26,3 +26,5 @@ _testmain.go
 *.config.json
 *.sublime-workspace
 *.sublime-project
+
+webserver/static/lib
