@@ -1,7 +1,14 @@
 {{define "index"}}
 {{template "header" .}}
 
-<h1>Hi</h1>
+
+
+<h2>Login</h2>
+<form method="POST" action="/">
+  <paper-input name="username" label="Username" min="5" max="32"></paper-input>
+  <paper-input name="password" label="Password" type="password" min="6" max="32"></paper-input>
+  <paper-button type="submit">Login</paper-button>
+</form>
 
 {{template "footer" .}}
 {{end}}

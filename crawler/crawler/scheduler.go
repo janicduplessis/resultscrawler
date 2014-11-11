@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"text/template"
 	"time"
@@ -92,8 +93,8 @@ func (s *Scheduler) crawlerLoop(crawler *Crawler) {
 			// Check if results changed
 			newRes := s.getNewResults(user, results)
 			if len(newRes) > 0 {
-				log.Println("New results")
-
+				log.Println(fmt.Sprintf("New results: %+v", newRes))
+				log.Println(fmt.Sprintf("Results before mail: %+v", results))
 				err := s.sendEmail(user, newRes)
 				if err != nil {
 					log.Println(err.Error())
@@ -103,8 +104,10 @@ func (s *Scheduler) crawlerLoop(crawler *Crawler) {
 					// Ignore results with errors
 					if res.Err == nil {
 						user.Classes[res.ClassIndex].Results = res.Results
+						log.Println(fmt.Sprintf("Updating %v"))
 					}
 				}
+				log.Println(fmt.Sprintf("Classes before update: %+v", user.Classes))
 				err = s.UserStore.Update(user)
 				if err != nil {
 					log.Println(err.Error())

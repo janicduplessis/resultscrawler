@@ -5,17 +5,17 @@
 {{range .NewClasses}}
   {{if gt (len .Results) 0}}
     <h3>{{.Name}}</h3>
-    <table>
-      <tr>
-        <td>Name</td>
-        <td>Score</td>
-        <td>Average</td>
+    <table style="background-color:#ddd;border-collapse:collapse;font-size:14px;">
+      <tr style="font-size:bold;background-color:#004262;color:#fff;">
+        <td style="padding:5px 10px;border:1px solid #333;">Name</td>
+        <td style="padding:5px 10px;border:1px solid #333;">Score</td>
+        <td style="padding:5px 10px;border:1px solid #333;">Average</td>
       </tr>
       {{range .Results}}
         <tr>
-          <td>{{.Name}}</td>
-          <td>{{.Result}}</td>
-          <td>{{.Average}}</td>
+          <td style="padding:5px 10px;border:1px solid #333;">{{.Name}}</td>
+          <td style="padding:5px 10px;border:1px solid #333;">{{.Result}}</td>
+          <td style="padding:5px 10px;border:1px solid #333;">{{.Average}}</td>
         </tr>
       {{end}}
     </table>

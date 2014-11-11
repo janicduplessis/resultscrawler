@@ -82,7 +82,8 @@ func (c *Crawler) runClass(user *lib.User, classIndex int, doneCh chan runResult
 	data, err := c.Crypto.AESDecrypt(user.Code)
 	if err != nil {
 		doneCh <- runResult{
-			Err: err,
+			ClassIndex: classIndex,
+			Err:        err,
 		}
 		return
 	}
@@ -90,7 +91,8 @@ func (c *Crawler) runClass(user *lib.User, classIndex int, doneCh chan runResult
 	data, err = c.Crypto.AESDecrypt(user.Nip)
 	if err != nil {
 		doneCh <- runResult{
-			Err: err,
+			ClassIndex: classIndex,
+			Err:        err,
 		}
 		return
 	}
@@ -106,7 +108,8 @@ func (c *Crawler) runClass(user *lib.User, classIndex int, doneCh chan runResult
 	req, err := http.NewRequest("POST", requestString, nil)
 	if err != nil {
 		doneCh <- runResult{
-			Err: err,
+			ClassIndex: classIndex,
+			Err:        err,
 		}
 		return
 	}
@@ -117,7 +120,8 @@ func (c *Crawler) runClass(user *lib.User, classIndex int, doneCh chan runResult
 	resp, err := client.Do(req)
 	if err != nil {
 		doneCh <- runResult{
-			Err: err,
+			ClassIndex: classIndex,
+			Err:        err,
 		}
 		return
 	}
@@ -126,7 +130,8 @@ func (c *Crawler) runClass(user *lib.User, classIndex int, doneCh chan runResult
 	results, err := c.parseResponse(resp.Body)
 	if err != nil {
 		doneCh <- runResult{
-			Err: err,
+			ClassIndex: classIndex,
+			Err:        err,
 		}
 		return
 	}
