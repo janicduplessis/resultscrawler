@@ -93,8 +93,9 @@ func (s *Scheduler) crawlerLoop(crawler *Crawler) {
 			// Check if results changed
 			newRes := s.getNewResults(user, results)
 			if len(newRes) > 0 {
-				log.Println(fmt.Sprintf("New results: %+v", newRes))
-				log.Println(fmt.Sprintf("Results before mail: %+v", results))
+				log.Println(fmt.Sprintf("Found difference: %+v", newRes))
+				log.Println(fmt.Sprintf("Old results: %+v", user.Classes))
+				log.Println(fmt.Sprintf("New results: %+v", results))
 				err := s.sendEmail(user, newRes)
 				if err != nil {
 					log.Println(err.Error())
@@ -104,7 +105,6 @@ func (s *Scheduler) crawlerLoop(crawler *Crawler) {
 					// Ignore results with errors
 					if res.Err == nil {
 						user.Classes[res.ClassIndex].Results = res.Results
-						log.Println(fmt.Sprintf("Updating %v"))
 					}
 				}
 				log.Println(fmt.Sprintf("Classes before update: %+v", user.Classes))
