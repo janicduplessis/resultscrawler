@@ -37,13 +37,13 @@ func NewWebserver(logger lib.Logger) *Webserver {
 
 	router := mux.NewRouter()
 	// Static files
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("webserver/static"))))
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	// Register router
 	http.Handle("/", router)
 
 	templates := template.New("template")
 
-	err := filepath.Walk("webserver/views", func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk("views", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
