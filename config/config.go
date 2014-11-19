@@ -58,17 +58,9 @@ func ReadFile(configFile string, obj *ServerConfig) {
 	// Get server config
 	file, err := ioutil.ReadFile(configFile)
 
+	// return if no config files
 	if err != nil {
-		// No config found, we will create the default one and tell the user to set it up
-		data, err := json.Marshal(obj)
-		if err != nil {
-			log.Fatal(err)
-		}
-		err = ioutil.WriteFile(configFile, data, 0600)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Fatalf("No config found, created default config file. Please edit '%s' and try again.", configFile)
+		return
 	}
 
 	if err = json.Unmarshal(file, &obj); err != nil {
@@ -76,6 +68,10 @@ func ReadFile(configFile string, obj *ServerConfig) {
 	}
 
 	Config = obj
+}
+
+func ValidateConfig(obj *ServerConfig) {
+
 }
 
 // Print prints the config to std output

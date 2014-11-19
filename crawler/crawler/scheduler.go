@@ -19,7 +19,7 @@ const (
 	updateIntervalMin time.Duration = 30
 )
 
-var msgTemplate = template.Must(template.New("msgtemplate.html").ParseFiles("crawler/msgtemplate.html"))
+var msgTemplate = template.Must(template.New("msgtemplate.html").ParseFiles("msgtemplate.html"))
 
 type userInfo struct {
 	ID         bson.ObjectId
