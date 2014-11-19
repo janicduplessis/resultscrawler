@@ -6,13 +6,21 @@ import (
 	"time"
 
 	"labix.org/v2/mgo"
-
-	"github.com/janicduplessis/resultscrawler/config"
 )
 
 // MongoStore handles connection to a mongodb database.
 type MongoStore struct {
 	mongoSession *mgo.Session
+	config       *DBConfig
+}
+
+// DBConfig contains the configuration of the database server.
+type DBConfig struct {
+	Host     string
+	Port     string
+	Name     string
+	User     string
+	Password string
 }
 
 // The ConnCloser interface provides an abstraction to close a db connection.
@@ -21,14 +29,14 @@ type ConnCloser interface {
 }
 
 // NewMongoStore creates a new MongoStore object.
-func NewMongoStore() *MongoStore {
+func NewMongoStore(dbConfig *DBConfig) *MongoStore {
 	// We need this object to establish a session to our MongoDB.
 	mongoDBDialInfo := &mgo.DialInfo{
-		Addrs:    []string{fmt.Sprintf("%s:%s", config.Config.DbURL, config.Config.DbPort)},
+		Addrs:    []string{fmt.Sprintf("%s:%s", dbConfig.Host, dbConfig.Port)},
 		Timeout:  60 * time.Second,
-		Database: config.Config.DbName,
-		Username: config.Config.DbUser,
-		Password: config.Config.DbPassword,
+		Database: dbConfig.Name,
+		Username: dbConfig.User,
+		Password: dbConfig.Password,
 	}
 
 	// Create a session which maintains a pool of socket connections
@@ -47,6 +55,7 @@ func NewMongoStore() *MongoStore {
 
 	return &MongoStore{
 		mongoSession: mongoSession,
+		config:       dbConfig,
 	}
 }
 
@@ -55,5 +64,5 @@ func NewMongoStore() *MongoStore {
 // connection using the ConnCloser.
 func (hndl *MongoStore) Get() (*mgo.Database, ConnCloser) {
 	sessionCopy := hndl.mongoSession.Copy()
-	return sessionCopy.DB(config.Config.DbName), sessionCopy
+	return sessionCopy.DB(hndl.config.Name), sessionCopy
 }

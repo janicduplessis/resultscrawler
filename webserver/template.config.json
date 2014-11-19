@@ -1,0 +1,11 @@
+{
+  "ServerPort":"8080",
+  "Database": {
+    "Host": "<db_host>",
+    "Port": "<db_port>",
+    "User": "<db_user>",
+    "Password": "<db_password>",
+    "Name": "<db_name>"
+  },
+  "AESSecretKey": "iama16charkey123"
+}

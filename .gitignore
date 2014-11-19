@@ -23,7 +23,8 @@ _testmain.go
 *.test
 *.prof
 
-*.config.json
+crawler.config.json
+webserver.config.json
 *.sublime-workspace
 *.sublime-project
 

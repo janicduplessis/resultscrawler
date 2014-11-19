@@ -18,12 +18,14 @@ const (
 	userAgent    = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.36 Safari/537.36"
 	urlResultats = "https://www-s.websysinfo.uqam.ca/etudiant/drew00da"
 
+	// POST fields
 	fieldCode  = "owa_cd_perm"
 	fieldNip   = "owa_cpa"
 	fieldClass = "owa_sigle"
 	fieldGroup = "owa_groupe"
 	fieldYear  = "owa_annee"
 
+	// Error/warning messages.
 	warningString      = "ATTENTION"
 	noResultsString    = "ne sont pas disponibles via"
 	invalidClassString = "Session/sigle/groupe inexistant"

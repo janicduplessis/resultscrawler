@@ -1,46 +1,41 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
-	"github.com/janicduplessis/resultscrawler/config"
 	"github.com/janicduplessis/resultscrawler/lib"
 	"github.com/janicduplessis/resultscrawler/webserver/webserver"
 )
 
+const (
+	configFile = "webserver.config.json"
+)
+
+var (
+	envPort = flag.String("port", "8080", "Webserver port")
+)
+
+type config struct {
+	ServerPort   string
+	Database     *lib.DBConfig
+	AESSecretKey string // 16 bytes
+}
+
 func main() {
 	log.SetFlags(log.Lshortfile)
 
-	envConfig := flag.Bool("useenv", false, "Use environnement variables config")
-	envPort := flag.String("port", "8080", "Webserver port")
 	flag.Parse()
-
-	// Default config
-	conf := &config.ServerConfig{
-		ServerURL:  "localhost",
-		ServerPort: "8080",
-		DbName:     "resultscrawler",
-		DbUser:     "resultscrawler",
-		DbPassword: "***",
-		DbURL:      "localhost",
-		DbPort:     "7777",
-	}
-
-	if *envConfig {
-		config.ReadEnv(conf)
-		conf.ServerPort = *envPort
-	} else {
-		config.ReadFile("webserver.config.json", conf)
-	}
-
-	config.Print(conf)
+	config := readConfig()
 
 	// Inject dependencies
-	crypto := lib.NewCryptoHandler(config.Config.AESSecretKey)
-	store := lib.NewMongoStore()
+	crypto := lib.NewCryptoHandler(config.AESSecretKey)
+	store := lib.NewMongoStore(config.Database)
 	logger := &lib.ConsoleLogger{}
 
 	userStore := lib.NewUserStoreHandler(store)
@@ -49,6 +44,64 @@ func main() {
 	webserver.NewResultsWebserver(ws, userStore, crypto)
 
 	log.Println("Server started")
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", config.Config.ServerPort), nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", config.ServerPort), nil))
 	log.Println("Server stopped")
+}
+
+func readConfig() *config {
+	conf := &config{
+		Database: new(lib.DBConfig),
+	}
+
+	readFileConfig(conf)
+	readEnvConfig(conf)
+
+	return conf
+}
+
+func readFileConfig(config *config) {
+	// Get server config
+	file, err := ioutil.ReadFile(configFile)
+
+	// return if no config files
+	if err != nil {
+		return
+	}
+
+	if err = json.Unmarshal(file, config); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func readEnvConfig(config *config) {
+	val := os.Getenv("CRAWLERSERVER_SERVER_PORT")
+	if len(val) > 0 {
+		config.ServerPort = val
+	}
+	// DB
+	val = os.Getenv("CRAWLERSERVER_DB_HOST")
+	if len(val) > 0 {
+		config.Database.Host = val
+	}
+	val = os.Getenv("CRAWLERSERVER_DB_PORT")
+	if len(val) > 0 {
+		config.Database.Port = val
+	}
+	val = os.Getenv("CRAWLERSERVER_DB_USER")
+	if len(val) > 0 {
+		config.Database.User = val
+	}
+	val = os.Getenv("CRAWLERSERVER_DB_PASSWORD")
+	if len(val) > 0 {
+		config.Database.Password = val
+	}
+	val = os.Getenv("CRAWLERSERVER_DB_NAME")
+	if len(val) > 0 {
+		config.Database.Name = val
+	}
+	// AES
+	val = os.Getenv("CRAWLERSERVER_AES_SECRET_KEY")
+	if len(val) > 0 {
+		config.AESSecretKey = val
+	}
 }

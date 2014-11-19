@@ -1,0 +1,16 @@
+{
+  "Database": {
+    "Host": "<db_host>",
+    "Port": "<db_port>",
+    "User": "<db_user>",
+    "Password": "<db_password>",
+    "Name": "<db_name>"
+  },
+  "Email": {
+    "Host": "<email_host>",
+    "Port": "<email_port>",
+    "User": "<email_user>",
+    "Password": "<email_password>"
+  },
+  "AESSecretKey": "iama16charkey123"
+}
