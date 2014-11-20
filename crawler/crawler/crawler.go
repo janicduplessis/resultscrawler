@@ -28,6 +28,7 @@ const (
 	// Error/warning messages.
 	warningString      = "ATTENTION"
 	noResultsString    = "ne sont pas disponibles via"
+	noResultsString2   = "valuation n'est diffu"
 	invalidClassString = "Session/sigle/groupe inexistant"
 	notListedString    = "pas inscrit"
 	invalidInfoString  = "Code permanent ou NIP non valide"
@@ -194,7 +195,7 @@ func parseResponse(resp io.Reader) ([]lib.Result, error) {
 		} else {
 			// If there is an error try to find what it is.
 			if n.Type == html.TextNode {
-				if strings.Contains(strings.ToUpper(n.Data), strings.ToUpper(noResultsString)) {
+				if strings.Contains(n.Data, noResultsString) || strings.Contains(n.Data, noResultsString2) {
 					err = ErrNoResults
 					done = true
 				} else if strings.Contains(n.Data, invalidClassString) {

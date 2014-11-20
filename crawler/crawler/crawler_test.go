@@ -57,7 +57,7 @@ func TestCrawlerNewResults(t *testing.T) {
 }
 
 func TestCrawlerNoResults(t *testing.T) {
-	/*client := &FakeClient{
+	client := &FakeClient{
 		"crawler/test/no_results.html",
 	}
 	crypto := &FakeCrypto{}
@@ -70,7 +70,7 @@ func TestCrawlerNoResults(t *testing.T) {
 		if res.Err != ErrNoResults {
 			t.Errorf("Expected ErrNoResults. Found: %s", res.Err)
 		}
-	}*/
+	}
 }
 
 func TestCrawlerErrorNoResults(t *testing.T) {
