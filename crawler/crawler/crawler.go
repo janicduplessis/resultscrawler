@@ -33,21 +33,41 @@ const (
 	invalidInfoString  = "Code permanent ou NIP non valide"
 )
 
-type runResult struct {
-	ClassIndex int
-	Results    []lib.Result
-	Err        error
-}
+var (
+	// ErrNoResults happens when the crawler cannot find any results.
+	ErrNoResults = errors.New("No results for this class")
+	// ErrInvalidGroupClass happens when the group, class or year is invalid.
+	ErrInvalidGroupClass = errors.New("Invalid year/class/group")
+	// ErrInvalidCodeNip happens when the user code or nip is invalid.
+	ErrInvalidCodeNip = errors.New("Invalid code or nip")
+	// ErrNotRegistered happens when the user isnt registered for the specified class.
+	ErrNotRegistered = errors.New("Not listed for this class")
+)
 
-// Crawler for getting all grades of a user on resultats uqam
-type Crawler struct {
-	Crypto lib.Crypto
-}
+type (
+	// Client interface for sending a request.
+	Client interface {
+		Do(*http.Request) (*http.Response, error)
+	}
+
+	// Crawler for getting all grades of a user on resultats uqam
+	Crawler struct {
+		Client Client
+		Crypto lib.Crypto
+	}
+
+	runResult struct {
+		ClassIndex int
+		Results    []lib.Result
+		Err        error
+	}
+)
 
 // NewCrawler creates a new crawler object
-func NewCrawler(crypto lib.Crypto) *Crawler {
+func NewCrawler(client Client, crypto lib.Crypto) *Crawler {
 	return &Crawler{
-		Crypto: crypto,
+		client,
+		crypto,
 	}
 }
 
@@ -78,7 +98,6 @@ func (c *Crawler) Run(user *lib.User) []runResult {
 }
 
 func (c *Crawler) runClass(user *lib.User, classIndex int, doneCh chan runResult) {
-	client := &http.Client{}
 	class := user.Classes[classIndex]
 	// Decrypt the user code and nip
 	data, err := c.Crypto.AESDecrypt(user.Code)
@@ -119,7 +138,7 @@ func (c *Crawler) runClass(user *lib.User, classIndex int, doneCh chan runResult
 	req.Header.Set("User-Agent", userAgent)
 
 	log.Printf("Sending request for %s\n", class.Name)
-	resp, err := client.Do(req)
+	resp, err := c.Client.Do(req)
 	if err != nil {
 		doneCh <- runResult{
 			ClassIndex: classIndex,
@@ -127,9 +146,10 @@ func (c *Crawler) runClass(user *lib.User, classIndex int, doneCh chan runResult
 		}
 		return
 	}
+	defer resp.Body.Close()
 
 	log.Printf("Parsing response for %s\n", class.Name)
-	results, err := c.parseResponse(resp.Body)
+	results, err := parseResponse(resp.Body)
 	if err != nil {
 		doneCh <- runResult{
 			ClassIndex: classIndex,
@@ -143,7 +163,7 @@ func (c *Crawler) runClass(user *lib.User, classIndex int, doneCh chan runResult
 	}
 }
 
-func (c *Crawler) parseResponse(resp io.Reader) ([]lib.Result, error) {
+func parseResponse(resp io.Reader) ([]lib.Result, error) {
 	var results []lib.Result
 	doc, err := html.Parse(resp)
 	if err != nil {
@@ -166,7 +186,7 @@ func (c *Crawler) parseResponse(resp io.Reader) ([]lib.Result, error) {
 				for _, attr := range n.Attr {
 					if attr.Key == "name" && attr.Val == "form" {
 						log.Println("Found results table")
-						results = c.parseResultsTable(n)
+						results = parseResultsTable(n)
 						done = true
 					}
 				}
@@ -175,16 +195,16 @@ func (c *Crawler) parseResponse(resp io.Reader) ([]lib.Result, error) {
 			// If there is an error try to find what it is.
 			if n.Type == html.TextNode {
 				if strings.Contains(strings.ToUpper(n.Data), strings.ToUpper(noResultsString)) {
-					err = errors.New("No results for this class")
+					err = ErrNoResults
 					done = true
 				} else if strings.Contains(n.Data, invalidClassString) {
-					err = errors.New("Invalid year/class/group")
+					err = ErrInvalidGroupClass
 					done = true
 				} else if strings.Contains(n.Data, invalidInfoString) {
-					err = errors.New("Invalid code or nip")
+					err = ErrInvalidCodeNip
 					done = true
 				} else if strings.Contains(n.Data, notListedString) {
-					err = errors.New("Not listed for this class")
+					err = ErrNotRegistered
 					done = true
 				}
 			}
@@ -201,7 +221,7 @@ func (c *Crawler) parseResponse(resp io.Reader) ([]lib.Result, error) {
 	return results, err
 }
 
-func (c *Crawler) parseResultsTable(node *html.Node) []lib.Result {
+func parseResultsTable(node *html.Node) []lib.Result {
 	// Get all rows from the table
 	var rows []*html.Node
 	tBody := node.FirstChild.NextSibling
@@ -217,12 +237,12 @@ func (c *Crawler) parseResultsTable(node *html.Node) []lib.Result {
 	// Parse rows
 	results := make([]lib.Result, len(rows))
 	for i, row := range rows {
-		results[i] = c.parseResultRow(row)
+		results[i] = parseResultRow(row)
 	}
 	return results
 }
 
-func (c *Crawler) parseResultRow(node *html.Node) lib.Result {
+func parseResultRow(node *html.Node) lib.Result {
 	var cols []*html.Node
 	for c := node.FirstChild; c != nil; c = c.NextSibling {
 		if c.Type == html.ElementNode && c.Data == "td" {

@@ -91,7 +91,7 @@ func (s *Scheduler) crawlerLoop(crawler *Crawler) {
 			// Get results
 			results := crawler.Run(user)
 			// Check if results changed
-			newRes := s.getNewResults(user, results)
+			newRes := getNewResults(user, results)
 			if len(newRes) > 0 {
 				log.Println(fmt.Sprintf("Found difference: %+v", newRes))
 				log.Println(fmt.Sprintf("Old results: %+v", user.Classes))
@@ -137,7 +137,24 @@ func (s *Scheduler) mainLoop() {
 	}
 }
 
-func (s *Scheduler) getNewResults(user *lib.User, newResults []runResult) []lib.Class {
+func (s *Scheduler) sendEmail(user *lib.User, newResults []lib.Class) error {
+	var msg bytes.Buffer
+	data := struct {
+		User       *lib.User
+		NewClasses []lib.Class
+	}{
+		user,
+		newResults,
+	}
+	err := msgTemplate.Execute(&msg, data)
+	if err != nil {
+		return err
+	}
+
+	return s.Sender.Send(user.Email, "You have new results!", string(msg.Bytes()))
+}
+
+func getNewResults(user *lib.User, newResults []runResult) []lib.Class {
 	var resClasses []lib.Class
 	for i, resInfo := range newResults {
 		if resInfo.Err != nil {
@@ -170,21 +187,4 @@ func (s *Scheduler) getNewResults(user *lib.User, newResults []runResult) []lib.
 		}
 	}
 	return resClasses
-}
-
-func (s *Scheduler) sendEmail(user *lib.User, newResults []lib.Class) error {
-	var msg bytes.Buffer
-	data := struct {
-		User       *lib.User
-		NewClasses []lib.Class
-	}{
-		user,
-		newResults,
-	}
-	err := msgTemplate.Execute(&msg, data)
-	if err != nil {
-		return err
-	}
-
-	return s.Sender.Send(user.Email, "You have new results!", string(msg.Bytes()))
 }

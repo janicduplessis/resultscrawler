@@ -5,6 +5,7 @@ import (
 	"flag"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/janicduplessis/resultscrawler/crawler/crawler"
@@ -31,11 +32,12 @@ func main() {
 	crypto := lib.NewCryptoHandler(config.AESSecretKey)
 	emailSender := lib.NewEmailSender(config.Email)
 	store := lib.NewMongoStore(config.Database)
+	httpClient := &http.Client{}
 
 	userStore := lib.NewUserStoreHandler(store)
 
 	crawlers := []*crawler.Crawler{
-		crawler.NewCrawler(crypto),
+		crawler.NewCrawler(httpClient, crypto),
 	}
 	scheduler := crawler.NewScheduler(crawlers, userStore, emailSender)
 
