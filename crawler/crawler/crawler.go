@@ -31,7 +31,7 @@ const (
 	noResultsString2   = "valuation n'est diffu"
 	invalidClassString = "Session/sigle/groupe inexistant"
 	notListedString    = "pas inscrit"
-	invalidInfoString  = "Code permanent ou NIP non valide"
+	invalidInfoString  = "Code permanent inexistant ou NIP non valide"
 )
 
 var (
@@ -177,10 +177,19 @@ func parseResponse(resp io.Reader) ([]lib.Result, error) {
 		// If there is no error yet
 		if !hasWarning {
 			// Check if there is an error
-			if n.Type == html.TextNode && strings.Contains(n.Data, warningString) {
-				log.Println("Found warning")
-				hasWarning = true
+			if n.Type == html.TextNode {
+				if strings.Contains(n.Data, warningString) {
+					log.Println("Found warning")
+					hasWarning = true
+				}
+				// There is 2 different pages for no results. This one has
+				// no warning header so we will look for it here.
+				if strings.Contains(n.Data, noResultsString2) {
+					err = ErrNoResults
+					done = true
+				}
 			}
+
 			// Looking for the results table, it has a 'name' attribute
 			// with the value 'form'
 			if n.Type == html.ElementNode && n.Data == "table" {
@@ -195,7 +204,7 @@ func parseResponse(resp io.Reader) ([]lib.Result, error) {
 		} else {
 			// If there is an error try to find what it is.
 			if n.Type == html.TextNode {
-				if strings.Contains(n.Data, noResultsString) || strings.Contains(n.Data, noResultsString2) {
+				if strings.Contains(n.Data, noResultsString) {
 					err = ErrNoResults
 					done = true
 				} else if strings.Contains(n.Data, invalidClassString) {

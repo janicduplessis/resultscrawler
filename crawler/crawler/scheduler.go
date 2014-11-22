@@ -19,7 +19,8 @@ const (
 	updateIntervalMin time.Duration = 30
 )
 
-var msgTemplate = template.Must(template.New("msgtemplate.html").ParseFiles("msgtemplate.html"))
+var msgTemplatePath = "crawler/msgtemplate.html"
+var msgTemplate *template.Template
 
 type userInfo struct {
 	ID         bson.ObjectId
@@ -40,6 +41,10 @@ type Scheduler struct {
 
 // NewScheduler creates a new scuduler object.
 func NewScheduler(crawlers []*Crawler, userStore lib.UserStore, sender lib.Sender) *Scheduler {
+	if msgTemplate == nil {
+		msgTemplate = template.Must(template.New("msgtemplate.html").ParseFiles(msgTemplatePath))
+	}
+
 	queueCh := make(chan *lib.User)
 	doneCh := make(chan bool)
 

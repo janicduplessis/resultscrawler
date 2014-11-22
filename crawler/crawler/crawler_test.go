@@ -1,49 +1,24 @@
 package crawler
 
 import (
-	"net/http"
 	"os"
 	"testing"
 
 	"labix.org/v2/mgo/bson"
 
+	"github.com/janicduplessis/resultscrawler/crawler/crawler/test"
 	"github.com/janicduplessis/resultscrawler/lib"
 )
 
-type FakeClient struct {
-	FilePath string
-}
-
-type FakeCrypto struct {
-}
-
-func (c *FakeClient) Do(req *http.Request) (*http.Response, error) {
-	file, err := os.Open(c.FilePath)
-	if err != nil {
-		return nil, err
-	}
-	return &http.Response{
-		Body: file,
-	}, nil
-}
-
-func (c *FakeCrypto) AESEncrypt(data []byte) ([]byte, error) {
-	return data, nil
-}
-
-func (c *FakeCrypto) AESDecrypt(data []byte) ([]byte, error) {
-	return data, nil
-}
-
-func (c *FakeCrypto) GenerateRandomKey(strength int) []byte {
-	return []byte("1234")
-}
-
 func TestCrawlerNewResults(t *testing.T) {
-	client := &FakeClient{
-		"crawler/test/results.html",
+	data, err := os.Open("test/results.html")
+	if err != nil {
+		t.Errorf("Error opening test file. Err: %s", err)
 	}
-	crypto := &FakeCrypto{}
+	client := &test.FakeClient{
+		Data: data,
+	}
+	crypto := &test.FakeCrypto{}
 	crawler := NewCrawler(client, crypto)
 	results := crawler.Run(getTestUser())
 	if len(results) <= 0 {
@@ -56,28 +31,15 @@ func TestCrawlerNewResults(t *testing.T) {
 	}
 }
 
-func TestCrawlerNoResults(t *testing.T) {
-	client := &FakeClient{
-		"crawler/test/no_results.html",
-	}
-	crypto := &FakeCrypto{}
-	crawler := NewCrawler(client, crypto)
-	results := crawler.Run(getTestUser())
-	if len(results) <= 0 {
-		t.Error("Found no results. Expected results")
-	}
-	for _, res := range results {
-		if res.Err != ErrNoResults {
-			t.Errorf("Expected ErrNoResults. Found: %s", res.Err)
-		}
-	}
-}
-
 func TestCrawlerErrorNoResults(t *testing.T) {
-	client := &FakeClient{
-		"crawler/test/no_results.html",
+	data, err := os.Open("test/no_results.html")
+	if err != nil {
+		t.Errorf("Error opening test file. Err: %s", err)
 	}
-	crypto := &FakeCrypto{}
+	client := &test.FakeClient{
+		Data: data,
+	}
+	crypto := &test.FakeCrypto{}
 	crawler := NewCrawler(client, crypto)
 	results := crawler.Run(getTestUser())
 	if len(results) <= 0 {
@@ -91,10 +53,14 @@ func TestCrawlerErrorNoResults(t *testing.T) {
 }
 
 func TestCrawlerErrorInvalidCodeNip(t *testing.T) {
-	client := &FakeClient{
-		"crawler/test/invalid_code_or_nip.html",
+	data, err := os.Open("test/invalid_code_or_nip.html")
+	if err != nil {
+		t.Errorf("Error opening test file. Err: %s", err)
 	}
-	crypto := &FakeCrypto{}
+	client := &test.FakeClient{
+		Data: data,
+	}
+	crypto := &test.FakeCrypto{}
 	crawler := NewCrawler(client, crypto)
 	results := crawler.Run(getTestUser())
 	if len(results) <= 0 {
@@ -108,10 +74,14 @@ func TestCrawlerErrorInvalidCodeNip(t *testing.T) {
 }
 
 func TestCrawlerErrorInvalidClassGroup(t *testing.T) {
-	client := &FakeClient{
-		"crawler/test/invalid_class_or_group.html",
+	data, err := os.Open("test/invalid_class_or_group.html")
+	if err != nil {
+		t.Errorf("Error opening test file. Err: %s", err)
 	}
-	crypto := &FakeCrypto{}
+	client := &test.FakeClient{
+		Data: data,
+	}
+	crypto := &test.FakeCrypto{}
 	crawler := NewCrawler(client, crypto)
 	results := crawler.Run(getTestUser())
 	if len(results) <= 0 {
@@ -125,10 +95,14 @@ func TestCrawlerErrorInvalidClassGroup(t *testing.T) {
 }
 
 func TestCrawlerErrorNotRegistered(t *testing.T) {
-	client := &FakeClient{
-		"crawler/test/not_registered_for_class.html",
+	data, err := os.Open("test/not_registered_for_class.html")
+	if err != nil {
+		t.Errorf("Error opening test file. Err: %s", err)
 	}
-	crypto := &FakeCrypto{}
+	client := &test.FakeClient{
+		Data: data,
+	}
+	crypto := &test.FakeCrypto{}
 	crawler := NewCrawler(client, crypto)
 	results := crawler.Run(getTestUser())
 	if len(results) <= 0 {
@@ -157,4 +131,10 @@ func getTestUser() *lib.User {
 			},
 		},
 	}
+}
+
+func init() {
+	// Working directory is different in test so we have to fix the path of
+	// the template file.
+	msgTemplatePath = "msgtemplate.html"
 }

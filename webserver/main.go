@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/janicduplessis/resultscrawler/lib"
@@ -39,12 +38,10 @@ func main() {
 	logger := &lib.ConsoleLogger{}
 
 	userStore := lib.NewUserStoreHandler(store)
-	ws := webserver.NewWebserver(logger)
-
-	webserver.NewResultsWebserver(ws, userStore, crypto)
+	server := webserver.NewWebserver(userStore, crypto, logger)
 
 	log.Println("Server started")
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", config.ServerPort), nil))
+	log.Fatal(server.Start(fmt.Sprintf(":%s", config.ServerPort)))
 	log.Println("Server stopped")
 }
 
