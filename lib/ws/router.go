@@ -8,15 +8,17 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type key int
+type (
+	key int
 
-// Router handles routes for the application.
-// It is a simple wrapper around the httprouter lib.
-type Router struct {
-	router *httprouter.Router
-}
+	// Router handles routes for the application.
+	// It is a simple wrapper around the httprouter lib.
+	Router struct {
+		router *httprouter.Router
+	}
+)
 
-var paramsKey = 1
+const paramsKey key = 1
 
 // NewRouter creates a new router object.
 func NewRouter() *Router {

@@ -7,5 +7,6 @@
     "Password": "<db_password>",
     "Name": "<db_name>"
   },
-  "AESSecretKey": "iama16charkey123"
+  "AESSecretKey": "iama16charkey123",
+  "SessionKey": "sessionkey1234"
 }

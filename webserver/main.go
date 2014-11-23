@@ -24,6 +24,7 @@ type config struct {
 	ServerPort   string
 	Database     *lib.DBConfig
 	AESSecretKey string // 16 bytes
+	SessionKey   string
 }
 
 func main() {
@@ -38,7 +39,13 @@ func main() {
 	logger := &lib.ConsoleLogger{}
 
 	userStore := lib.NewUserStoreHandler(store)
-	server := webserver.NewWebserver(userStore, crypto, logger)
+
+	server := webserver.NewWebserver(&webserver.Config{
+		userStore,
+		crypto,
+		logger,
+		config.SessionKey,
+	})
 
 	log.Println("Server started")
 	log.Fatal(server.Start(fmt.Sprintf(":%s", config.ServerPort)))
@@ -100,5 +107,9 @@ func readEnvConfig(config *config) {
 	val = os.Getenv("CRAWLERSERVER_AES_SECRET_KEY")
 	if len(val) > 0 {
 		config.AESSecretKey = val
+	}
+	val = os.Getenv("CRAWLERSERVER_SESSION_KEY")
+	if len(val) > 0 {
+		config.SessionKey = val
 	}
 }

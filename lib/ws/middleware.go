@@ -1,14 +1,16 @@
 package ws
 
-// Middleware is a function that implements additional functionnality
-// for a handler.
-type Middleware func(Handler) Handler
+type (
+	// Middleware is a function that implements additional functionnality
+	// for a handler.
+	Middleware func(Handler) Handler
 
-// MiddlewareGroup allows simple chaining of middlewares.
-// Based on alice (https://github.com/justinas/alice).
-type MiddlewareGroup struct {
-	handlers []Middleware
-}
+	// MiddlewareGroup allows simple chaining of middlewares.
+	// Based on alice (https://github.com/justinas/alice).
+	MiddlewareGroup struct {
+		handlers []Middleware
+	}
+)
 
 // NewMiddlewareGroup creates a new middleware group.
 func NewMiddlewareGroup(handlers ...Middleware) MiddlewareGroup {

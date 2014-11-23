@@ -15,7 +15,7 @@ func (handler *ConsoleLogger) Log(message string) {
 
 // Logf logs a message with format.
 func (handler *ConsoleLogger) Logf(message string, args ...interface{}) {
-	log.Println(fmt.Sprintf(message, args))
+	log.Println(fmt.Sprintf(message, args...))
 }
 
 // Error logs an error object.

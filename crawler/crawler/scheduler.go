@@ -27,7 +27,7 @@ type userInfo struct {
 	LastUpdate time.Time
 }
 
-// Scheduler handles scheduling crawler runs for every users.
+// Scheduler handles scheduling crawler runs for every user.
 type Scheduler struct {
 	Crawlers  []*Crawler
 	UserStore lib.UserStore
