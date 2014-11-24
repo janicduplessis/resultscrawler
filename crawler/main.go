@@ -33,13 +33,24 @@ func main() {
 	emailSender := lib.NewEmailSender(config.Email)
 	store := lib.NewMongoStore(config.Database)
 	httpClient := &http.Client{}
+	logger := &lib.ConsoleLogger{}
 
 	userStore := lib.NewUserStoreHandler(store)
+	userInfoStore := lib.NewUserInfoStoreHandler(store)
+	userResultsStore := lib.NewUserResultsStoreHandler(store)
 
 	crawlers := []*crawler.Crawler{
-		crawler.NewCrawler(httpClient, crypto),
+		crawler.NewCrawler(httpClient, logger),
 	}
-	scheduler := crawler.NewScheduler(crawlers, userStore, emailSender)
+	scheduler := crawler.NewScheduler(&crawler.SchedulerConfig{
+		crawlers,
+		userStore,
+		userInfoStore,
+		userResultsStore,
+		crypto,
+		emailSender,
+		logger,
+	})
 
 	log.Println("Server started")
 	scheduler.Start()

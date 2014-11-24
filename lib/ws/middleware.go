@@ -25,6 +25,7 @@ func (g MiddlewareGroup) Append(handlers ...Middleware) MiddlewareGroup {
 	newGroup := make([]Middleware, len(g.handlers))
 	copy(newGroup, g.handlers)
 	newGroup = append(newGroup, handlers...)
+	g.handlers = newGroup
 	return g
 }
 

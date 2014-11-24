@@ -51,6 +51,11 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.router.ServeHTTP(w, req)
 }
 
+// ServeFiles serves files from the filesystem.
+func (r *Router) ServeFiles(path string, root http.FileSystem) {
+	r.router.ServeFiles(path, root)
+}
+
 // Params returns the route parameters from the context
 func Params(ctx context.Context) httprouter.Params {
 	p, ok := ctx.Value(paramsKey).(httprouter.Params)

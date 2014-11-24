@@ -3,9 +3,12 @@
 package webserver
 
 import (
+	"encoding/gob"
 	"log"
 	"net/http"
 	"time"
+
+	"labix.org/v2/mgo/bson"
 
 	"code.google.com/p/go.net/context"
 	"github.com/gorilla/sessions"
@@ -36,7 +39,9 @@ type (
 )
 
 const (
-	userKey key = 1
+	userKey          key = 1
+	sessionUserIDKey     = "userid"
+	sessionName          = "rc-session"
 )
 
 // NewWebserver creates a new webserver object.
@@ -56,7 +61,11 @@ func NewWebserver(config *Config) *Webserver {
 	commonHandlers := ws.NewMiddlewareGroup(webserver.errorMiddleware, webserver.logMiddleware)
 	registeredHandlers := commonHandlers.Append(webserver.authMiddleware)
 
+	// Static files
+	router.ServeFiles("/app/*filepath", http.Dir("public"))
+
 	// Register routes
+	router.GET("/", commonHandlers.Then(webserver.homeHandler))
 	router.GET("/api/v1/results/:year/:class", registeredHandlers.Then(webserver.resultsHandler))
 
 	router.POST("/api/v1/login", commonHandlers.Then(webserver.loginHandler))
@@ -70,8 +79,12 @@ func (server *Webserver) Start(address string) error {
 	return http.ListenAndServe(address, server.router)
 }
 
-func (server *Webserver) loginHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (server *Webserver) homeHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/app", http.StatusMovedPermanently)
+}
 
+func (server *Webserver) loginHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	//user, err := server.userStore.FindByID()
 }
 
 func (server *Webserver) registerHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
@@ -88,7 +101,35 @@ func (server *Webserver) resultsHandler(ctx context.Context, w http.ResponseWrit
 
 func (server *Webserver) authMiddleware(next ws.Handler) ws.Handler {
 	fn := func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-		ctx = context.WithValue(ctx, userKey, &lib.User{})
+		s, err := server.sessions.Get(r, sessionName)
+		if err != nil {
+			server.logger.Error(err)
+			server.authError(w)
+			return
+		}
+
+		if s.Values[sessionUserIDKey] == nil {
+			server.authError(w)
+			return
+		}
+
+		userID, ok := s.Values[sessionUserIDKey].(bson.ObjectId)
+		if !ok {
+			server.logger.Error(err)
+			server.authError(w)
+			return
+		}
+
+		server.logger.Logf("%v", userID)
+
+		user, err := server.userStore.FindByID(userID)
+		if err != nil {
+			server.logger.Error(err)
+			server.authError(w)
+			return
+		}
+
+		ctx = context.WithValue(ctx, userKey, user)
 
 		next.ServeHTTP(ctx, w, r)
 	}
@@ -123,10 +164,19 @@ func (server *Webserver) logMiddleware(next ws.Handler) ws.Handler {
 	return ws.HandlerFunc(fn)
 }
 
+func (server *Webserver) authError(w http.ResponseWriter) {
+	server.logger.Log("Unauthorized request attempt")
+	http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+}
+
 func getUser(ctx context.Context) *lib.User {
 	user, ok := ctx.Value(userKey).(*lib.User)
 	if !ok {
 		panic("No user in context. Make sure the handler is authentified")
 	}
 	return user
+}
+
+func init() {
+	gob.Register(bson.ObjectId(""))
 }

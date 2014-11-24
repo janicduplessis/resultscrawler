@@ -22,3 +22,8 @@ func (handler *ConsoleLogger) Logf(message string, args ...interface{}) {
 func (handler *ConsoleLogger) Error(err error) {
 	log.Println(err.Error())
 }
+
+// Fatal logs a fatal error. The application will panic.
+func (handler *ConsoleLogger) Fatal(err error) {
+	log.Fatal(err)
+}

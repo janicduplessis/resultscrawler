@@ -2,7 +2,6 @@ package crawler
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 	"text/template"
 	"time"
@@ -27,34 +26,61 @@ type userInfo struct {
 	LastUpdate time.Time
 }
 
+type crawlerUser struct {
+	ID      bson.ObjectId
+	Classes []lib.Class
+	Nip     string
+	Code    string
+	Email   string
+}
+
+// SchedulerConfig initializes the scheduler.
+type SchedulerConfig struct {
+	Crawlers         []*Crawler
+	UserStore        lib.UserStore
+	UserInfoStore    lib.UserInfoStore
+	UserResultsStore lib.UserResultsStore
+	Crypto           lib.Crypto
+	Sender           lib.Sender
+	Logger           lib.Logger
+}
+
 // Scheduler handles scheduling crawler runs for every user.
 type Scheduler struct {
-	Crawlers  []*Crawler
-	UserStore lib.UserStore
-	Sender    lib.Sender
+	Crawlers         []*Crawler
+	UserStore        lib.UserStore
+	UserInfoStore    lib.UserInfoStore
+	UserResultsStore lib.UserResultsStore
+	Crypto           lib.Crypto
+	Sender           lib.Sender
+	Logger           lib.Logger
 
-	usersInfo       []*userInfo
-	queueCh         chan *lib.User
-	doneCh          chan bool
-	messageTemplate *template.Template
+	usersInfo []*userInfo
+	queueCh   chan *crawlerUser
+	doneCh    chan bool
 }
 
 // NewScheduler creates a new scuduler object.
-func NewScheduler(crawlers []*Crawler, userStore lib.UserStore, sender lib.Sender) *Scheduler {
+func NewScheduler(config *SchedulerConfig) *Scheduler {
 	if msgTemplate == nil {
 		msgTemplate = template.Must(template.New("msgtemplate.html").ParseFiles(msgTemplatePath))
 	}
 
-	queueCh := make(chan *lib.User)
+	queueCh := make(chan *crawlerUser)
 	doneCh := make(chan bool)
 
 	return &Scheduler{
-		Crawlers:  crawlers,
-		UserStore: userStore,
-		Sender:    sender,
+		config.Crawlers,
+		config.UserStore,
+		config.UserInfoStore,
+		config.UserResultsStore,
+		config.Crypto,
+		config.Sender,
+		config.Logger,
 
-		queueCh: queueCh,
-		doneCh:  doneCh,
+		nil,
+		queueCh,
+		doneCh,
 	}
 }
 
@@ -81,12 +107,41 @@ func (s *Scheduler) Start() {
 
 // Queue tells the scheduler do a run for a user
 func (s *Scheduler) Queue(userID bson.ObjectId) {
-	user, err := s.UserStore.FindByID(userID)
+	// Get the user info
+	userInfo, err := s.UserInfoStore.FindByID(userID)
 	if err != nil {
-		log.Println(err.Error())
+		s.Logger.Error(err)
 		return
 	}
-	s.queueCh <- user
+
+	// Decrypt the user code and nip
+	data, err := s.Crypto.AESDecrypt(userInfo.Code)
+	if err != nil {
+		s.Logger.Error(err)
+		return
+	}
+	userCode := string(data)
+	data, err = s.Crypto.AESDecrypt(userInfo.Nip)
+	if err != nil {
+		s.Logger.Error(err)
+		return
+	}
+	userNip := string(data)
+
+	// Get the user current results
+	results, err := s.UserResultsStore.FindByID(userID)
+	if err != nil {
+		s.Logger.Error(err)
+		return
+	}
+
+	s.queueCh <- &crawlerUser{
+		ID:      userID,
+		Classes: results.Classes,
+		Code:    userCode,
+		Nip:     userNip,
+		Email:   userInfo.Email,
+	}
 }
 
 func (s *Scheduler) crawlerLoop(crawler *Crawler) {
@@ -98,12 +153,12 @@ func (s *Scheduler) crawlerLoop(crawler *Crawler) {
 			// Check if results changed
 			newRes := getNewResults(user, results)
 			if len(newRes) > 0 {
-				log.Println(fmt.Sprintf("Found difference: %+v", newRes))
-				log.Println(fmt.Sprintf("Old results: %+v", user.Classes))
-				log.Println(fmt.Sprintf("New results: %+v", results))
+				s.Logger.Logf("Found difference: %+v", newRes)
+				s.Logger.Logf("Old results: %+v", user.Classes)
+				s.Logger.Logf("New results: %+v", results)
 				err := s.sendEmail(user, newRes)
 				if err != nil {
-					log.Println(err.Error())
+					s.Logger.Error(err)
 				}
 				// Update results
 				for _, res := range results {
@@ -112,10 +167,13 @@ func (s *Scheduler) crawlerLoop(crawler *Crawler) {
 						user.Classes[res.ClassIndex].Results = res.Results
 					}
 				}
-				log.Println(fmt.Sprintf("Classes before update: %+v", user.Classes))
-				err = s.UserStore.Update(user)
+				s.Logger.Logf("Classes before update: %+v", user.Classes)
+				err = s.UserResultsStore.Update(&lib.UserResults{
+					UserID:  user.ID,
+					Classes: user.Classes,
+				})
 				if err != nil {
-					log.Println(err.Error())
+					s.Logger.Error(err)
 				}
 			}
 		}
@@ -142,10 +200,10 @@ func (s *Scheduler) mainLoop() {
 	}
 }
 
-func (s *Scheduler) sendEmail(user *lib.User, newResults []lib.Class) error {
+func (s *Scheduler) sendEmail(user *crawlerUser, newResults []lib.Class) error {
 	var msg bytes.Buffer
 	data := struct {
-		User       *lib.User
+		User       *crawlerUser
 		NewClasses []lib.Class
 	}{
 		user,
@@ -159,7 +217,7 @@ func (s *Scheduler) sendEmail(user *lib.User, newResults []lib.Class) error {
 	return s.Sender.Send(user.Email, "You have new results!", string(msg.Bytes()))
 }
 
-func getNewResults(user *lib.User, newResults []runResult) []lib.Class {
+func getNewResults(user *crawlerUser, newResults []runResult) []lib.Class {
 	var resClasses []lib.Class
 	for i, resInfo := range newResults {
 		if resInfo.Err != nil {

@@ -11,15 +11,7 @@ import (
 )
 
 func TestCrawlerNewResults(t *testing.T) {
-	data, err := os.Open("test/results.html")
-	if err != nil {
-		t.Errorf("Error opening test file. Err: %s", err)
-	}
-	client := &test.FakeClient{
-		Data: data,
-	}
-	crypto := &test.FakeCrypto{}
-	crawler := NewCrawler(client, crypto)
+	crawler := getCrawler(t, "test/results.html")
 	results := crawler.Run(getTestUser())
 	if len(results) <= 0 {
 		t.Error("Found no results. Expected results")
@@ -32,15 +24,7 @@ func TestCrawlerNewResults(t *testing.T) {
 }
 
 func TestCrawlerErrorNoResults(t *testing.T) {
-	data, err := os.Open("test/no_results.html")
-	if err != nil {
-		t.Errorf("Error opening test file. Err: %s", err)
-	}
-	client := &test.FakeClient{
-		Data: data,
-	}
-	crypto := &test.FakeCrypto{}
-	crawler := NewCrawler(client, crypto)
+	crawler := getCrawler(t, "test/no_results.html")
 	results := crawler.Run(getTestUser())
 	if len(results) <= 0 {
 		t.Error("Found no results. Expected results")
@@ -53,15 +37,7 @@ func TestCrawlerErrorNoResults(t *testing.T) {
 }
 
 func TestCrawlerErrorInvalidCodeNip(t *testing.T) {
-	data, err := os.Open("test/invalid_code_or_nip.html")
-	if err != nil {
-		t.Errorf("Error opening test file. Err: %s", err)
-	}
-	client := &test.FakeClient{
-		Data: data,
-	}
-	crypto := &test.FakeCrypto{}
-	crawler := NewCrawler(client, crypto)
+	crawler := getCrawler(t, "test/invalid_code_or_nip.html")
 	results := crawler.Run(getTestUser())
 	if len(results) <= 0 {
 		t.Error("Found no results. Expected results")
@@ -74,15 +50,7 @@ func TestCrawlerErrorInvalidCodeNip(t *testing.T) {
 }
 
 func TestCrawlerErrorInvalidClassGroup(t *testing.T) {
-	data, err := os.Open("test/invalid_class_or_group.html")
-	if err != nil {
-		t.Errorf("Error opening test file. Err: %s", err)
-	}
-	client := &test.FakeClient{
-		Data: data,
-	}
-	crypto := &test.FakeCrypto{}
-	crawler := NewCrawler(client, crypto)
+	crawler := getCrawler(t, "test/invalid_class_or_group.html")
 	results := crawler.Run(getTestUser())
 	if len(results) <= 0 {
 		t.Error("Found no results. Expected results")
@@ -95,15 +63,7 @@ func TestCrawlerErrorInvalidClassGroup(t *testing.T) {
 }
 
 func TestCrawlerErrorNotRegistered(t *testing.T) {
-	data, err := os.Open("test/not_registered_for_class.html")
-	if err != nil {
-		t.Errorf("Error opening test file. Err: %s", err)
-	}
-	client := &test.FakeClient{
-		Data: data,
-	}
-	crypto := &test.FakeCrypto{}
-	crawler := NewCrawler(client, crypto)
+	crawler := getCrawler(t, "test/not_registered_for_class.html")
 	results := crawler.Run(getTestUser())
 	if len(results) <= 0 {
 		t.Error("Found no results. Expected results")
@@ -115,13 +75,12 @@ func TestCrawlerErrorNotRegistered(t *testing.T) {
 	}
 }
 
-func getTestUser() *lib.User {
-	return &lib.User{
-		ID:       bson.NewObjectId(),
-		UserName: "Test",
-		Email:    "test@test.com",
-		Code:     []byte("aaaaaa"),
-		Nip:      []byte("zzzzzzz"),
+func getTestUser() *crawlerUser {
+	return &crawlerUser{
+		ID:    bson.NewObjectId(),
+		Code:  "aaaaaa",
+		Nip:   "zzzzzzz",
+		Email: "test@test.com",
 		Classes: []lib.Class{
 			lib.Class{
 				Name:    "Class1",
@@ -131,6 +90,18 @@ func getTestUser() *lib.User {
 			},
 		},
 	}
+}
+
+func getCrawler(t *testing.T, fileToCrawl string) *Crawler {
+	data, err := os.Open(fileToCrawl)
+	if err != nil {
+		t.Errorf("Error opening test file %s. Err: %s", fileToCrawl, err)
+	}
+	client := &test.FakeClient{
+		Data: data,
+	}
+	logger := &lib.ConsoleLogger{}
+	return NewCrawler(client, logger)
 }
 
 func init() {

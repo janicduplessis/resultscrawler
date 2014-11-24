@@ -28,4 +28,10 @@ webserver.config.json
 *.sublime-workspace
 *.sublime-project
 
-webserver/static/lib
+webserver/public/bower_components
+
+logs/*
+webserver/node_modules
+tmp
+.DS_Store
+.idea

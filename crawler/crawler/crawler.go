@@ -57,7 +57,7 @@ type (
 	// Crawler for getting all grades of a user on resultats uqam
 	Crawler struct {
 		Client Client
-		Crypto lib.Crypto
+		Logger lib.Logger
 	}
 
 	runResult struct {
@@ -68,17 +68,17 @@ type (
 )
 
 // NewCrawler creates a new crawler object
-func NewCrawler(client Client, crypto lib.Crypto) *Crawler {
+func NewCrawler(client Client, logger lib.Logger) *Crawler {
 	return &Crawler{
 		client,
-		crypto,
+		logger,
 	}
 }
 
 // Run returns the results of all classes for the user
-func (c *Crawler) Run(user *lib.User) []runResult {
+func (c *Crawler) Run(user *crawlerUser) []runResult {
 	log.Println(fmt.Sprintf("Start looking for results for user %s. User has %v classes.",
-		user.UserName, len(user.Classes)))
+		user.ID, len(user.Classes)))
 
 	// Request results
 	doneCh := make(chan runResult)
@@ -96,35 +96,16 @@ func (c *Crawler) Run(user *lib.User) []runResult {
 		results[result.ClassIndex] = result
 	}
 
-	log.Printf("Done looking for results for user %s.\n", user.UserName)
+	log.Printf("Done looking for results for user %s.\n", user.ID)
 
 	return results
 }
 
-func (c *Crawler) runClass(user *lib.User, classIndex int, doneCh chan runResult) {
+func (c *Crawler) runClass(user *crawlerUser, classIndex int, doneCh chan runResult) {
 	class := user.Classes[classIndex]
-	// Decrypt the user code and nip
-	data, err := c.Crypto.AESDecrypt(user.Code)
-	if err != nil {
-		doneCh <- runResult{
-			ClassIndex: classIndex,
-			Err:        err,
-		}
-		return
-	}
-	userCode := string(data)
-	data, err = c.Crypto.AESDecrypt(user.Nip)
-	if err != nil {
-		doneCh <- runResult{
-			ClassIndex: classIndex,
-			Err:        err,
-		}
-		return
-	}
-	userNip := string(data)
 	params := url.Values{
-		fieldCode:  {userCode},
-		fieldNip:   {userNip},
+		fieldCode:  {user.Code},
+		fieldNip:   {user.Nip},
 		fieldClass: {class.Name},
 		fieldGroup: {class.Group},
 		fieldYear:  {class.Year},
