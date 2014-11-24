@@ -26,6 +26,16 @@ func (hndl *UserStoreHandler) FindByID(id bson.ObjectId) (*User, error) {
 	return &user, err
 }
 
+// FindByEmail return a user with the specified email.
+func (hndl *UserStoreHandler) FindByEmail(email string) (*User, error) {
+	db, conn := hndl.store.Get()
+	defer conn.Close()
+
+	user := User{}
+	err := db.C(userKey).Find(bson.M{"email": email}).One(&user)
+	return &user, err
+}
+
 // FindAll returns all users.
 func (hndl *UserStoreHandler) FindAll() ([]*User, error) {
 	db, conn := hndl.store.Get()

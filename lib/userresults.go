@@ -6,6 +6,7 @@ type (
 	UserResultsStore interface {
 		FindByID(userID bson.ObjectId) (*UserResults, error)
 		Update(results *UserResults) error
+		Insert(results *UserResults) error
 	}
 
 	UserResults struct {

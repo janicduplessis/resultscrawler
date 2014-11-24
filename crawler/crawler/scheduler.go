@@ -107,6 +107,11 @@ func (s *Scheduler) Start() {
 
 // Queue tells the scheduler do a run for a user
 func (s *Scheduler) Queue(userID bson.ObjectId) {
+	user, err := s.UserStore.FindByID(userID)
+	if err != nil {
+		s.Logger.Error(err)
+		return
+	}
 	// Get the user info
 	userInfo, err := s.UserInfoStore.FindByID(userID)
 	if err != nil {
@@ -140,7 +145,7 @@ func (s *Scheduler) Queue(userID bson.ObjectId) {
 		Classes: results.Classes,
 		Code:    userCode,
 		Nip:     userNip,
-		Email:   userInfo.Email,
+		Email:   user.Email,
 	}
 }
 

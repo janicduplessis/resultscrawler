@@ -5,6 +5,8 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"errors"
+
+	"code.google.com/p/go.crypto/bcrypt"
 )
 
 // CryptoHandler is an utility for various crypto algorithms.
@@ -58,4 +60,20 @@ func (hndl *CryptoHandler) GenerateRandomKey(strength int) []byte {
 		return nil
 	}
 	return k
+}
+
+func (hndl *CryptoHandler) CompareHashAndPassword(hash string, password string) (bool, error) {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	if err != nil {
+		if err == bcrypt.ErrMismatchedHashAndPassword {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
+func (hndl *CryptoHandler) GenerateFromPassword(password string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(hash), err
 }

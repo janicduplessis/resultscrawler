@@ -39,9 +39,13 @@ func main() {
 	logger := &lib.ConsoleLogger{}
 
 	userStore := lib.NewUserStoreHandler(store)
+	userInfoStore := lib.NewUserInfoStoreHandler(store)
+	userResultsStore := lib.NewUserResultsStoreHandler(store)
 
 	server := webserver.NewWebserver(&webserver.Config{
 		userStore,
+		userInfoStore,
+		userResultsStore,
 		crypto,
 		logger,
 		config.SessionKey,

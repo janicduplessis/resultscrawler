@@ -1,17 +1,31 @@
 package webserver
 
-import "github.com/janicduplessis/resultscrawler/lib"
+type (
+	userModel struct {
+		Email     string `json:"email"`
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+	}
 
-type Page struct {
-	PageID string
-	Title  string
-	User   *lib.User
-}
+	loginRequest struct {
+		Email    string `json:"userName"`
+		Password string `json:"password"`
+	}
 
-type homeModel struct {
-	Page Page
-}
+	registerRequest struct {
+		Email     string `json:"email"`
+		Password  string `json:"password"`
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+	}
 
-type aboutModel struct {
-	Page Page
-}
+	loginResponse struct {
+		Status int        `json:"status"`
+		User   *userModel `json:"user"`
+	}
+
+	registerResponse struct {
+		Status int        `json:"status"`
+		User   *userModel `json:"user"`
+	}
+)

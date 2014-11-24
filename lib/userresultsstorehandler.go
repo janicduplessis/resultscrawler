@@ -21,7 +21,7 @@ func (hndl *UserResultsStoreHandler) FindByID(userID bson.ObjectId) (*UserResult
 	defer conn.Close()
 
 	userResults := UserResults{}
-	err := db.C(userResultsKey).FindId(userID).One(&userResults)
+	err := db.C(userResultsKey).Find(bson.M{"user_id": userID}).One(&userResults)
 	return &userResults, err
 }
 
@@ -29,6 +29,14 @@ func (hndl *UserResultsStoreHandler) Update(userResults *UserResults) error {
 	db, conn := hndl.store.Get()
 	defer conn.Close()
 
-	err := db.C(userResultsKey).UpdateId(userResults.UserID, userResults)
+	err := db.C(userResultsKey).Update(bson.M{"user_id": userResults.UserID}, userResults)
+	return err
+}
+
+func (hndl *UserResultsStoreHandler) Insert(userResults *UserResults) error {
+	db, conn := hndl.store.Get()
+	defer conn.Close()
+
+	err := db.C(userResultsKey).Insert(userResults)
 	return err
 }

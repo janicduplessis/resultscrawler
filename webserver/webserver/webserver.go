@@ -4,14 +4,16 @@ package webserver
 
 import (
 	"encoding/gob"
+	"encoding/json"
+	"errors"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
 
-	"labix.org/v2/mgo/bson"
-
 	"code.google.com/p/go.net/context"
 	"github.com/gorilla/sessions"
+	"labix.org/v2/mgo/bson"
 
 	"github.com/janicduplessis/resultscrawler/lib"
 	"github.com/janicduplessis/resultscrawler/lib/ws"
@@ -20,19 +22,23 @@ import (
 type (
 	// Config contains parameters to initialize the webserver.
 	Config struct {
-		UserStore  lib.UserStore
-		Crypto     lib.Crypto
-		Logger     lib.Logger
-		SessionKey string
+		UserStore        lib.UserStore
+		UserInfoStore    lib.UserInfoStore
+		UserResultsStore lib.UserResultsStore
+		Crypto           lib.Crypto
+		Logger           lib.Logger
+		SessionKey       string
 	}
 
 	// Webserver serves as a global context for the server.
 	Webserver struct {
-		userStore lib.UserStore
-		crypto    lib.Crypto
-		logger    lib.Logger
-		router    *ws.Router
-		sessions  *sessions.CookieStore
+		userStore        lib.UserStore
+		userInfoStore    lib.UserInfoStore
+		userResultsStore lib.UserResultsStore
+		crypto           lib.Crypto
+		logger           lib.Logger
+		router           *ws.Router
+		sessions         *sessions.CookieStore
 	}
 
 	key int
@@ -42,7 +48,17 @@ const (
 	userKey          key = 1
 	sessionUserIDKey     = "userid"
 	sessionName          = "rc-session"
+
+	// Status for register and login.
+	statusOK              = 0 // Everything is ok.
+	statusInvalidLogin    = 1 // Invalid username or password.
+	statusTooMany         = 2 // Too many invalid logins attempts.
+	statusInvalidUserName = 3 // The requested username already exists.
+	statusInvalidInfos    = 4 // The registration infos are invalid.
 )
+
+// ErrUnauthorized happens when an unauthorized access occur.
+var ErrUnauthorized = errors.New("Unauthorized access")
 
 // NewWebserver creates a new webserver object.
 func NewWebserver(config *Config) *Webserver {
@@ -51,6 +67,8 @@ func NewWebserver(config *Config) *Webserver {
 
 	webserver := &Webserver{
 		config.UserStore,
+		config.UserInfoStore,
+		config.UserResultsStore,
 		config.Crypto,
 		config.Logger,
 		router,
@@ -79,16 +97,119 @@ func (server *Webserver) Start(address string) error {
 	return http.ListenAndServe(address, server.router)
 }
 
+// Handlers
 func (server *Webserver) homeHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/app", http.StatusMovedPermanently)
 }
 
 func (server *Webserver) loginHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	//user, err := server.userStore.FindByID()
+	request := &loginRequest{}
+	err := readJSON(r, request)
+	if err != nil {
+		server.serverError(w, err)
+	}
+
+	user, err := server.userStore.FindByEmail(request.Email)
+	if err != nil {
+		return
+	}
+	res, err := server.crypto.CompareHashAndPassword(user.PasswordHash, request.Password)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
+	if res {
+		info, err := server.userInfoStore.FindByID(user.ID)
+		if err != nil {
+			server.serverError(w, err)
+			return
+		}
+
+		response := &loginResponse{
+			Status: statusOK,
+			User: &userModel{
+				Email:     user.Email,
+				FirstName: info.FirstName,
+				LastName:  info.LastName,
+			},
+		}
+		err = sendJSON(w, response)
+		if err != nil {
+			server.serverError(w, err)
+			return
+		}
+	} else {
+		response := &loginResponse{
+			Status: statusInvalidLogin,
+			User:   nil,
+		}
+		err = sendJSON(w, response)
+		if err != nil {
+			server.serverError(w, err)
+			return
+		}
+	}
 }
 
 func (server *Webserver) registerHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	request := &registerRequest{}
+	err := readJSON(r, request)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
 
+	//TODO: validate fields
+
+	passwordHash, err := server.crypto.GenerateFromPassword(request.Password)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
+
+	user := &lib.User{
+		Email:        request.Email,
+		PasswordHash: passwordHash,
+	}
+
+	err = server.userStore.Insert(user)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
+
+	userInfo := &lib.UserInfo{
+		UserID:    user.ID,
+		FirstName: request.FirstName,
+		LastName:  request.LastName,
+		CrawlerOn: false,
+	}
+
+	err = server.userInfoStore.Insert(userInfo)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
+
+	results := &lib.UserResults{
+		UserID: user.ID,
+	}
+
+	server.userResultsStore.Insert(results)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
+
+	response := &registerResponse{
+		Status: statusOK,
+		User:   &userModel{},
+	}
+
+	err = sendJSON(w, response)
+	if err != nil {
+		server.serverError(w, err)
+	}
 }
 
 func (server *Webserver) resultsHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
@@ -96,31 +217,18 @@ func (server *Webserver) resultsHandler(ctx context.Context, w http.ResponseWrit
 	year := params.ByName("year")
 	class := params.ByName("class")
 	user := getUser(ctx)
-	server.logger.Logf("Getting classes for user %s, year %s and class %s", user.UserName, year, class)
+	server.logger.Logf("Getting classes for user %s, year %s and class %s", user.Email, year, class)
 }
 
+// Middlewares
 func (server *Webserver) authMiddleware(next ws.Handler) ws.Handler {
 	fn := func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-		s, err := server.sessions.Get(r, sessionName)
+		userID, err := server.getSessionUserID(r)
 		if err != nil {
 			server.logger.Error(err)
 			server.authError(w)
 			return
 		}
-
-		if s.Values[sessionUserIDKey] == nil {
-			server.authError(w)
-			return
-		}
-
-		userID, ok := s.Values[sessionUserIDKey].(bson.ObjectId)
-		if !ok {
-			server.logger.Error(err)
-			server.authError(w)
-			return
-		}
-
-		server.logger.Logf("%v", userID)
 
 		user, err := server.userStore.FindByID(userID)
 		if err != nil {
@@ -156,17 +264,85 @@ func (server *Webserver) logMiddleware(next ws.Handler) ws.Handler {
 	fn := func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		server.logger.Logf("Request start %s", r.URL.String())
 		start := time.Now()
+		defer func() {
+			elapsed := time.Since(start)
+			server.logger.Logf("Request end %s. Took %vms.", r.URL.String(), elapsed.Seconds()*1000)
+		}()
 		next.ServeHTTP(ctx, w, r)
-		elapsed := time.Since(start)
-		server.logger.Logf("Request end %s. Took %vms.", r.URL.String(), elapsed.Seconds()*1000)
 	}
 
 	return ws.HandlerFunc(fn)
 }
 
+// Session helpers
+func (server *Webserver) getSessionUserID(r *http.Request) (bson.ObjectId, error) {
+	s, err := server.sessions.Get(r, sessionName)
+	if err != nil {
+		return bson.ObjectId(""), err
+	}
+
+	if s.Values[sessionUserIDKey] == nil {
+		return bson.ObjectId(""), ErrUnauthorized
+	}
+
+	userID, ok := s.Values[sessionUserIDKey].(bson.ObjectId)
+	if !ok {
+		return bson.ObjectId(""), ErrUnauthorized
+	}
+	return userID, nil
+}
+
+func (server *Webserver) createSession(w http.ResponseWriter, r *http.Request, userID bson.ObjectId) error {
+	session, err := server.sessions.Get(r, sessionName)
+	if err != nil {
+		return err
+	}
+
+	session.Values[sessionUserIDKey] = userID
+	return session.Save(r, w)
+}
+
+func (server *Webserver) endSession(w http.ResponseWriter, r *http.Request) error {
+	session, err := server.sessions.Get(r, sessionName)
+	if err != nil {
+		return err
+	}
+
+	delete(session.Values, sessionUserIDKey)
+	return session.Save(r, w)
+}
+
+// Error helpers
 func (server *Webserver) authError(w http.ResponseWriter) {
 	server.logger.Log("Unauthorized request attempt")
 	http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+}
+
+func (server *Webserver) serverError(w http.ResponseWriter, err error) {
+	server.logger.Error(err)
+	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+}
+
+// JSON helpers
+func readJSON(r *http.Request, obj interface{}) error {
+	defer r.Body.Close()
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(body, obj)
+}
+
+func sendJSON(w http.ResponseWriter, obj interface{}) error {
+	data, err := json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_, err = w.Write(data)
+
+	return err
 }
 
 func getUser(ctx context.Context) *lib.User {
