@@ -1,0 +1,17 @@
+{
+  "name": "resultscrawler",
+  "version": "0.0.1",
+  "homepage": "https://github.com/janicduplessis/resultscrawler",
+  "authors": [
+    "Janic <janicduplessis@gmail.com>"
+  ],
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "angular": "1.2.x",
+    "angular-route": "1.2.x",
+    "angular-loader": "1.2.x",
+    "angular-mocks": "~1.2.x",
+    "html5-boilerplate": "~4.3.0"
+  }
+}
