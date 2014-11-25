@@ -66,3 +66,7 @@ func (hndl *MongoStore) Get() (*mgo.Database, ConnCloser) {
 	sessionCopy := hndl.mongoSession.Copy()
 	return sessionCopy.DB(hndl.config.Name), sessionCopy
 }
+
+func init() {
+	mgo.ErrNotFound = ErrNotFound
+}

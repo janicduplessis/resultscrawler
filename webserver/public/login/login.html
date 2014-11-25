@@ -1,0 +1,21 @@
+<div ng-controller="LoginCtrl">
+
+  <h2>Login</h2>
+
+  <form name="loginForm" ng-submit="login(credentials)" novalidate>
+    <input type="email" placeholder="Email" ng-model="credentials.email" />
+    <input type="password" placeholder="Password" ng-model="credentials.password" />
+    <button type="submit">Login</button>
+  </form>
+
+  <!--<h2>Register</h2>
+
+  <form name="registerForm" ng-submit="register(user)" novalidate>
+    <input type="email" placeholder="Email" ng-model="user.email" required />
+    <input type="password" placeholder="Password" ng-model="user.password" required />
+    <input type="text" placeholder="First name" ng-model="user.firstName" required />
+    <input type="text" placeholder="Last name" ng-model="user.lastName" required />
+    <button type="submit">Register</button>
+  </form>-->
+
+</div>

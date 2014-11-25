@@ -103,42 +103,25 @@ func (server *Webserver) homeHandler(ctx context.Context, w http.ResponseWriter,
 }
 
 func (server *Webserver) loginHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	// Watch out this thing has many exit points!
+	// Went with the return on error technique here. So if
+	// you get to the bottom of this function you are logged in.
 	request := &loginRequest{}
 	err := readJSON(r, request)
 	if err != nil {
 		server.serverError(w, err)
+		return
 	}
 
+	// Check if the user exists.
 	user, err := server.userStore.FindByEmail(request.Email)
 	if err != nil {
-		return
-	}
-	res, err := server.crypto.CompareHashAndPassword(user.PasswordHash, request.Password)
-	if err != nil {
-		server.serverError(w, err)
-		return
-	}
-	if res {
-		info, err := server.userInfoStore.FindByID(user.ID)
-		if err != nil {
+		if err != lib.ErrNotFound {
 			server.serverError(w, err)
 			return
 		}
 
-		response := &loginResponse{
-			Status: statusOK,
-			User: &userModel{
-				Email:     user.Email,
-				FirstName: info.FirstName,
-				LastName:  info.LastName,
-			},
-		}
-		err = sendJSON(w, response)
-		if err != nil {
-			server.serverError(w, err)
-			return
-		}
-	} else {
+		// If the user is not found returns an invalid login status.
 		response := &loginResponse{
 			Status: statusInvalidLogin,
 			User:   nil,
@@ -146,8 +129,54 @@ func (server *Webserver) loginHandler(ctx context.Context, w http.ResponseWriter
 		err = sendJSON(w, response)
 		if err != nil {
 			server.serverError(w, err)
-			return
 		}
+		return
+	}
+
+	// At this point we have a valid email, check the password.
+	res, err := server.crypto.CompareHashAndPassword(user.PasswordHash, request.Password)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
+	if !res {
+		// Bad password :( that was close. Returns an invalid login status.
+		response := &loginResponse{
+			Status: statusInvalidLogin,
+			User:   nil,
+		}
+		err = sendJSON(w, response)
+		if err != nil {
+			server.serverError(w, err)
+		}
+		return
+	}
+
+	// Good password, start the session and returns user info.
+	info, err := server.userInfoStore.FindByID(user.ID)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
+
+	err = server.createSession(w, r, user.ID)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
+
+	response := &loginResponse{
+		Status: statusOK,
+		User: &userModel{
+			Email:     user.Email,
+			FirstName: info.FirstName,
+			LastName:  info.LastName,
+		},
+	}
+
+	err = sendJSON(w, response)
+	if err != nil {
+		server.serverError(w, err)
 	}
 }
 
@@ -203,7 +232,11 @@ func (server *Webserver) registerHandler(ctx context.Context, w http.ResponseWri
 
 	response := &registerResponse{
 		Status: statusOK,
-		User:   &userModel{},
+		User: &userModel{
+			user.Email,
+			userInfo.FirstName,
+			userInfo.LastName,
+		},
 	}
 
 	err = sendJSON(w, response)
