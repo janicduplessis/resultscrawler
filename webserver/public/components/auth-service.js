@@ -5,9 +5,18 @@ angular.module('rc.services', [])
 .factory('AuthService', ['$http', 'Session', function($http, Session) {
   var authService = {};
 
-  authService.login = function(credentials) {
+  authService.login = function(loginInfo) {
     return $http
-      .post('/api/v1/login', credentials)
+      .post('/api/v1/auth/login', loginInfo)
+      .then(function(res) {
+        Session.create(res.data.user);
+        return res.data.user;
+      });
+  };
+
+  authService.register = function(registerInfo) {
+    return $http
+      .post('/api/v1/auth/register', registerInfo)
       .then(function(res) {
         Session.create(res.data.user);
         return res.data.user;

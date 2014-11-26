@@ -29,6 +29,9 @@ func NewCryptoHandler(key string) *CryptoHandler {
 
 // AESEncrypt encrypts the data using AES-128.
 func (hndl *CryptoHandler) AESEncrypt(data []byte) ([]byte, error) {
+	if len(data) == 0 {
+		return data, nil
+	}
 	iv := hndl.GenerateRandomKey(aes.BlockSize)
 	if iv == nil {
 		return nil, errors.New("Failed to generate random iv")
@@ -41,6 +44,9 @@ func (hndl *CryptoHandler) AESEncrypt(data []byte) ([]byte, error) {
 
 // AESDecrypt decrypts the data using AES-128.
 func (hndl *CryptoHandler) AESDecrypt(data []byte) ([]byte, error) {
+	if len(data) == 0 {
+		return data, nil
+	}
 	size := aes.BlockSize
 	if len(data) <= size {
 		return nil, errors.New("Decryption failed, data does not contain iv")

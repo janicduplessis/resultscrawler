@@ -11,20 +11,31 @@ angular.module('rc.login', ['ngRoute'])
 
 .controller('LoginCtrl', ['$scope', '$rootScope', 'AUTH_EVENTS', 'AuthService',
   function($scope, $rootScope, AUTH_EVENTS, AuthService) {
-  $scope.credentials = {
+  $scope.loginInfo = {
     email: '',
     password: ''
   };
 
-  $scope.login = function(credentials) {
-    AuthService.login(credentials).then(function(user){
+  $scope.registerInfo = {
+    email: '',
+    password: '',
+    firstName: '',
+    lastName: ''
+  };
+
+  $scope.login = function(loginInfo) {
+    AuthService.login(loginInfo).then(function(user){
       $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
     }, function() {
       $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
     });
   };
 
-  $scope.register = function(user) {
-
+  $scope.register = function(registerInfo) {
+    AuthService.register(registerInfo).then(function(user){
+      $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
+    }, function() {
+      $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
+    });
   };
 }]);
