@@ -12,9 +12,10 @@ type (
 
 	// CrawlerConfig contains info about the crawler configuration.
 	CrawlerConfig struct {
-		UserID    bson.ObjectId `bson:"user_id"`
-		CrawlerOn bool          `bson:"crawler_on"`
-		Code      []byte        `bson:"code"`
-		Nip       []byte        `bson:"nip"`
+		UserID            bson.ObjectId `bson:"user_id"`
+		Status            bool          `bson:"status"`
+		Code              []byte        `bson:"code"`
+		Nip               []byte        `bson:"nip"`
+		NotificationEmail string        `bson:"notification_email"`
 	}
 )

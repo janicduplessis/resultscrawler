@@ -25,23 +25,23 @@ import (
 type (
 	// Config contains parameters to initialize the webserver.
 	Config struct {
-		UserStore        store.UserStore
-		UserInfoStore    store.CrawlerConfigStore
-		UserResultsStore store.UserResultsStore
-		Crypto           crypto.Crypto
-		Logger           logger.Logger
-		SessionKey       string
+		UserStore          store.UserStore
+		CrawlerConfigStore store.CrawlerConfigStore
+		UserResultsStore   store.UserResultsStore
+		Crypto             crypto.Crypto
+		Logger             logger.Logger
+		SessionKey         string
 	}
 
 	// Webserver serves as a global context for the server.
 	Webserver struct {
-		userStore        store.UserStore
-		userInfoStore    store.CrawlerConfigStore
-		userResultsStore store.UserResultsStore
-		crypto           crypto.Crypto
-		logger           logger.Logger
-		router           *ws.Router
-		sessions         *sessions.CookieStore
+		userStore          store.UserStore
+		crawlerConfigStore store.CrawlerConfigStore
+		userResultsStore   store.UserResultsStore
+		crypto             crypto.Crypto
+		logger             logger.Logger
+		router             *ws.Router
+		sessions           *sessions.CookieStore
 	}
 
 	key int
@@ -70,7 +70,7 @@ func NewWebserver(config *Config) *Webserver {
 
 	webserver := &Webserver{
 		config.UserStore,
-		config.UserInfoStore,
+		config.CrawlerConfigStore,
 		config.UserResultsStore,
 		config.Crypto,
 		config.Logger,
@@ -89,9 +89,13 @@ func NewWebserver(config *Config) *Webserver {
 	router.GET("/", commonHandlers.Then(webserver.homeHandler))
 	router.GET("/api/v1/results/:year/:class", registeredHandlers.Then(webserver.resultsHandler))
 
-	router.GET("/api/v1/crawler/config", registeredHandlers.Then(webserver.crawlerGETConfigHandler))
-	router.POST("/api/v1/crawler/config", registeredHandlers.Then(webserver.crawlerPOSTConfigHandler))
-	router.PUT("/api/v1/crawler/state", registeredHandlers.Then(webserver.crawlerState))
+	router.GET("/api/v1/crawler/config", registeredHandlers.Then(webserver.crawlerGetConfigHandler))
+	router.POST("/api/v1/crawler/config", registeredHandlers.Then(webserver.crawlerSaveConfigHandler))
+
+	router.GET("/api/v1/crawler/config/class", registeredHandlers.Then(webserver.crawlerGetClassesHandler))
+	router.POST("/api/v1/crawler/config/class", registeredHandlers.Then(webserver.crawlerCreateClassHandler))
+	router.PUT("/api/v1/crawler/config/class/:classId", registeredHandlers.Then(webserver.crawlerEditClassHandler))
+	router.DELETE("/api/v1/crawler/config/class/:classId", registeredHandlers.Then(webserver.crawlerDeleteClassHandler))
 
 	router.POST("/api/v1/auth/login", commonHandlers.Then(webserver.loginHandler))
 	router.POST("/api/v1/auth/register", commonHandlers.Then(webserver.registerHandler))
@@ -240,12 +244,12 @@ func (server *Webserver) registerHandler(ctx context.Context, w http.ResponseWri
 		return
 	}
 
-	// Create the user info in the datastore.
-	userInfo := &store.CrawlerConfig{
-		UserID:    user.ID,
-		CrawlerOn: false,
+	// Create the crawler config in the datastore.
+	crawlerConfig := &store.CrawlerConfig{
+		UserID: user.ID,
+		Status: false,
 	}
-	err = server.userInfoStore.Insert(userInfo)
+	err = server.crawlerConfigStore.Insert(crawlerConfig)
 	if err != nil {
 		server.serverError(w, err)
 		return
@@ -293,9 +297,9 @@ func (server *Webserver) resultsHandler(ctx context.Context, w http.ResponseWrit
 	server.logger.Logf("Getting classes for user %s, year %s and class %s", user.Email, year, class)
 }
 
-func (server *Webserver) crawlerGETConfigHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (server *Webserver) crawlerGetConfigHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	user := getUser(ctx)
-	config, err := server.userInfoStore.FindByID(user.ID)
+	config, err := server.crawlerConfigStore.FindByID(user.ID)
 	if err != nil {
 		server.serverError(w, err)
 		return
@@ -313,11 +317,10 @@ func (server *Webserver) crawlerGETConfigHandler(ctx context.Context, w http.Res
 	}
 
 	response := &crawlerConfigModel{
-		Status:            config.CrawlerOn,
+		Status:            config.Status,
 		Code:              string(userCode),
 		Nip:               string(userNip),
-		NotificationEmail: "",
-		Classes:           nil,
+		NotificationEmail: config.NotificationEmail,
 	}
 	err = sendJSON(w, response)
 	if err != nil {
@@ -325,7 +328,7 @@ func (server *Webserver) crawlerGETConfigHandler(ctx context.Context, w http.Res
 	}
 }
 
-func (server *Webserver) crawlerPOSTConfigHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (server *Webserver) crawlerSaveConfigHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	request := &crawlerConfigModel{}
 	err := readJSON(r, request)
 	if err != nil {
@@ -335,13 +338,165 @@ func (server *Webserver) crawlerPOSTConfigHandler(ctx context.Context, w http.Re
 
 	// TODO: validate config
 
-	//user := getUser(ctx)
+	userCode, err := server.crypto.AESEncrypt([]byte(request.Code))
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
+	userNip, err := server.crypto.AESEncrypt([]byte(request.Nip))
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
 
+	user := getUser(ctx)
+	config, err := server.crawlerConfigStore.FindByID(user.ID)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
+
+	results, err := server.userResultsStore.FindByID(user.ID)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
+
+	config.Code = userCode
+	config.Nip = userNip
+	config.NotificationEmail = request.NotificationEmail
+	config.Status = request.Status
+
+	err = server.crawlerConfigStore.Update(config)
+	if err != nil {
+		server.serverError(w, err)
+	}
+
+	err = server.userResultsStore.Update(results)
+	if err != nil {
+		server.serverError(w, err)
+	}
 }
 
-func (server *Webserver) crawlerState(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	//user := getUser(ctx)
+func (server *Webserver) crawlerGetClassesHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	user := getUser(ctx)
+	results, err := server.userResultsStore.FindByID(user.ID)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
 
+	response := getClassesModel(results.Classes)
+	err = sendJSON(w, response)
+	if err != nil {
+		server.serverError(w, err)
+	}
+}
+
+func (server *Webserver) crawlerCreateClassHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	request := crawlerConfigClassModel{}
+	err := readJSON(r, &request)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
+
+	user := getUser(ctx)
+	results, err := server.userResultsStore.FindByID(user.ID)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
+
+	id := bson.NewObjectId()
+
+	results.Classes = append(results.Classes, store.Class{
+		ID:    id,
+		Name:  request.Name,
+		Group: request.Group,
+		Year:  request.Year,
+	})
+
+	err = server.userResultsStore.Update(results)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
+	request.ID = id.Hex()
+	err = sendJSON(w, &request)
+	if err != nil {
+		server.serverError(w, err)
+	}
+}
+
+func (server *Webserver) crawlerEditClassHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	params := ws.Params(ctx)
+	classID := bson.ObjectId(params.ByName("classId"))
+
+	request := crawlerConfigClassModel{}
+	err := readJSON(r, &request)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
+
+	user := getUser(ctx)
+	results, err := server.userResultsStore.FindByID(user.ID)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
+
+	for i, c := range results.Classes {
+		if c.ID == classID {
+			results.Classes[i] = store.Class{
+				ID:    c.ID,
+				Name:  request.Name,
+				Group: request.Group,
+				Year:  request.Year,
+			}
+			break
+		}
+	}
+
+	err = server.userResultsStore.Update(results)
+	if err != nil {
+		server.serverError(w, err)
+	}
+}
+
+func (server *Webserver) crawlerDeleteClassHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	params := ws.Params(ctx)
+	idHex := params.ByName("classId")
+	if !bson.IsObjectIdHex(idHex) {
+		server.serverError(w, store.ErrInvalidID)
+		return
+	}
+	classID := bson.ObjectIdHex(idHex)
+
+	user := getUser(ctx)
+	results, err := server.userResultsStore.FindByID(user.ID)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
+
+	log.Printf("id: %s", classID.Hex())
+	log.Printf("before: %v", results.Classes)
+
+	for i, c := range results.Classes {
+		if c.ID == classID {
+			results.Classes = append(results.Classes[:i], results.Classes[i+1:]...)
+			break
+		}
+	}
+
+	log.Printf("after: %v", results.Classes)
+
+	err = server.userResultsStore.Update(results)
+	if err != nil {
+		server.serverError(w, err)
+	}
 }
 
 // Middlewares
@@ -479,6 +634,20 @@ func getUser(ctx context.Context) *store.User {
 		panic("No user in context. Make sure the handler is authentified")
 	}
 	return user
+}
+
+// Model helpers
+func getClassesModel(classes []store.Class) []*crawlerConfigClassModel {
+	result := make([]*crawlerConfigClassModel, len(classes))
+	for i, c := range classes {
+		result[i] = &crawlerConfigClassModel{
+			ID:    c.ID.Hex(),
+			Name:  c.Name,
+			Group: c.Group,
+			Year:  c.Year,
+		}
+	}
+	return result
 }
 
 func init() {

@@ -30,16 +30,16 @@ type (
 	}
 
 	crawlerConfigClassModel struct {
+		ID    string `json:"id"`
 		Name  string `json:"name"`
 		Year  string `json:"year"`
 		Group string `json:"group"`
 	}
 
 	crawlerConfigModel struct {
-		Status            bool                       `json:"status"`
-		Code              string                     `json:"code"`
-		Nip               string                     `json:"nip"`
-		NotificationEmail string                     `json:"notificationEmail"`
-		Classes           []*crawlerConfigClassModel `json:"classes"`
+		Status            bool   `json:"status"`
+		Code              string `json:"code"`
+		Nip               string `json:"nip"`
+		NotificationEmail string `json:"notificationEmail"`
 	}
 )

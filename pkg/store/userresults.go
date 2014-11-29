@@ -16,10 +16,11 @@ type (
 
 	// Class is an entity for a class.
 	Class struct {
-		Name    string   `bson:"name"`
-		Group   string   `bson:"group"`
-		Year    string   `bson:"year"`
-		Results []Result `bson:"results"`
+		ID      bson.ObjectId `bson:"_id"`
+		Name    string        `bson:"name"`
+		Group   string        `bson:"group"`
+		Year    string        `bson:"year"`
+		Results []Result      `bson:"results"`
 	}
 
 	// Result is an entity for storing a result

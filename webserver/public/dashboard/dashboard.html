@@ -1,1 +1,42 @@
 <p>Controls!</p>
+
+<form name="configForm" ng-submit="saveConfig(config)" novalidate>
+
+  <label for="status">Status: </label>
+  <input name="status" type="checkbox" ng-model="config.status" /><br/>
+
+  <label for="code">Code: </label>
+  <input name="code" type="text" ng-model="config.code" /><br/>
+
+  <label for="nip">Nip: </label>
+  <input name="nip" type="text" ng-model="config.nip" /><br/>
+
+  <label for="notificationEmail">Notification email: </label>
+  <input name="notificationEmail" type="email" ng-model="config.notificationEmail" /><br/>
+
+  <div class="classes">
+    <div ng-if="classes.length === 0">
+      No classes
+    </div>
+    <div ng-repeat="c in classes">
+      <div>{{c.name}}</div>
+      <div>{{c.group}}</div>
+      <div>{{c.year}}</div>
+      <button type="button" ng-click="deleteClass(c)">Delete</button>
+    </div>
+    <button type="button" ng-click="openAddClassPopup()">Add</button>
+  </div>
+
+  <button type="submit">Save</button>
+</form>
+
+<form id="addClassPopup" name="addClassForm" ng-submit="addClass(newClass)" style="display:none;" novalidate>
+  <label for="name">Name: </label>
+  <input name="name" type="text" ng-model="newClass.name" /><br/>
+  <label for="group">Group: </label>
+  <input name="group" type="text" ng-model="newClass.group" /><br/>
+  <label for="year">Year: </label>
+  <input name="year" type="text" ng-model="newClass.year" /><br/>
+  <button>Ok</button>
+  <button>Cancel</button>
+</form>

@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('rc.services', [])
+angular.module('rc.authservice', [])
 
 .factory('AuthService', ['$http', 'Session', function($http, Session) {
   var authService = {};
