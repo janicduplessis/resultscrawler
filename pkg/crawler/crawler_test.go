@@ -6,8 +6,9 @@ import (
 
 	"labix.org/v2/mgo/bson"
 
-	"github.com/janicduplessis/resultscrawler/crawler/crawler/test"
-	"github.com/janicduplessis/resultscrawler/lib"
+	"github.com/janicduplessis/resultscrawler/pkg/crawler/test"
+	"github.com/janicduplessis/resultscrawler/pkg/logger"
+	"github.com/janicduplessis/resultscrawler/pkg/store"
 )
 
 func TestCrawlerNewResults(t *testing.T) {
@@ -81,12 +82,12 @@ func getTestUser() *crawlerUser {
 		Code:  "aaaaaa",
 		Nip:   "zzzzzzz",
 		Email: "test@test.com",
-		Classes: []lib.Class{
-			lib.Class{
+		Classes: []store.Class{
+			store.Class{
 				Name:    "Class1",
 				Group:   "20",
 				Year:    "2014",
-				Results: []lib.Result{},
+				Results: []store.Result{},
 			},
 		},
 	}
@@ -100,12 +101,12 @@ func getCrawler(t *testing.T, fileToCrawl string) *Crawler {
 	client := &test.FakeClient{
 		Data: data,
 	}
-	logger := &lib.ConsoleLogger{}
+	logger := &logger.ConsoleLogger{}
 	return NewCrawler(client, logger)
 }
 
 func init() {
 	// Working directory is different in test so we have to fix the path of
 	// the template file.
-	msgTemplatePath = "msgtemplate.html"
+	msgTemplatePath = "../../crawler/msgtemplate.html"
 }

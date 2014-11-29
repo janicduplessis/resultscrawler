@@ -8,8 +8,11 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/janicduplessis/resultscrawler/crawler/crawler"
-	"github.com/janicduplessis/resultscrawler/lib"
+	"github.com/janicduplessis/resultscrawler/pkg/crawler"
+	"github.com/janicduplessis/resultscrawler/pkg/crypto"
+	"github.com/janicduplessis/resultscrawler/pkg/logger"
+	"github.com/janicduplessis/resultscrawler/pkg/store"
+	"github.com/janicduplessis/resultscrawler/pkg/utils"
 )
 
 const (
@@ -17,8 +20,8 @@ const (
 )
 
 type config struct {
-	Database     *lib.DBConfig
-	Email        *lib.EmailConfig
+	Database     *store.DBConfig
+	Email        *utils.EmailConfig
 	AESSecretKey string // 16 bytes
 }
 
@@ -29,15 +32,15 @@ func main() {
 	config := readConfig()
 
 	// Inject dependencies
-	crypto := lib.NewCryptoHandler(config.AESSecretKey)
-	emailSender := lib.NewEmailSender(config.Email)
-	store := lib.NewMongoStore(config.Database)
+	crypto := crypto.NewCryptoHandler(config.AESSecretKey)
+	emailSender := utils.NewEmailSender(config.Email)
+	mongoStore := store.NewMongoStore(config.Database)
 	httpClient := &http.Client{}
-	logger := &lib.ConsoleLogger{}
+	logger := &logger.ConsoleLogger{}
 
-	userStore := lib.NewUserStoreHandler(store)
-	userInfoStore := lib.NewUserInfoStoreHandler(store)
-	userResultsStore := lib.NewUserResultsStoreHandler(store)
+	userStore := store.NewUserStoreHandler(mongoStore)
+	userInfoStore := store.NewCrawlerConfigStoreHandler(mongoStore)
+	userResultsStore := store.NewUserResultsStoreHandler(mongoStore)
 
 	crawlers := []*crawler.Crawler{
 		crawler.NewCrawler(httpClient, logger),
@@ -52,15 +55,15 @@ func main() {
 		logger,
 	})
 
-	log.Println("Server started")
+	log.Println("Crawler started")
 	scheduler.Start()
-	log.Println("Server stopped")
+	log.Println("Crawler stopped")
 }
 
 func readConfig() *config {
 	conf := &config{
-		Database: new(lib.DBConfig),
-		Email:    new(lib.EmailConfig),
+		Database: new(store.DBConfig),
+		Email:    new(utils.EmailConfig),
 	}
 
 	readFileConfig(conf)

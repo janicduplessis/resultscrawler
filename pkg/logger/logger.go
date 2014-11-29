@@ -1,4 +1,4 @@
-package lib
+package logger
 
 // The Logger interface
 type Logger interface {

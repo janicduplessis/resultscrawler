@@ -1,4 +1,4 @@
-package lib
+package crypto
 
 // The Crypto interface exposes various cryto algorithms and utilities.
 type Crypto interface {

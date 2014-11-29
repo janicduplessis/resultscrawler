@@ -1,4 +1,4 @@
-package lib
+package store
 
 import "labix.org/v2/mgo/bson"
 

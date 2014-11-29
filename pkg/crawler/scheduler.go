@@ -8,7 +8,10 @@ import (
 
 	"labix.org/v2/mgo/bson"
 
-	"github.com/janicduplessis/resultscrawler/lib"
+	"github.com/janicduplessis/resultscrawler/pkg/crypto"
+	"github.com/janicduplessis/resultscrawler/pkg/logger"
+	"github.com/janicduplessis/resultscrawler/pkg/store"
+	"github.com/janicduplessis/resultscrawler/pkg/utils"
 )
 
 const (
@@ -18,7 +21,7 @@ const (
 	updateIntervalMin time.Duration = 30
 )
 
-var msgTemplatePath = "crawler/msgtemplate.html"
+var msgTemplatePath = "msgtemplate.html"
 var msgTemplate *template.Template
 
 type userInfo struct {
@@ -28,7 +31,7 @@ type userInfo struct {
 
 type crawlerUser struct {
 	ID      bson.ObjectId
-	Classes []lib.Class
+	Classes []store.Class
 	Nip     string
 	Code    string
 	Email   string
@@ -36,24 +39,24 @@ type crawlerUser struct {
 
 // SchedulerConfig initializes the scheduler.
 type SchedulerConfig struct {
-	Crawlers         []*Crawler
-	UserStore        lib.UserStore
-	UserInfoStore    lib.UserInfoStore
-	UserResultsStore lib.UserResultsStore
-	Crypto           lib.Crypto
-	Sender           lib.Sender
-	Logger           lib.Logger
+	Crawlers           []*Crawler
+	UserStore          store.UserStore
+	CrawlerConfigStore store.CrawlerConfigStore
+	UserResultsStore   store.UserResultsStore
+	Crypto             crypto.Crypto
+	Sender             utils.Sender
+	Logger             logger.Logger
 }
 
 // Scheduler handles scheduling crawler runs for every user.
 type Scheduler struct {
-	Crawlers         []*Crawler
-	UserStore        lib.UserStore
-	UserInfoStore    lib.UserInfoStore
-	UserResultsStore lib.UserResultsStore
-	Crypto           lib.Crypto
-	Sender           lib.Sender
-	Logger           lib.Logger
+	Crawlers           []*Crawler
+	UserStore          store.UserStore
+	CrawlerConfigStore store.CrawlerConfigStore
+	UserResultsStore   store.UserResultsStore
+	Crypto             crypto.Crypto
+	Sender             utils.Sender
+	Logger             logger.Logger
 
 	usersInfo []*userInfo
 	queueCh   chan *crawlerUser
@@ -72,7 +75,7 @@ func NewScheduler(config *SchedulerConfig) *Scheduler {
 	return &Scheduler{
 		config.Crawlers,
 		config.UserStore,
-		config.UserInfoStore,
+		config.CrawlerConfigStore,
 		config.UserResultsStore,
 		config.Crypto,
 		config.Sender,
@@ -112,21 +115,21 @@ func (s *Scheduler) Queue(userID bson.ObjectId) {
 		s.Logger.Error(err)
 		return
 	}
-	// Get the user info
-	userInfo, err := s.UserInfoStore.FindByID(userID)
+	// Get crawler config.
+	crawlerConfig, err := s.CrawlerConfigStore.FindByID(userID)
 	if err != nil {
 		s.Logger.Error(err)
 		return
 	}
 
 	// Decrypt the user code and nip
-	data, err := s.Crypto.AESDecrypt(userInfo.Code)
+	data, err := s.Crypto.AESDecrypt(crawlerConfig.Code)
 	if err != nil {
 		s.Logger.Error(err)
 		return
 	}
 	userCode := string(data)
-	data, err = s.Crypto.AESDecrypt(userInfo.Nip)
+	data, err = s.Crypto.AESDecrypt(crawlerConfig.Nip)
 	if err != nil {
 		s.Logger.Error(err)
 		return
@@ -173,7 +176,7 @@ func (s *Scheduler) crawlerLoop(crawler *Crawler) {
 					}
 				}
 				s.Logger.Logf("Classes before update: %+v", user.Classes)
-				err = s.UserResultsStore.Update(&lib.UserResults{
+				err = s.UserResultsStore.Update(&store.UserResults{
 					UserID:  user.ID,
 					Classes: user.Classes,
 				})
@@ -205,11 +208,11 @@ func (s *Scheduler) mainLoop() {
 	}
 }
 
-func (s *Scheduler) sendEmail(user *crawlerUser, newResults []lib.Class) error {
+func (s *Scheduler) sendEmail(user *crawlerUser, newResults []store.Class) error {
 	var msg bytes.Buffer
 	data := struct {
 		User       *crawlerUser
-		NewClasses []lib.Class
+		NewClasses []store.Class
 	}{
 		user,
 		newResults,
@@ -222,14 +225,14 @@ func (s *Scheduler) sendEmail(user *crawlerUser, newResults []lib.Class) error {
 	return s.Sender.Send(user.Email, "You have new results!", string(msg.Bytes()))
 }
 
-func getNewResults(user *crawlerUser, newResults []runResult) []lib.Class {
-	var resClasses []lib.Class
+func getNewResults(user *crawlerUser, newResults []runResult) []store.Class {
+	var resClasses []store.Class
 	for i, resInfo := range newResults {
 		if resInfo.Err != nil {
 			continue
 		}
 
-		var curResults []lib.Result
+		var curResults []store.Result
 		for j, res := range resInfo.Results {
 			if len(user.Classes[i].Results) <= j {
 				// If the is a new result
@@ -246,7 +249,7 @@ func getNewResults(user *crawlerUser, newResults []runResult) []lib.Class {
 		}
 		if len(curResults) > 0 {
 			classInfo := user.Classes[i]
-			resClasses = append(resClasses, lib.Class{
+			resClasses = append(resClasses, store.Class{
 				Name:    classInfo.Name,
 				Group:   classInfo.Group,
 				Year:    classInfo.Year,

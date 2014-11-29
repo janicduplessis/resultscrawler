@@ -1,4 +1,4 @@
-package lib
+package store
 
 import "labix.org/v2/mgo/bson"
 
@@ -17,5 +17,7 @@ type (
 		ID           bson.ObjectId `bson:"_id,omitempty"`
 		Email        string        `bson:"email"`
 		PasswordHash string        `bson:"password_hash"`
+		FirstName    string        `bson:"first_name"`
+		LastName     string        `bson:"last_name"`
 	}
 )

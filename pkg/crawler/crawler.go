@@ -14,7 +14,8 @@ import (
 
 	"code.google.com/p/go.net/html"
 
-	"github.com/janicduplessis/resultscrawler/lib"
+	"github.com/janicduplessis/resultscrawler/pkg/logger"
+	"github.com/janicduplessis/resultscrawler/pkg/store"
 )
 
 const (
@@ -57,18 +58,18 @@ type (
 	// Crawler for getting all grades of a user on resultats uqam
 	Crawler struct {
 		Client Client
-		Logger lib.Logger
+		Logger logger.Logger
 	}
 
 	runResult struct {
 		ClassIndex int
-		Results    []lib.Result
+		Results    []store.Result
 		Err        error
 	}
 )
 
 // NewCrawler creates a new crawler object
-func NewCrawler(client Client, logger lib.Logger) *Crawler {
+func NewCrawler(client Client, logger logger.Logger) *Crawler {
 	return &Crawler{
 		client,
 		logger,
@@ -148,8 +149,8 @@ func (c *Crawler) runClass(user *crawlerUser, classIndex int, doneCh chan runRes
 	}
 }
 
-func parseResponse(resp io.Reader) ([]lib.Result, error) {
-	var results []lib.Result
+func parseResponse(resp io.Reader) ([]store.Result, error) {
+	var results []store.Result
 	doc, err := html.Parse(resp)
 	if err != nil {
 		return nil, err
@@ -215,7 +216,7 @@ func parseResponse(resp io.Reader) ([]lib.Result, error) {
 	return results, err
 }
 
-func parseResultsTable(node *html.Node) []lib.Result {
+func parseResultsTable(node *html.Node) []store.Result {
 	// Get all rows from the table
 	var rows []*html.Node
 	tBody := node.FirstChild.NextSibling
@@ -229,21 +230,21 @@ func parseResultsTable(node *html.Node) []lib.Result {
 	log.Println(fmt.Sprintf("Found %v results", len(rows)))
 
 	// Parse rows
-	results := make([]lib.Result, len(rows))
+	results := make([]store.Result, len(rows))
 	for i, row := range rows {
 		results[i] = parseResultRow(row)
 	}
 	return results
 }
 
-func parseResultRow(node *html.Node) lib.Result {
+func parseResultRow(node *html.Node) store.Result {
 	var cols []*html.Node
 	for c := node.FirstChild; c != nil; c = c.NextSibling {
 		if c.Type == html.ElementNode && c.Data == "td" {
 			cols = append(cols, c)
 		}
 	}
-	return lib.Result{
+	return store.Result{
 		Name:    strings.TrimSpace(cols[0].FirstChild.Data),
 		Result:  strings.TrimSpace(cols[1].FirstChild.Data),
 		Average: strings.TrimSpace(cols[2].FirstChild.Data),
