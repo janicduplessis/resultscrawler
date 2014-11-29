@@ -30,7 +30,9 @@ func main() {
 
 	flag.Parse()
 	config := readConfig()
-	log.Printf("config: %v", config)
+	log.Printf("AES: %v", config.AESSecretKey)
+	log.Printf("db: %+v", config.Database)
+	log.Printf("email: %+v", config.Email)
 
 	// Inject dependencies
 	crypto := crypto.NewCryptoHandler(config.AESSecretKey)
