@@ -1,12 +1,7 @@
 package webserver
 
 type (
-	userModel struct {
-		Email     string `json:"email"`
-		FirstName string `json:"firstName"`
-		LastName  string `json:"lastName"`
-	}
-
+	// requests
 	loginRequest struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -19,6 +14,7 @@ type (
 		LastName  string `json:"lastName"`
 	}
 
+	// responses
 	loginResponse struct {
 		Status int        `json:"status"`
 		User   *userModel `json:"user"`
@@ -27,6 +23,18 @@ type (
 	registerResponse struct {
 		Status int        `json:"status"`
 		User   *userModel `json:"user"`
+	}
+
+	resultsResponse struct {
+		Year    string              `json:"year"`
+		Classes []*resultClassModel `json:"classes"`
+	}
+
+	// models
+	userModel struct {
+		Email     string `json:"email"`
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
 	}
 
 	crawlerConfigClassModel struct {
@@ -41,5 +49,17 @@ type (
 		Code              string `json:"code"`
 		Nip               string `json:"nip"`
 		NotificationEmail string `json:"notificationEmail"`
+	}
+
+	resultClassModel struct {
+		Name    string         `json:"name"`
+		Group   string         `json:"group"`
+		Results []*resultModel `json:"results"`
+	}
+
+	resultModel struct {
+		Name    string `json:"name"`
+		Result  string `json:"result"`
+		Average string `json:"average"`
 	}
 )

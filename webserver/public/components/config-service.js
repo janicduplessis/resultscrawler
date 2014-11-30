@@ -7,7 +7,7 @@ angular.module('rc.configservice', ['ngResource'])
 }])
 
 .factory('ConfigClass', ['$resource', function($resource) {
-  return $resource('/api/v1/crawler/config/class/:id', {
+  return $resource('/api/v1/crawler/class/:id', {
       id: '@id'
     }, {
       update: {

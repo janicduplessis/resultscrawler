@@ -87,7 +87,8 @@ func NewWebserver(config *Config) *Webserver {
 
 	// Register routes
 	router.GET("/", commonHandlers.Then(webserver.homeHandler))
-	router.GET("/api/v1/results/:year/:class", registeredHandlers.Then(webserver.resultsHandler))
+	router.GET("/app", commonHandlers.Then(webserver.appHandler))
+	router.GET("/api/v1/results/:year", registeredHandlers.Then(webserver.resultsHandler))
 
 	router.GET("/api/v1/crawler/config", registeredHandlers.Then(webserver.crawlerGetConfigHandler))
 	router.POST("/api/v1/crawler/config", registeredHandlers.Then(webserver.crawlerSaveConfigHandler))
@@ -111,6 +112,43 @@ func (server *Webserver) Start(address string) error {
 // Handlers
 func (server *Webserver) homeHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/app", http.StatusMovedPermanently)
+}
+
+func (server *Webserver) appHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	var tmpUser *userModel
+
+	userID, err := server.getSessionUserID(r)
+	if err != ErrUnauthorized {
+		if err != nil {
+			server.serverError(w, err)
+			return
+		}
+
+		user, err := server.userStore.FindByID(userID)
+		if err != nil {
+			server.serverError(w, err)
+			return
+		}
+
+		tmpUser = &userModel{
+			Email:     user.Email,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+		}
+	}
+
+	userJSON, err := json.Marshal(tmpUser)
+	if err != nil {
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "user-tmp",
+		Value:    string(userJSON),
+		Expires:  time.Now().Add(1 * time.Minute),
+		HttpOnly: false,
+	})
+	http.ServeFile(w, r, "public/index.html")
 }
 
 func (server *Webserver) loginHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
@@ -293,9 +331,39 @@ func (server *Webserver) registerHandler(ctx context.Context, w http.ResponseWri
 func (server *Webserver) resultsHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	params := ws.Params(ctx)
 	year := params.ByName("year")
-	class := params.ByName("class")
 	user := getUser(ctx)
-	server.logger.Logf("Getting classes for user %s, year %s and class %s", user.Email, year, class)
+	results, err := server.userResultsStore.FindByID(user.ID)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
+
+	response := &resultsResponse{
+		Year: year,
+	}
+
+	for _, c := range results.Classes {
+		if c.Year == year {
+			newClass := &resultClassModel{
+				Name:    c.Name,
+				Group:   c.Group,
+				Results: make([]*resultModel, len(c.Results)),
+			}
+			for i, result := range c.Results {
+				newClass.Results[i] = &resultModel{
+					Name:    result.Name,
+					Result:  result.Result,
+					Average: result.Average,
+				}
+			}
+			response.Classes = append(response.Classes, newClass)
+		}
+	}
+
+	err = sendJSON(w, response)
+	if err != nil {
+		server.serverError(w, err)
+	}
 }
 
 func (server *Webserver) crawlerGetConfigHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
