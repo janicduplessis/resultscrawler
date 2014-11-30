@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"text/template"
 	"time"
@@ -34,6 +35,7 @@ type crawlerUser struct {
 	Classes []store.Class
 	Nip     string
 	Code    string
+	Name    string
 	Email   string
 }
 
@@ -148,7 +150,8 @@ func (s *Scheduler) Queue(userID bson.ObjectId) {
 		Classes: results.Classes,
 		Code:    userCode,
 		Nip:     userNip,
-		Email:   user.Email,
+		Email:   crawlerConfig.NotificationEmail,
+		Name:    fmt.Sprintf("%s %s", user.FirstName, user.LastName),
 	}
 }
 
@@ -164,9 +167,11 @@ func (s *Scheduler) crawlerLoop(crawler *Crawler) {
 				s.Logger.Logf("Found difference: %+v", newRes)
 				s.Logger.Logf("Old results: %+v", user.Classes)
 				s.Logger.Logf("New results: %+v", results)
-				err := s.sendEmail(user, newRes)
-				if err != nil {
-					s.Logger.Error(err)
+				if len(user.Email) > 0 {
+					err := s.sendEmail(user, newRes)
+					if err != nil {
+						s.Logger.Error(err)
+					}
 				}
 				// Update results
 				for _, res := range results {
@@ -176,7 +181,7 @@ func (s *Scheduler) crawlerLoop(crawler *Crawler) {
 					}
 				}
 				s.Logger.Logf("Classes before update: %+v", user.Classes)
-				err = s.UserResultsStore.Update(&store.UserResults{
+				err := s.UserResultsStore.Update(&store.UserResults{
 					UserID:  user.ID,
 					Classes: user.Classes,
 				})

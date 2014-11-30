@@ -79,7 +79,7 @@ func NewCrawler(client Client, logger logger.Logger) *Crawler {
 // Run returns the results of all classes for the user
 func (c *Crawler) Run(user *crawlerUser) []runResult {
 	log.Println(fmt.Sprintf("Start looking for results for user %s. User has %v classes.",
-		user.ID, len(user.Classes)))
+		user.Email, len(user.Classes)))
 
 	// Request results
 	doneCh := make(chan runResult)
@@ -97,7 +97,7 @@ func (c *Crawler) Run(user *crawlerUser) []runResult {
 		results[result.ClassIndex] = result
 	}
 
-	log.Printf("Done looking for results for user %s.\n", user.ID)
+	log.Printf("Done looking for results for user %s.\n", user.Email)
 
 	return results
 }

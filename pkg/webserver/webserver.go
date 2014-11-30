@@ -92,10 +92,10 @@ func NewWebserver(config *Config) *Webserver {
 	router.GET("/api/v1/crawler/config", registeredHandlers.Then(webserver.crawlerGetConfigHandler))
 	router.POST("/api/v1/crawler/config", registeredHandlers.Then(webserver.crawlerSaveConfigHandler))
 
-	router.GET("/api/v1/crawler/config/class", registeredHandlers.Then(webserver.crawlerGetClassesHandler))
-	router.POST("/api/v1/crawler/config/class", registeredHandlers.Then(webserver.crawlerCreateClassHandler))
-	router.PUT("/api/v1/crawler/config/class/:classId", registeredHandlers.Then(webserver.crawlerEditClassHandler))
-	router.DELETE("/api/v1/crawler/config/class/:classId", registeredHandlers.Then(webserver.crawlerDeleteClassHandler))
+	router.GET("/api/v1/crawler/class", registeredHandlers.Then(webserver.crawlerGetClassesHandler))
+	router.POST("/api/v1/crawler/class", registeredHandlers.Then(webserver.crawlerCreateClassHandler))
+	router.PUT("/api/v1/crawler/class/:classId", registeredHandlers.Then(webserver.crawlerEditClassHandler))
+	router.DELETE("/api/v1/crawler/class/:classId", registeredHandlers.Then(webserver.crawlerDeleteClassHandler))
 
 	router.POST("/api/v1/auth/login", commonHandlers.Then(webserver.loginHandler))
 	router.POST("/api/v1/auth/register", commonHandlers.Then(webserver.registerHandler))
@@ -246,8 +246,9 @@ func (server *Webserver) registerHandler(ctx context.Context, w http.ResponseWri
 
 	// Create the crawler config in the datastore.
 	crawlerConfig := &store.CrawlerConfig{
-		UserID: user.ID,
-		Status: false,
+		UserID:            user.ID,
+		Status:            false,
+		NotificationEmail: request.Email,
 	}
 	err = server.crawlerConfigStore.Insert(crawlerConfig)
 	if err != nil {
