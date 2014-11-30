@@ -8,3 +8,4 @@ UQAM Resultats crawler
 
 Installation
 =============
+Test
