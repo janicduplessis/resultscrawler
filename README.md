@@ -39,15 +39,20 @@ The recommended way to get the code is through the go get command.
         bower install
 
 4. Create config files.
+
     4.1 Crawler
+
         From the project root:
+
               cd crawler
               cp template.config.json crawler.config.json
 
         Edit the crawler.config.json file to reflect your server configuration.
 
     4.2 Webserver
+
         From the project root:
+
               cd webserver
               cp template.config.json webserver.config.json
 
@@ -56,11 +61,14 @@ The recommended way to get the code is through the go get command.
 Run the code
 --------------
 To run the crawler, from the project root:
+
         cd crawler
         go run crawler.go
 
 To run the webserver, from the project root:
+
         cd webserver
         go run webserver.go
+
 
 Hopefully everything worked!
