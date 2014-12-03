@@ -6,6 +6,61 @@ resultscrawler
 
 UQAM Resultats crawler
 
+This application contains two executables, a crawler to fetch data from
+the UQAM website and a webserver to access the data at any time.
+
+Prerequisites
+---------------
+Mandatory:
+- Go
+- npm
+- mongodb
+Optionnal:
+- An email smtp server
+
 Installation
-=============
-Test
+---------------
+The recommended way to get the code is through the go get command.
+
+        go get github.com/janicduplessis/resultscrawler
+
+1. Navigate to the root folder and install go dependencies.
+
+        cd $GOPATH/src/github.com/janicduplessis/resultscrawler
+        go install ./...
+
+2. If you dont already have bower installed globally, install it.
+
+        npm install bower -g
+
+3. Install the webserver libraries using bower.
+
+        cd webserver
+        bower install
+
+4. Create config files.
+    4.1 Crawler
+        From the project root:
+              cd crawler
+              cp template.config.json crawler.config.json
+
+        Edit the crawler.config.json file to reflect your server configuration.
+
+    4.2 Webserver
+        From the project root:
+              cd webserver
+              cp template.config.json webserver.config.json
+
+        Edit the webserver.config.json file to reflect your server configuration.
+
+Run the code
+--------------
+To run the crawler, from the project root:
+        cd crawler
+        go run crawler.go
+
+To run the webserver, from the project root:
+        cd webserver
+        go run webserver.go
+
+Hopefully everything worked!
