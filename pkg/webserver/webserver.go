@@ -87,7 +87,6 @@ func NewWebserver(config *Config) *Webserver {
 
 	// Register routes
 	router.GET("/", commonHandlers.Then(webserver.homeHandler))
-	router.GET("/app", commonHandlers.Then(webserver.appHandler))
 	router.GET("/api/v1/results/:year", registeredHandlers.Then(webserver.resultsHandler))
 
 	router.GET("/api/v1/crawler/config", registeredHandlers.Then(webserver.crawlerGetConfigHandler))

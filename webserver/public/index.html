@@ -6,38 +6,54 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Results Crawler</title>
+  <title ng-bind="'Results Crawler - ' + title">Results Crawler - {{title}}</title>
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <base href="/app/index.html" />
   <link rel="stylesheet" href="bower_components/html5-boilerplate/css/normalize.css">
   <link rel="stylesheet" href="bower_components/html5-boilerplate/css/main.css">
+  <link rel="stylesheet" href="bower_components/angular-material/angular-material.css">
+  <link rel="stylesheet" href="bower_components/angular-material/themes/green-theme.css">
   <link rel="stylesheet" href="app.css">
   <script src="bower_components/html5-boilerplate/js/vendor/modernizr-2.6.2.min.js"></script>
 </head>
-<body ng-controller="ApplicationCtrl">
-  <ul class="menu">
-    <li><a href="/app/home">Home</a></li>
-    <li ng-if="currentUser"><a href="/app/results">Results</a></li>
-    <li ng-if="currentUser"><a href="/app/dashboard">Setup</a></li>
-    <li><a href="/app/about">About</a></li>
-    <li ng-if="!currentUser"><a href="/app/login">Sign in</a></li>
-    <li ng-if="!currentUser"><a href="/app/register">Register</a></li>
-    <li ng-if="currentUser"><a href="/app/logout">Logout</a></li>
-  </ul>
+<body ng-controller="ApplicationCtrl" layout="row" md-theme="green">
+  <md-sidenav class="md-sidenav-left md-whiteframe-z2" layout="column" md-component-id="left" md-is-locked-open="$media('sm')">
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <span class="md-flex">Results</span>
+      </div>
+    </md-toolbar>
 
-  <!--[if lt IE 7]>
-      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-  <![endif]-->
+    <ul class="menu">
+      <li><a href="#/home">Home</a></li>
+      <li ng-if="currentUser"><a href="#/results">Results</a></li>
+      <li ng-if="currentUser"><a href="#/dashboard">Setup</a></li>
+      <li><a href="#/about">About</a></li>
+      <li ng-if="!currentUser"><a href="#/login">Sign in</a></li>
+      <li ng-if="!currentUser"><a href="#/register">Register</a></li>
+      <li ng-if="currentUser"><a href="#/logout">Logout</a></li>
+    </ul>
+  </md-sidenav>
+  
+  <div layout="column" layout-fill tabindex="-1" role="main">
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+          <button class="menu-icon" hide-gt-sm ng-click="openMenu()">
+            <md-icon icon="img/icons/ic_menu_24px.svg"></md-icon>
+          </button>
+          <span class="md-flex" ng-bind="title"></span>
+        </div>
+    </md-toolbar>
 
-  <div ng-view></div>
-
-  <!-- In production use:
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/x.x.x/angular.min.js"></script>
-  -->
+    <md-content class="md-padding" layout="row" layout-align="center start" ng-view flex></md-content>
+  </div>
   <script src="bower_components/angular/angular.js"></script>
   <script src="bower_components/angular-route/angular-route.js"></script>
   <script src="bower_components/angular-resource/angular-resource.js"></script>
+  <script src="bower_components/angular-aria/angular-aria.js"></script>
+  <script src="bower_components/angular-animate/angular-animate.js"></script>
+  <script src="bower_components/hammerjs/hammer.js"></script>
+  <script src="bower_components/angular-material/angular-material.js"></script>
   <script src="bower_components/jquery/dist/jquery.js"></script>
   <script src="app.js"></script>
   <script src="components/auth-service.js"></script>

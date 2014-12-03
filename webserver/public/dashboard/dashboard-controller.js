@@ -4,6 +4,7 @@ angular.module('rc.dashboard', ['ngRoute'])
 
 .config(['$routeProvider', function($routeProvider) {
   $routeProvider.when('/dashboard', {
+    title: 'Settings',
     templateUrl: 'dashboard/dashboard.html',
     controller: 'DashboardCtrl'
   });

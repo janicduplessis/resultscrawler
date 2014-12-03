@@ -4,9 +4,11 @@ angular.module('rc.login', ['ngRoute'])
 
 .config(['$routeProvider', function($routeProvider) {
   $routeProvider.when('/login', {
+    title: 'Sign in',
     templateUrl: 'login/login.html',
     controller: 'LoginCtrl'
   }).when('/register', {
+    title: 'Register',
     templateUrl: 'login/register.html',
     controller: 'LoginCtrl'
   }).when('/logout', {

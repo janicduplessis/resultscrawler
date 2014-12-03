@@ -1,1 +1,12 @@
+.menu-icon {
+	background: none;
+	border: none;
+}
 
+md-card {
+	width: 300px;
+}
+
+md-input-group > input {
+	width: 100%;
+}

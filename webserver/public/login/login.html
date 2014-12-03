@@ -1,10 +1,10 @@
-<h2>Login</h2>
-
-<form name="loginForm" ng-submit="login(loginInfo)" novalidate>
-  <input type="email" placeholder="Email" ng-model="loginInfo.email" />
-  <input type="password" placeholder="Password" ng-model="loginInfo.password" />
-  <button type="submit">Login</button>
-</form>
-
-
-
+<md-card>
+	<h2>Login</h2>
+	<form name="loginForm" ng-submit="login(loginInfo)" novalidate>
+	  <md-text-float type="email" label="Email" ng-model="loginInfo.email"></md-text-float>
+	  <md-text-float type="password" label="Password" ng-model="loginInfo.password"></md-text-float>
+	  <div layout="row" layout-align="end center">
+	  	<md-button type="submit">Login</md-button>
+	  </div>
+	</form>
+</md-card>

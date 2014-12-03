@@ -4,6 +4,7 @@ angular.module('rc.results', ['ngRoute'])
 
 .config(['$routeProvider', function($routeProvider) {
   $routeProvider.when('/results', {
+  	title: 'Results',
     templateUrl: 'results/results.html',
     controller: 'ResultsCtrl'
   });
