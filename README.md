@@ -15,7 +15,9 @@ Mandatory:
 - Go
 - npm
 - mongodb
+
 Optionnal:
+
 - An email smtp server
 
 Installation
@@ -42,21 +44,21 @@ The recommended way to get the code is through the go get command.
 
     4.1 Crawler
 
-        From the project root:
+    From the project root:
 
               cd crawler
               cp template.config.json crawler.config.json
 
-        Edit the crawler.config.json file to reflect your server configuration.
+    Edit the crawler.config.json file to reflect your server configuration.
 
     4.2 Webserver
 
-        From the project root:
+    From the project root:
 
               cd webserver
               cp template.config.json webserver.config.json
 
-        Edit the webserver.config.json file to reflect your server configuration.
+    Edit the webserver.config.json file to reflect your server configuration.
 
 Run the code
 --------------
