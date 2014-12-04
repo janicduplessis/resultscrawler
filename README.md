@@ -15,7 +15,7 @@ Mandatory:
 - [Node and npm](http://nodejs.org/)
 - [mongodb](http://www.mongodb.org/)
 
-Optionnal:
+Optional:
 
 - An email smtp server
 
@@ -25,12 +25,13 @@ The recommended way to get the code is through the go get command.
 
         go get github.com/janicduplessis/resultscrawler
 
-1.  Navigate to the root folder and install go dependencies.  You may need to install mercurial and bazaar to be able to download the dependencies.
+1.  Navigate to the root folder and install go dependencies.
+You may need to install mercurial and bazaar to be able to download the dependencies.
 
         cd $GOPATH/src/github.com/janicduplessis/resultscrawler
         go install ./...
 
-2.  If you dont already have bower installed globally, install it.
+2.  If you don't already have bower installed globally, install it.
 
         npm install bower -g
 
