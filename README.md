@@ -1,10 +1,8 @@
-resultscrawler
+UQAM Resultats Crawler
 ==============
 
 [![Build Status](https://travis-ci.org/janicduplessis/resultscrawler.svg)](https://travis-ci.org/janicduplessis/resultscrawler)
 [![GoDoc](https://godoc.org/github.com/janicduplessis/resultscrawler?status.svg)](https://godoc.org/github.com/janicduplessis/resultscrawler)
-
-UQAM Resultats crawler
 
 This application contains two executables, a crawler to fetch data from
 the UQAM website and a webserver to access the data at any time.
@@ -12,9 +10,10 @@ the UQAM website and a webserver to access the data at any time.
 Prerequisites
 ---------------
 Mandatory:
-- Go
-- npm
-- mongodb
+
+- [Go](http://golang.org/)
+- [Node and npm](http://nodejs.org/)
+- [mongodb](http://www.mongodb.org/)
 
 Optionnal:
 
@@ -26,23 +25,23 @@ The recommended way to get the code is through the go get command.
 
         go get github.com/janicduplessis/resultscrawler
 
-1. Navigate to the root folder and install go dependencies.
+1.  Navigate to the root folder and install go dependencies.  You may need to install mercurial and bazaar to be able to download the dependencies.
 
         cd $GOPATH/src/github.com/janicduplessis/resultscrawler
         go install ./...
 
-2. If you dont already have bower installed globally, install it.
+2.  If you dont already have bower installed globally, install it.
 
         npm install bower -g
 
-3. Install the webserver libraries using bower.
+3.  Install the webserver libraries using bower.
 
         cd webserver
         bower install
 
-4. Create config files.
+4.  Create config files.
 
-    4.1 Crawler
+    4.1  Crawler
 
     From the project root:
 
@@ -51,7 +50,7 @@ The recommended way to get the code is through the go get command.
 
     Edit the crawler.config.json file to reflect your server configuration.
 
-    4.2 Webserver
+    4.2  Webserver
 
     From the project root:
 
