@@ -7,7 +7,7 @@ const (
 )
 
 func TestCryptoEncryptDecrypt(t *testing.T) {
-	handler := NewCryptoHandler(testAESKey)
+	Init(testAESKey)
 
 	data := []string{
 		"H",
@@ -18,13 +18,13 @@ func TestCryptoEncryptDecrypt(t *testing.T) {
 
 	// Test if the encrypting and decrypting gives the same string
 	for _, curStr := range data {
-		crypted, err := handler.AESEncrypt([]byte(curStr))
+		crypted, err := AESEncrypt([]byte(curStr))
 		if err != nil {
 			t.Errorf("Error encrypting %s. Err: %s", curStr, err.Error())
 			continue
 		}
 		cryptedStr := string(crypted)
-		decrypted, err := handler.AESDecrypt([]byte(cryptedStr))
+		decrypted, err := AESDecrypt([]byte(cryptedStr))
 		if err != nil {
 			t.Errorf("Error decrypting %s. Err: %s", curStr, err.Error())
 		}
@@ -36,14 +36,14 @@ func TestCryptoEncryptDecrypt(t *testing.T) {
 }
 
 func TestCryptoEncrypt(t *testing.T) {
-	handler := NewCryptoHandler(testAESKey)
+	Init(testAESKey)
 	// Test if encrypting the same data gives different encrypted data
 	data := []byte("TEST")
-	crypted1, err := handler.AESEncrypt(data)
+	crypted1, err := AESEncrypt(data)
 	if err != nil {
 		t.Errorf("Error decrypting %s. Err: %s", string(data), err.Error())
 	}
-	crypted2, err := handler.AESEncrypt(data)
+	crypted2, err := AESEncrypt(data)
 	if string(crypted1) == string(crypted2) {
 		t.Errorf("Encrypted data is the same for the same data. Crypted1: %s, Crypted2: %s", string(crypted1), string(crypted2))
 	}

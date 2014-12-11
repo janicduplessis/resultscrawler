@@ -9,8 +9,8 @@ import (
 	"os"
 
 	"github.com/janicduplessis/resultscrawler/pkg/crypto"
-	"github.com/janicduplessis/resultscrawler/pkg/logger"
-	"github.com/janicduplessis/resultscrawler/pkg/store"
+	"github.com/janicduplessis/resultscrawler/pkg/store/mongo"
+	"github.com/janicduplessis/resultscrawler/pkg/tools"
 	"github.com/janicduplessis/resultscrawler/pkg/webserver"
 )
 
@@ -24,7 +24,7 @@ var (
 
 type config struct {
 	ServerPort   string
-	Database     *store.DBConfig
+	Database     *tools.MongoConfig
 	AESSecretKey string // 16 bytes
 	SessionKey   string
 }
@@ -34,22 +34,19 @@ func main() {
 
 	flag.Parse()
 	config := readConfig()
+	crypto.Init(config.AESSecretKey)
 
 	// Inject dependencies
-	crypto := crypto.NewCryptoHandler(config.AESSecretKey)
-	mongoStore := store.NewMongoStore(config.Database)
-	logger := &logger.ConsoleLogger{}
+	mongoHelper := tools.NewMongoHelper(config.Database)
 
-	userStore := store.NewUserStoreHandler(mongoStore)
-	crawlerConfigStore := store.NewCrawlerConfigStoreHandler(mongoStore)
-	userResultsStore := store.NewUserResultsStoreHandler(mongoStore)
+	userStore := mongo.New(mongoHelper)
+	crawlerConfigStore := mongo.New(mongoHelper)
+	userResultsStore := mongo.New(mongoHelper)
 
 	server := webserver.NewWebserver(&webserver.Config{
 		userStore,
 		crawlerConfigStore,
 		userResultsStore,
-		crypto,
-		logger,
 		config.SessionKey,
 	})
 
@@ -60,7 +57,7 @@ func main() {
 
 func readConfig() *config {
 	conf := &config{
-		Database: new(store.DBConfig),
+		Database: new(tools.MongoConfig),
 	}
 
 	readFileConfig(conf)

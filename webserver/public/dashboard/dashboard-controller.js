@@ -6,7 +6,12 @@ angular.module('rc.dashboard', ['ngRoute'])
   $routeProvider.when('/dashboard', {
     title: 'Settings',
     templateUrl: 'dashboard/dashboard.html',
-    controller: 'DashboardCtrl'
+    controller: 'DashboardCtrl',
+    menu: {
+      authentified: true,
+      guest: false,
+      order: 5
+    }
   });
 }])
 

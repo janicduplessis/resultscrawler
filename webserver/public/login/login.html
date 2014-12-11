@@ -1,10 +1,33 @@
-<md-card>
-	<h2>Login</h2>
-	<form name="loginForm" ng-submit="login(loginInfo)" novalidate>
-	  <md-text-float type="email" label="Email" ng-model="loginInfo.email"></md-text-float>
-	  <md-text-float type="password" label="Password" ng-model="loginInfo.password"></md-text-float>
-	  <div layout="row" layout-align="end center">
-	  	<md-button type="submit">Login</md-button>
-	  </div>
-	</form>
-</md-card>
+<div class="container" layout="column" layout-gt-md="row"
+	layout-align="start center" layout-align-gt-md="center start" flex>
+	<md-card flex>
+	  	<md-toolbar>
+	  		<div class="md-toolbar-tools">Login to my account</div>
+	  	</md-toolbar>
+	  	<md-content class="md-padding">
+			<form name="loginForm" ng-submit="login(loginInfo)" novalidate>
+			  	<md-text-float type="email" label="Email" ng-model="loginInfo.email"></md-text-float>
+			  	<md-text-float type="password" label="Password" ng-model="loginInfo.password"></md-text-float>
+			  	<md-checkbox>Remember me</md-checkbox>
+			  	<md-button class="login-btn md-raised md-primary" type="submit">Login</md-button>
+			</form>
+		</md-content>
+	</md-card>
+
+	<md-card flex>
+		<md-toolbar>
+	  		<div class="md-toolbar-tools">Create an account</div>
+	  	</md-toolbar>
+	  	<md-content class="md-padding">
+			<form name="registerForm" ng-submit="register(registerInfo)" novalidate>
+				<md-text-float type="email" label="Email" ng-model="registerInfo.email" required></md-text-float>
+				<md-text-float type="password" label="Password" ng-model="registerInfo.password" required></md-text-float>
+				<md-text-float type="password" label="Confirm password" required></md-text-float>
+				<md-text-float type="text" label="First name" ng-model="registerInfo.firstName" required></md-text-float>
+				<md-text-float type="text" label="Last name" ng-model="registerInfo.lastName" required></md-text-float>
+
+				<md-button class="login-btn md-raised md-primary" type="submit">Register</md-button>
+			</form>
+		</md-content>
+	</md-card>
+</div>

@@ -6,11 +6,12 @@ angular.module('rc.login', ['ngRoute'])
   $routeProvider.when('/login', {
     title: 'Sign in',
     templateUrl: 'login/login.html',
-    controller: 'LoginCtrl'
-  }).when('/register', {
-    title: 'Register',
-    templateUrl: 'login/register.html',
-    controller: 'LoginCtrl'
+    controller: 'LoginCtrl',
+    menu: {
+      authentified: false,
+      guest: true,
+      order: 1
+    }
   }).when('/logout', {
     controller: 'LogoutCtrl'
   });
@@ -24,6 +25,13 @@ angular.module('rc.login', ['ngRoute'])
     password: ''
   };
 
+  $scope.registerInfo = {
+    email: '',
+    password: '',
+    firstName: '',
+    lastName: ''
+  };
+
   $scope.login = function(loginInfo) {
     AuthService.login(loginInfo).then(function(user){
       $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
@@ -31,17 +39,6 @@ angular.module('rc.login', ['ngRoute'])
     }, function() {
       $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
     });
-  };
-}])
-
-.controller('RegisterCtrl', ['$scope', '$rootScope', 'AUTH_EVENTS', 'AuthService',
-      function($scope, $rootScope, AUTH_EVENTS, AuthService) {
-
-  $scope.registerInfo = {
-    email: '',
-    password: '',
-    firstName: '',
-    lastName: ''
   };
 
   $scope.register = function(registerInfo) {
@@ -51,7 +48,9 @@ angular.module('rc.login', ['ngRoute'])
       $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
     });
   };
-}]).controller('LogoutCtrl', ['$scope', '$rootScope', '$location', 'AUTH_EVENTS', 'AuthService',
+}])
+
+.controller('LogoutCtrl', ['$scope', '$rootScope', '$location', 'AUTH_EVENTS', 'AuthService',
   function($scope, $rootScope, $location, AUTH_EVENTS, AuthService) {
       AuthService.logout();
       $rootScope.$broadcast(AUTH_EVENTS.logoutSuccess);

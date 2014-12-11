@@ -1,12 +1,120 @@
+/*
+ * Global
+ */
 .menu-icon {
 	background: none;
 	border: none;
 }
 
 md-card {
-	width: 300px;
+  background-color: #FFF;
+}
+
+md-card > md-toolbar {
+  border-radius: 2px 2px 0 0;
 }
 
 md-input-group > input {
 	width: 100%;
+}
+
+md-content.main {
+  background-color: #F0F0F0;
+}
+
+/* Toolbar buttons */
+md-toolbar .md-toolbar-tools .md-button.md-green-theme, md-toolbar .md-toolbar-tools .md-button.md-green-theme:hover {
+  box-shadow: none;
+  border: none;
+  transform: none;
+  -webkit-transform: none;
+}
+md-toolbar .md-toolbar-tools .md-button.md-green-theme:hover button {
+  background: rgba(46, 168, 109, 0.8);
+}
+md-toolbar .md-toolbar-tools .md-button.md-green-theme:focus, md-toolbar .md-toolbar-tools .md-button.md-green-theme button:focus {
+  background: #2ea86d;
+}
+
+/*
+ * Extend angular material layout
+ * Responsive layout alignment
+ */
+@media (min-width: 960px) {
+  [layout-align-gt-md="center center"],
+  [layout-align-gt-md="start center"],
+  [layout-align-gt-md="end center"],
+  [layout-align-gt-md="space-between center"],
+  [layout-align-gt-md="space-around center"] {
+    -webkit-align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
+  }
+
+  [layout-align-gt-md="center start"],
+  [layout-align-gt-md="start start"],
+  [layout-align-gt-md="end start"],
+  [layout-align-gt-md="space-between start"],
+  [layout-align-gt-md="space-around start"] {
+    -webkit-align-items: flex-start;
+    -ms-flex-align: start;
+    align-items: flex-start;
+  }
+
+  [layout-align-gt-md="center"],
+  [layout-align-gt-md="center center"],
+  [layout-align-gt-md="center start"],
+  [layout-align-gt-md="center end"] {
+    -webkit-justify-content: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+  }
+}
+
+/*
+ * Modules
+ */
+
+/* Login module */
+.rc-login md-card {
+  padding: 0;
+  margin: 30px;
+}
+
+.rc-login md-card md-toolbar {
+  background-color: #676767;
+}
+
+.rc-login md-card md-content {
+  padding-top: 0;
+}
+
+.rc-login md-checkbox {
+  margin-left: 0;
+}
+
+.rc-login .login-btn {
+  width: 100%;
+  height: 2.5em;
+  margin-top: 15px;
+}
+
+.rc-login .container {
+    -webkit-align-items: stretch;
+    -ms-flex-align: stretch;
+    align-items: stretch;
+}
+
+@media (min-width: 960px) {
+  .rc-login md-card {
+    padding: 0;
+    max-width: 400px;
+    margin: 30px;
+  }
+
+  .rc-login .container {
+    -webkit-align-items: flex-start;
+    -ms-flex-align: start;
+    align-items: flex-start;
+  }
 }

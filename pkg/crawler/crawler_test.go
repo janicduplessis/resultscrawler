@@ -1,15 +1,25 @@
 package crawler
 
 import (
+	"io"
+	"net/http"
 	"os"
 	"testing"
 
 	"labix.org/v2/mgo/bson"
 
-	"github.com/janicduplessis/resultscrawler/pkg/crawler/test"
-	"github.com/janicduplessis/resultscrawler/pkg/logger"
 	"github.com/janicduplessis/resultscrawler/pkg/store"
 )
+
+type FakeClient struct {
+	Data io.ReadCloser
+}
+
+func (c *FakeClient) Do(req *http.Request) (*http.Response, error) {
+	return &http.Response{
+		Body: c.Data,
+	}, nil
+}
 
 func TestCrawlerNewResults(t *testing.T) {
 	crawler := getCrawler(t, "test/results.html")
@@ -98,11 +108,10 @@ func getCrawler(t *testing.T, fileToCrawl string) *Crawler {
 	if err != nil {
 		t.Errorf("Error opening test file %s. Err: %s", fileToCrawl, err)
 	}
-	client := &test.FakeClient{
+	client := &FakeClient{
 		Data: data,
 	}
-	logger := &logger.ConsoleLogger{}
-	return NewCrawler(client, logger)
+	return NewCrawler(client)
 }
 
 func init() {

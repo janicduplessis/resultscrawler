@@ -1,4 +1,4 @@
-package store
+package tools
 
 import (
 	"fmt"
@@ -8,14 +8,14 @@ import (
 	"labix.org/v2/mgo"
 )
 
-// MongoStore handles connection to a mongodb database.
-type MongoStore struct {
+// MongoHelper handles connection to a mongodb database.
+type MongoHelper struct {
 	mongoSession *mgo.Session
-	config       *DBConfig
+	config       *MongoConfig
 }
 
-// DBConfig contains the configuration of the database server.
-type DBConfig struct {
+// MongoConfig contains the configuration of the database server.
+type MongoConfig struct {
 	Host     string
 	Port     string
 	Name     string
@@ -28,8 +28,8 @@ type ConnCloser interface {
 	Close()
 }
 
-// NewMongoStore creates a new MongoStore object.
-func NewMongoStore(dbConfig *DBConfig) *MongoStore {
+// NewMongoHelper creates a new MongoStore object.
+func NewMongoHelper(dbConfig *MongoConfig) *MongoHelper {
 	// We need this object to establish a session to our MongoDB.
 	mongoDBDialInfo := &mgo.DialInfo{
 		Addrs:    []string{fmt.Sprintf("%s:%s", dbConfig.Host, dbConfig.Port)},
@@ -53,20 +53,16 @@ func NewMongoStore(dbConfig *DBConfig) *MongoStore {
 	// http://godoc.org/labix.org/v2/mgo#Session.SetMode
 	mongoSession.SetMode(mgo.Monotonic, true)
 
-	return &MongoStore{
+	return &MongoHelper{
 		mongoSession: mongoSession,
 		config:       dbConfig,
 	}
 }
 
-// Get returns a connection from the connection pool using the database
+// Client returns a connection from the connection pool using the database
 // in the configuration. It is the caller's responsability to close the
 // connection using the ConnCloser.
-func (hndl *MongoStore) Get() (*mgo.Database, ConnCloser) {
+func (hndl *MongoHelper) Client() (*mgo.Database, ConnCloser) {
 	sessionCopy := hndl.mongoSession.Copy()
 	return sessionCopy.DB(hndl.config.Name), sessionCopy
-}
-
-func init() {
-	mgo.ErrNotFound = ErrNotFound
 }

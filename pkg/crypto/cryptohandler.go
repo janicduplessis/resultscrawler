@@ -5,45 +5,36 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"errors"
+	"log"
 
 	"code.google.com/p/go.crypto/bcrypt"
 )
 
-// CryptoHandler is an utility for various crypto algorithms.
-type CryptoHandler struct {
-	block cipher.Block
-}
+var block cipher.Block
 
-// NewCryptoHandler creates a new CryptoHandler object.
+// Init initializes the crypto package.
 // Key must be 16 bytes long.
-func NewCryptoHandler(key string) *CryptoHandler {
-	block, err := aes.NewCipher([]byte(key))
-	if err != nil {
-		panic(err)
-	}
-
-	return &CryptoHandler{
-		block: block,
-	}
+func Init(key string) {
+	block = mustCreateBlock([]byte(key))
 }
 
 // AESEncrypt encrypts the data using AES-128.
-func (hndl *CryptoHandler) AESEncrypt(data []byte) ([]byte, error) {
+func AESEncrypt(data []byte) ([]byte, error) {
 	if len(data) == 0 {
 		return data, nil
 	}
-	iv := hndl.GenerateRandomKey(aes.BlockSize)
+	iv := GenerateRandomKey(aes.BlockSize)
 	if iv == nil {
 		return nil, errors.New("Failed to generate random iv")
 	}
-	encrypter := cipher.NewCFBEncrypter(hndl.block, iv)
+	encrypter := cipher.NewCFBEncrypter(block, iv)
 	encrypted := make([]byte, len(data))
 	encrypter.XORKeyStream(encrypted, data)
 	return append(iv, encrypted...), nil
 }
 
 // AESDecrypt decrypts the data using AES-128.
-func (hndl *CryptoHandler) AESDecrypt(data []byte) ([]byte, error) {
+func AESDecrypt(data []byte) ([]byte, error) {
 	if len(data) == 0 {
 		return data, nil
 	}
@@ -53,14 +44,14 @@ func (hndl *CryptoHandler) AESDecrypt(data []byte) ([]byte, error) {
 	}
 	iv := data[:size]
 	data = data[size:]
-	decrypter := cipher.NewCFBDecrypter(hndl.block, iv)
+	decrypter := cipher.NewCFBDecrypter(block, iv)
 	decrypted := make([]byte, len(data))
 	decrypter.XORKeyStream(decrypted, data)
 	return decrypted, nil
 }
 
 // GenerateRandomKey creates a random key with the given strength.
-func (hndl *CryptoHandler) GenerateRandomKey(strength int) []byte {
+func GenerateRandomKey(strength int) []byte {
 	k := make([]byte, strength)
 	if _, err := rand.Read(k); err != nil {
 		return nil
@@ -68,7 +59,8 @@ func (hndl *CryptoHandler) GenerateRandomKey(strength int) []byte {
 	return k
 }
 
-func (hndl *CryptoHandler) CompareHashAndPassword(hash string, password string) (bool, error) {
+// CompareHashAndPassword checks if the hashed password matches the plain text one.
+func CompareHashAndPassword(hash string, password string) (bool, error) {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	if err != nil {
 		if err == bcrypt.ErrMismatchedHashAndPassword {
@@ -79,7 +71,16 @@ func (hndl *CryptoHandler) CompareHashAndPassword(hash string, password string) 
 	return true, nil
 }
 
-func (hndl *CryptoHandler) GenerateFromPassword(password string) (string, error) {
+// GenerateFromPassword creates a hash from the plain text password.
+func GenerateFromPassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(hash), err
+}
+
+func mustCreateBlock(key []byte) cipher.Block {
+	b, err := aes.NewCipher([]byte(key))
+	if err != nil {
+		log.Fatal(err)
+	}
+	return b
 }

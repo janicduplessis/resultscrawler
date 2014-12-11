@@ -10,9 +10,8 @@ import (
 
 	"github.com/janicduplessis/resultscrawler/pkg/crawler"
 	"github.com/janicduplessis/resultscrawler/pkg/crypto"
-	"github.com/janicduplessis/resultscrawler/pkg/logger"
-	"github.com/janicduplessis/resultscrawler/pkg/store"
-	"github.com/janicduplessis/resultscrawler/pkg/utils"
+	"github.com/janicduplessis/resultscrawler/pkg/store/mongo"
+	"github.com/janicduplessis/resultscrawler/pkg/tools"
 )
 
 const (
@@ -20,8 +19,8 @@ const (
 )
 
 type config struct {
-	Database     *store.DBConfig
-	Email        *utils.EmailConfig
+	Database     *tools.MongoConfig
+	Email        *tools.EmailConfig
 	AESSecretKey string // 16 bytes
 }
 
@@ -34,28 +33,26 @@ func main() {
 	log.Printf("db: %+v", config.Database)
 	log.Printf("email: %+v", config.Email)
 
-	// Inject dependencies
-	crypto := crypto.NewCryptoHandler(config.AESSecretKey)
-	emailSender := utils.NewEmailSender(config.Email)
-	mongoStore := store.NewMongoStore(config.Database)
-	httpClient := &http.Client{}
-	logger := &logger.ConsoleLogger{}
+	crypto.Init(config.AESSecretKey)
 
-	userStore := store.NewUserStoreHandler(mongoStore)
-	userInfoStore := store.NewCrawlerConfigStoreHandler(mongoStore)
-	userResultsStore := store.NewUserResultsStoreHandler(mongoStore)
+	// Inject dependencies
+	emailSender := tools.NewEmailSender(config.Email)
+	mongoHelper := tools.NewMongoHelper(config.Database)
+	httpClient := &http.Client{}
+
+	userStore := mongo.New(mongoHelper)
+	userInfoStore := mongo.New(mongoHelper)
+	userResultsStore := mongo.New(mongoHelper)
 
 	crawlers := []*crawler.Crawler{
-		crawler.NewCrawler(httpClient, logger),
+		crawler.NewCrawler(httpClient),
 	}
 	scheduler := crawler.NewScheduler(&crawler.SchedulerConfig{
 		crawlers,
 		userStore,
 		userInfoStore,
 		userResultsStore,
-		crypto,
 		emailSender,
-		logger,
 	})
 
 	log.Println("Crawler started")
@@ -65,8 +62,8 @@ func main() {
 
 func readConfig() *config {
 	conf := &config{
-		Database: new(store.DBConfig),
-		Email:    new(utils.EmailConfig),
+		Database: new(tools.MongoConfig),
+		Email:    new(tools.EmailConfig),
 	}
 
 	readFileConfig(conf)

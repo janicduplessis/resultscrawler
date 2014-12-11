@@ -6,7 +6,12 @@ angular.module('rc.about', ['ngRoute'])
   $routeProvider.when('/about', {
   	title: 'About',
     templateUrl: 'about/about.html',
-    controller: 'AboutCtrl'
+    controller: 'AboutCtrl',
+    menu: {
+      authentified: true,
+      guest: true,
+      order: 5
+    }
   });
 }])
 

@@ -16,30 +16,28 @@ import (
 	"github.com/gorilla/sessions"
 	"labix.org/v2/mgo/bson"
 
+	"github.com/janicduplessis/resultscrawler/pkg/api"
 	"github.com/janicduplessis/resultscrawler/pkg/crypto"
-	"github.com/janicduplessis/resultscrawler/pkg/logger"
-	"github.com/janicduplessis/resultscrawler/pkg/store"
+	"github.com/janicduplessis/resultscrawler/pkg/store/crawlerconfig"
+	"github.com/janicduplessis/resultscrawler/pkg/store/results"
+	"github.com/janicduplessis/resultscrawler/pkg/store/user"
 	"github.com/janicduplessis/resultscrawler/pkg/ws"
 )
 
 type (
 	// Config contains parameters to initialize the webserver.
 	Config struct {
-		UserStore          store.UserStore
-		CrawlerConfigStore store.CrawlerConfigStore
-		UserResultsStore   store.UserResultsStore
-		Crypto             crypto.Crypto
-		Logger             logger.Logger
+		UserStore          user.Store
+		CrawlerConfigStore crawlerconfig.Store
+		UserResultsStore   results.Store
 		SessionKey         string
 	}
 
 	// Webserver serves as a global context for the server.
 	Webserver struct {
-		userStore          store.UserStore
-		crawlerConfigStore store.CrawlerConfigStore
-		userResultsStore   store.UserResultsStore
-		crypto             crypto.Crypto
-		logger             logger.Logger
+		userStore          user.Store
+		crawlerConfigStore crawlerconfig.Store
+		userResultsStore   results.Store
 		router             *ws.Router
 		sessions           *sessions.CookieStore
 	}
@@ -72,8 +70,6 @@ func NewWebserver(config *Config) *Webserver {
 		config.UserStore,
 		config.CrawlerConfigStore,
 		config.UserResultsStore,
-		config.Crypto,
-		config.Logger,
 		router,
 		sessions,
 	}
@@ -123,7 +119,7 @@ func (server *Webserver) appHandler(ctx context.Context, w http.ResponseWriter, 
 			return
 		}
 
-		user, err := server.userStore.FindByID(userID)
+		user, err := server.userStore.GetUser(userID)
 		if err != nil {
 			server.serverError(w, err)
 			return
@@ -164,13 +160,12 @@ func (server *Webserver) loginHandler(ctx context.Context, w http.ResponseWriter
 	//TODO: prevent login spam by ip.
 
 	// Check if the user exists.
-	user, err := server.userStore.FindByEmail(request.Email)
+	user, passHash, err := server.userStore.GetUserForLogin(request.Email)
 	if err != nil {
-		if err != store.ErrNotFound {
-			server.serverError(w, err)
-			return
-		}
-
+		server.serverError(w, err)
+		return
+	}
+	if user == nil {
 		// If the user is not found returns an invalid login status.
 		response := &loginResponse{
 			Status: statusInvalidLogin,
@@ -180,12 +175,12 @@ func (server *Webserver) loginHandler(ctx context.Context, w http.ResponseWriter
 		if err != nil {
 			server.serverError(w, err)
 		}
-		server.logger.Logf("Invalid login attempt. Email: %s, IP: %s", request.Email, r.RemoteAddr)
+		log.Printf("Invalid login attempt. Email: %s, IP: %s", request.Email, r.RemoteAddr)
 		return
 	}
 
 	// At this point we have a valid email, check the password.
-	res, err := server.crypto.CompareHashAndPassword(user.PasswordHash, request.Password)
+	res, err := crypto.CompareHashAndPassword(passHash, request.Password)
 	if err != nil {
 		server.serverError(w, err)
 		return
@@ -201,7 +196,7 @@ func (server *Webserver) loginHandler(ctx context.Context, w http.ResponseWriter
 			server.serverError(w, err)
 		}
 
-		server.logger.Log("Invalid password.")
+		log.Println("Invalid password.")
 		return
 	}
 
@@ -226,7 +221,7 @@ func (server *Webserver) loginHandler(ctx context.Context, w http.ResponseWriter
 		server.serverError(w, err)
 	}
 
-	server.logger.Logf("Succesful login for user %s", user.Email)
+	log.Printf("Succesful login for user %s", user.Email)
 }
 
 func (server *Webserver) registerHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
@@ -238,13 +233,12 @@ func (server *Webserver) registerHandler(ctx context.Context, w http.ResponseWri
 	}
 
 	// Make sure the email is not already used.
-	_, err = server.userStore.FindByEmail(request.Email)
-	if err != store.ErrNotFound {
-		if err != nil {
-			server.serverError(w, err)
-			return
-		}
-
+	user, _, err := server.userStore.GetUserForLogin(request.Email)
+	if err != nil {
+		server.serverError(w, err)
+		return
+	}
+	if user != nil {
 		// Send an invalid email response.
 		response := &registerResponse{
 			Status: statusInvalidEmail,
@@ -261,43 +255,20 @@ func (server *Webserver) registerHandler(ctx context.Context, w http.ResponseWri
 
 	// Here all the registration infos are good, create the user.
 	// Hash the password for storage.
-	passwordHash, err := server.crypto.GenerateFromPassword(request.Password)
+	passwordHash, err := crypto.GenerateFromPassword(request.Password)
 	if err != nil {
 		server.serverError(w, err)
 		return
 	}
 
-	user := &store.User{
-		Email:        request.Email,
-		PasswordHash: passwordHash,
-		FirstName:    request.FirstName,
-		LastName:     request.LastName,
+	user = &api.User{
+		Email:     request.Email,
+		FirstName: request.FirstName,
+		LastName:  request.LastName,
 	}
 
 	// Create the user in the datastore.
-	err = server.userStore.Insert(user)
-	if err != nil {
-		server.serverError(w, err)
-		return
-	}
-
-	// Create the crawler config in the datastore.
-	crawlerConfig := &store.CrawlerConfig{
-		UserID:            user.ID,
-		Status:            false,
-		NotificationEmail: request.Email,
-	}
-	err = server.crawlerConfigStore.Insert(crawlerConfig)
-	if err != nil {
-		server.serverError(w, err)
-		return
-	}
-
-	// Create empty results for the user.
-	results := &store.UserResults{
-		UserID: user.ID,
-	}
-	server.userResultsStore.Insert(results)
+	err = server.userStore.CreateUser(user, passwordHash)
 	if err != nil {
 		server.serverError(w, err)
 		return
@@ -324,14 +295,14 @@ func (server *Webserver) registerHandler(ctx context.Context, w http.ResponseWri
 		server.serverError(w, err)
 	}
 
-	server.logger.Logf("Succesful registration for user %s", user.Email)
+	log.Printf("Succesful registration for user %s", user.Email)
 }
 
 func (server *Webserver) resultsHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	params := ws.Params(ctx)
 	year := params.ByName("year")
 	user := getUser(ctx)
-	results, err := server.userResultsStore.FindByID(user.ID)
+	results, err := server.userResultsStore.GetResults(user.ID)
 	if err != nil {
 		server.serverError(w, err)
 		return
@@ -367,18 +338,7 @@ func (server *Webserver) resultsHandler(ctx context.Context, w http.ResponseWrit
 
 func (server *Webserver) crawlerGetConfigHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	user := getUser(ctx)
-	config, err := server.crawlerConfigStore.FindByID(user.ID)
-	if err != nil {
-		server.serverError(w, err)
-		return
-	}
-
-	userCode, err := server.crypto.AESDecrypt(config.Code)
-	if err != nil {
-		server.serverError(w, err)
-		return
-	}
-	userNip, err := server.crypto.AESDecrypt(config.Nip)
+	config, err := server.crawlerConfigStore.GetCrawlerConfig(user.ID)
 	if err != nil {
 		server.serverError(w, err)
 		return
@@ -386,8 +346,8 @@ func (server *Webserver) crawlerGetConfigHandler(ctx context.Context, w http.Res
 
 	response := &crawlerConfigModel{
 		Status:            config.Status,
-		Code:              string(userCode),
-		Nip:               string(userNip),
+		Code:              config.Code,
+		Nip:               config.Nip,
 		NotificationEmail: config.NotificationEmail,
 	}
 	err = sendJSON(w, response)
@@ -406,41 +366,30 @@ func (server *Webserver) crawlerSaveConfigHandler(ctx context.Context, w http.Re
 
 	// TODO: validate config
 
-	userCode, err := server.crypto.AESEncrypt([]byte(request.Code))
-	if err != nil {
-		server.serverError(w, err)
-		return
-	}
-	userNip, err := server.crypto.AESEncrypt([]byte(request.Nip))
-	if err != nil {
-		server.serverError(w, err)
-		return
-	}
-
 	user := getUser(ctx)
-	config, err := server.crawlerConfigStore.FindByID(user.ID)
+	config, err := server.crawlerConfigStore.GetCrawlerConfig(user.ID)
 	if err != nil {
 		server.serverError(w, err)
 		return
 	}
 
-	results, err := server.userResultsStore.FindByID(user.ID)
+	results, err := server.userResultsStore.GetResults(user.ID)
 	if err != nil {
 		server.serverError(w, err)
 		return
 	}
 
-	config.Code = userCode
-	config.Nip = userNip
+	config.Code = request.Code
+	config.Nip = request.Nip
 	config.NotificationEmail = request.NotificationEmail
 	config.Status = request.Status
 
-	err = server.crawlerConfigStore.Update(config)
+	err = server.crawlerConfigStore.UpdateCrawlerConfig(config)
 	if err != nil {
 		server.serverError(w, err)
 	}
 
-	err = server.userResultsStore.Update(results)
+	err = server.userResultsStore.UpdateResults(results)
 	if err != nil {
 		server.serverError(w, err)
 	}
@@ -448,7 +397,7 @@ func (server *Webserver) crawlerSaveConfigHandler(ctx context.Context, w http.Re
 
 func (server *Webserver) crawlerGetClassesHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	user := getUser(ctx)
-	results, err := server.userResultsStore.FindByID(user.ID)
+	results, err := server.userResultsStore.GetResults(user.ID)
 	if err != nil {
 		server.serverError(w, err)
 		return
@@ -470,27 +419,27 @@ func (server *Webserver) crawlerCreateClassHandler(ctx context.Context, w http.R
 	}
 
 	user := getUser(ctx)
-	results, err := server.userResultsStore.FindByID(user.ID)
+	results, err := server.userResultsStore.GetResults(user.ID)
 	if err != nil {
 		server.serverError(w, err)
 		return
 	}
 
-	id := bson.NewObjectId()
+	classID := bson.NewObjectId().Hex()
 
-	results.Classes = append(results.Classes, store.Class{
-		ID:    id,
+	results.Classes = append(results.Classes, api.Class{
+		ID:    classID,
 		Name:  request.Name,
 		Group: request.Group,
 		Year:  request.Year,
 	})
 
-	err = server.userResultsStore.Update(results)
+	err = server.userResultsStore.UpdateResults(results)
 	if err != nil {
 		server.serverError(w, err)
 		return
 	}
-	request.ID = id.Hex()
+	request.ID = classID
 	err = sendJSON(w, &request)
 	if err != nil {
 		server.serverError(w, err)
@@ -499,7 +448,7 @@ func (server *Webserver) crawlerCreateClassHandler(ctx context.Context, w http.R
 
 func (server *Webserver) crawlerEditClassHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	params := ws.Params(ctx)
-	classID := bson.ObjectId(params.ByName("classId"))
+	classID := params.ByName("classId")
 
 	request := crawlerConfigClassModel{}
 	err := readJSON(r, &request)
@@ -509,7 +458,7 @@ func (server *Webserver) crawlerEditClassHandler(ctx context.Context, w http.Res
 	}
 
 	user := getUser(ctx)
-	results, err := server.userResultsStore.FindByID(user.ID)
+	results, err := server.userResultsStore.GetResults(user.ID)
 	if err != nil {
 		server.serverError(w, err)
 		return
@@ -517,7 +466,7 @@ func (server *Webserver) crawlerEditClassHandler(ctx context.Context, w http.Res
 
 	for i, c := range results.Classes {
 		if c.ID == classID {
-			results.Classes[i] = store.Class{
+			results.Classes[i] = api.Class{
 				ID:    c.ID,
 				Name:  request.Name,
 				Group: request.Group,
@@ -527,7 +476,7 @@ func (server *Webserver) crawlerEditClassHandler(ctx context.Context, w http.Res
 		}
 	}
 
-	err = server.userResultsStore.Update(results)
+	err = server.userResultsStore.UpdateResults(results)
 	if err != nil {
 		server.serverError(w, err)
 	}
@@ -535,21 +484,15 @@ func (server *Webserver) crawlerEditClassHandler(ctx context.Context, w http.Res
 
 func (server *Webserver) crawlerDeleteClassHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	params := ws.Params(ctx)
-	idHex := params.ByName("classId")
-	if !bson.IsObjectIdHex(idHex) {
-		server.serverError(w, store.ErrInvalidID)
-		return
-	}
-	classID := bson.ObjectIdHex(idHex)
+	classID := params.ByName("classId")
 
 	user := getUser(ctx)
-	results, err := server.userResultsStore.FindByID(user.ID)
+	results, err := server.userResultsStore.GetResults(user.ID)
 	if err != nil {
 		server.serverError(w, err)
 		return
 	}
 
-	log.Printf("id: %s", classID.Hex())
 	log.Printf("before: %v", results.Classes)
 
 	for i, c := range results.Classes {
@@ -561,7 +504,7 @@ func (server *Webserver) crawlerDeleteClassHandler(ctx context.Context, w http.R
 
 	log.Printf("after: %v", results.Classes)
 
-	err = server.userResultsStore.Update(results)
+	err = server.userResultsStore.UpdateResults(results)
 	if err != nil {
 		server.serverError(w, err)
 	}
@@ -572,14 +515,14 @@ func (server *Webserver) authMiddleware(next ws.Handler) ws.Handler {
 	fn := func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		userID, err := server.getSessionUserID(r)
 		if err != nil {
-			server.logger.Error(err)
+			log.Println(err)
 			server.authError(w)
 			return
 		}
 
-		user, err := server.userStore.FindByID(userID)
+		user, err := server.userStore.GetUser(userID)
 		if err != nil {
-			server.logger.Error(err)
+			log.Println(err)
 			server.authError(w)
 			return
 		}
@@ -609,11 +552,11 @@ func (server *Webserver) errorMiddleware(next ws.Handler) ws.Handler {
 
 func (server *Webserver) logMiddleware(next ws.Handler) ws.Handler {
 	fn := func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-		server.logger.Logf("Request start %s", r.URL.String())
+		log.Printf("Request start %s", r.URL.String())
 		start := time.Now()
 		defer func() {
 			elapsed := time.Since(start)
-			server.logger.Logf("Request end %s. Took %.f ms.", r.URL.String(), elapsed.Seconds()*1000)
+			log.Printf("Request end %s. Took %.f ms.", r.URL.String(), elapsed.Seconds()*1000)
 		}()
 		next.ServeHTTP(ctx, w, r)
 	}
@@ -622,24 +565,24 @@ func (server *Webserver) logMiddleware(next ws.Handler) ws.Handler {
 }
 
 // Session helpers
-func (server *Webserver) getSessionUserID(r *http.Request) (bson.ObjectId, error) {
+func (server *Webserver) getSessionUserID(r *http.Request) (string, error) {
 	s, err := server.sessions.Get(r, sessionName)
 	if err != nil {
-		return bson.ObjectId(""), err
+		return "", err
 	}
 
 	if s.Values[sessionUserIDKey] == nil {
-		return bson.ObjectId(""), ErrUnauthorized
+		return "", ErrUnauthorized
 	}
 
-	userID, ok := s.Values[sessionUserIDKey].(bson.ObjectId)
+	userID, ok := s.Values[sessionUserIDKey].(string)
 	if !ok {
-		return bson.ObjectId(""), ErrUnauthorized
+		return "", ErrUnauthorized
 	}
 	return userID, nil
 }
 
-func (server *Webserver) createSession(w http.ResponseWriter, r *http.Request, userID bson.ObjectId) error {
+func (server *Webserver) createSession(w http.ResponseWriter, r *http.Request, userID string) error {
 	session, err := server.sessions.Get(r, sessionName)
 	if err != nil {
 		return err
@@ -661,12 +604,12 @@ func (server *Webserver) endSession(w http.ResponseWriter, r *http.Request) erro
 
 // Error helpers
 func (server *Webserver) authError(w http.ResponseWriter) {
-	server.logger.Log("Unauthorized request attempt")
+	log.Println("Unauthorized request attempt")
 	http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 }
 
 func (server *Webserver) serverError(w http.ResponseWriter, err error) {
-	server.logger.Error(err)
+	log.Println(err)
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
@@ -696,8 +639,8 @@ func sendJSON(w http.ResponseWriter, obj interface{}) error {
 	return err
 }
 
-func getUser(ctx context.Context) *store.User {
-	user, ok := ctx.Value(userKey).(*store.User)
+func getUser(ctx context.Context) *api.User {
+	user, ok := ctx.Value(userKey).(*api.User)
 	if !ok {
 		panic("No user in context. Make sure the handler is authentified")
 	}
@@ -705,11 +648,11 @@ func getUser(ctx context.Context) *store.User {
 }
 
 // Model helpers
-func getClassesModel(classes []store.Class) []*crawlerConfigClassModel {
+func getClassesModel(classes []api.Class) []*crawlerConfigClassModel {
 	result := make([]*crawlerConfigClassModel, len(classes))
 	for i, c := range classes {
 		result[i] = &crawlerConfigClassModel{
-			ID:    c.ID.Hex(),
+			ID:    c.ID,
 			Name:  c.Name,
 			Group: c.Group,
 			Year:  c.Year,

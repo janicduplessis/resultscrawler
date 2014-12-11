@@ -7,32 +7,31 @@ import (
 	"text/template"
 	"time"
 
-	"labix.org/v2/mgo/bson"
-
-	"github.com/janicduplessis/resultscrawler/pkg/crypto"
-	"github.com/janicduplessis/resultscrawler/pkg/logger"
-	"github.com/janicduplessis/resultscrawler/pkg/store"
-	"github.com/janicduplessis/resultscrawler/pkg/utils"
+	"github.com/janicduplessis/resultscrawler/pkg/api"
+	"github.com/janicduplessis/resultscrawler/pkg/store/crawlerconfig"
+	"github.com/janicduplessis/resultscrawler/pkg/store/results"
+	"github.com/janicduplessis/resultscrawler/pkg/store/user"
+	"github.com/janicduplessis/resultscrawler/pkg/tools"
 )
 
 const (
 	// Time between checks to see if a user needs an update in seconds
-	checkIntervalSec time.Duration = 30
+	checkInterval time.Duration = 30 * time.Second
 	// Time between updates for each user in minutes
-	updateIntervalMin time.Duration = 30
+	updateInterval time.Duration = 30 * time.Minute
 )
 
 var msgTemplatePath = "msgtemplate.html"
 var msgTemplate *template.Template
 
 type userInfo struct {
-	ID         bson.ObjectId
+	ID         string
 	LastUpdate time.Time
 }
 
 type crawlerUser struct {
-	ID      bson.ObjectId
-	Classes []store.Class
+	ID      string
+	Classes []api.Class
 	Nip     string
 	Code    string
 	Name    string
@@ -42,23 +41,19 @@ type crawlerUser struct {
 // SchedulerConfig initializes the scheduler.
 type SchedulerConfig struct {
 	Crawlers           []*Crawler
-	UserStore          store.UserStore
-	CrawlerConfigStore store.CrawlerConfigStore
-	UserResultsStore   store.UserResultsStore
-	Crypto             crypto.Crypto
-	Sender             utils.Sender
-	Logger             logger.Logger
+	UserStore          user.Store
+	CrawlerConfigStore crawlerconfig.Store
+	UserResultsStore   results.Store
+	Sender             tools.Sender
 }
 
 // Scheduler handles scheduling crawler runs for every user.
 type Scheduler struct {
 	Crawlers           []*Crawler
-	UserStore          store.UserStore
-	CrawlerConfigStore store.CrawlerConfigStore
-	UserResultsStore   store.UserResultsStore
-	Crypto             crypto.Crypto
-	Sender             utils.Sender
-	Logger             logger.Logger
+	UserStore          user.Store
+	CrawlerConfigStore crawlerconfig.Store
+	UserResultsStore   results.Store
+	Sender             tools.Sender
 
 	usersInfo []*userInfo
 	queueCh   chan *crawlerUser
@@ -79,9 +74,7 @@ func NewScheduler(config *SchedulerConfig) *Scheduler {
 		config.UserStore,
 		config.CrawlerConfigStore,
 		config.UserResultsStore,
-		config.Crypto,
 		config.Sender,
-		config.Logger,
 
 		nil,
 		queueCh,
@@ -91,7 +84,7 @@ func NewScheduler(config *SchedulerConfig) *Scheduler {
 
 // Start starts the scheduler
 func (s *Scheduler) Start() {
-	users, err := s.UserStore.FindAll()
+	users, err := s.UserStore.ListUsers()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -111,45 +104,31 @@ func (s *Scheduler) Start() {
 }
 
 // Queue tells the scheduler do a run for a user
-func (s *Scheduler) Queue(userID bson.ObjectId) {
-	user, err := s.UserStore.FindByID(userID)
+func (s *Scheduler) Queue(userID string) {
+	user, err := s.UserStore.GetUser(userID)
 	if err != nil {
-		s.Logger.Error(err)
+		log.Println(err)
 		return
 	}
 	// Get crawler config.
-	crawlerConfig, err := s.CrawlerConfigStore.FindByID(userID)
+	crawlerConfig, err := s.CrawlerConfigStore.GetCrawlerConfig(userID)
 	if err != nil {
-		s.Logger.Error(err)
+		log.Println(err)
 		return
 	}
-
-	// Decrypt the user code and nip
-	data, err := s.Crypto.AESDecrypt(crawlerConfig.Code)
-	if err != nil {
-		s.Logger.Error(err)
-		return
-	}
-	userCode := string(data)
-	data, err = s.Crypto.AESDecrypt(crawlerConfig.Nip)
-	if err != nil {
-		s.Logger.Error(err)
-		return
-	}
-	userNip := string(data)
 
 	// Get the user current results
-	results, err := s.UserResultsStore.FindByID(userID)
+	results, err := s.UserResultsStore.GetResults(userID)
 	if err != nil {
-		s.Logger.Error(err)
+		log.Println(err)
 		return
 	}
 
 	s.queueCh <- &crawlerUser{
 		ID:      userID,
 		Classes: results.Classes,
-		Code:    userCode,
-		Nip:     userNip,
+		Code:    crawlerConfig.Code,
+		Nip:     crawlerConfig.Nip,
 		Email:   crawlerConfig.NotificationEmail,
 		Name:    fmt.Sprintf("%s %s", user.FirstName, user.LastName),
 	}
@@ -164,13 +143,10 @@ func (s *Scheduler) crawlerLoop(crawler *Crawler) {
 			// Check if results changed
 			newRes := getNewResults(user, results)
 			if len(newRes) > 0 {
-				s.Logger.Logf("Found difference: %+v", newRes)
-				s.Logger.Logf("Old results: %+v", user.Classes)
-				s.Logger.Logf("New results: %+v", results)
 				if len(user.Email) > 0 {
 					err := s.sendEmail(user, newRes)
 					if err != nil {
-						s.Logger.Error(err)
+						log.Println(err)
 					}
 				}
 				// Update results
@@ -180,13 +156,12 @@ func (s *Scheduler) crawlerLoop(crawler *Crawler) {
 						user.Classes[res.ClassIndex].Results = res.Results
 					}
 				}
-				s.Logger.Logf("Classes before update: %+v", user.Classes)
-				err := s.UserResultsStore.Update(&store.UserResults{
+				err := s.UserResultsStore.UpdateResults(&api.Results{
 					UserID:  user.ID,
 					Classes: user.Classes,
 				})
 				if err != nil {
-					s.Logger.Error(err)
+					log.Println(err)
 				}
 			}
 		}
@@ -195,13 +170,13 @@ func (s *Scheduler) crawlerLoop(crawler *Crawler) {
 
 // The scheduler main loop
 func (s *Scheduler) mainLoop() {
-	ticker := time.NewTicker(checkIntervalSec * time.Second)
+	ticker := time.NewTicker(checkInterval)
 	for {
 		select {
 		case <-ticker.C:
 			// Check which users need to update
 			for _, userInfo := range s.usersInfo {
-				if time.Now().Sub(userInfo.LastUpdate) > updateIntervalMin*time.Minute {
+				if time.Now().Sub(userInfo.LastUpdate) > updateInterval {
 					s.Queue(userInfo.ID)
 					userInfo.LastUpdate = time.Now()
 				}
@@ -213,11 +188,11 @@ func (s *Scheduler) mainLoop() {
 	}
 }
 
-func (s *Scheduler) sendEmail(user *crawlerUser, newResults []store.Class) error {
+func (s *Scheduler) sendEmail(user *crawlerUser, newResults []api.Class) error {
 	var msg bytes.Buffer
 	data := struct {
 		User       *crawlerUser
-		NewClasses []store.Class
+		NewClasses []api.Class
 	}{
 		user,
 		newResults,
@@ -230,14 +205,14 @@ func (s *Scheduler) sendEmail(user *crawlerUser, newResults []store.Class) error
 	return s.Sender.Send(user.Email, "You have new results!", string(msg.Bytes()))
 }
 
-func getNewResults(user *crawlerUser, newResults []runResult) []store.Class {
-	var resClasses []store.Class
+func getNewResults(user *crawlerUser, newResults []runResult) []api.Class {
+	var resClasses []api.Class
 	for i, resInfo := range newResults {
 		if resInfo.Err != nil {
 			continue
 		}
 
-		var curResults []store.Result
+		var curResults []api.Result
 		for j, res := range resInfo.Results {
 			if len(user.Classes[i].Results) <= j {
 				// If the is a new result
@@ -254,7 +229,7 @@ func getNewResults(user *crawlerUser, newResults []runResult) []store.Class {
 		}
 		if len(curResults) > 0 {
 			classInfo := user.Classes[i]
-			resClasses = append(resClasses, store.Class{
+			resClasses = append(resClasses, api.Class{
 				Name:    classInfo.Name,
 				Group:   classInfo.Group,
 				Year:    classInfo.Year,
