@@ -8,7 +8,7 @@ import (
 
 	"labix.org/v2/mgo/bson"
 
-	"github.com/janicduplessis/resultscrawler/pkg/store"
+	"github.com/janicduplessis/resultscrawler/pkg/api"
 )
 
 type FakeClient struct {
@@ -88,16 +88,16 @@ func TestCrawlerErrorNotRegistered(t *testing.T) {
 
 func getTestUser() *crawlerUser {
 	return &crawlerUser{
-		ID:    bson.NewObjectId(),
+		ID:    bson.NewObjectId().Hex(),
 		Code:  "aaaaaa",
 		Nip:   "zzzzzzz",
 		Email: "test@test.com",
-		Classes: []store.Class{
-			store.Class{
+		Classes: []api.Class{
+			api.Class{
 				Name:    "Class1",
 				Group:   "20",
 				Year:    "2014",
-				Results: []store.Result{},
+				Results: []api.Result{},
 			},
 		},
 	}
