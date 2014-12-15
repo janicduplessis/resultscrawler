@@ -10,7 +10,7 @@ angular.module('rc.about', ['ngRoute'])
     menu: {
       authentified: true,
       guest: true,
-      order: 5
+      order: 10
     }
   });
 }])

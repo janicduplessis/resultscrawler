@@ -3,13 +3,13 @@
 package webserver
 
 import (
-	"encoding/gob"
 	"encoding/json"
 	"errors"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"runtime/debug"
 	"time"
 
 	"code.google.com/p/go.net/context"
@@ -64,14 +64,18 @@ var ErrUnauthorized = errors.New("Unauthorized access")
 // NewWebserver creates a new webserver object.
 func NewWebserver(config *Config) *Webserver {
 	router := ws.NewRouter()
-	sessions := sessions.NewCookieStore([]byte(config.SessionKey))
+	cs := sessions.NewCookieStore([]byte(config.SessionKey))
+	cs.Options = &sessions.Options{
+		Path:     "/",
+		HttpOnly: true,
+	}
 
 	webserver := &Webserver{
 		config.UserStore,
 		config.CrawlerConfigStore,
 		config.UserResultsStore,
 		router,
-		sessions,
+		cs,
 	}
 
 	// Define middleware groups
@@ -107,43 +111,6 @@ func (server *Webserver) Start(address string) error {
 // Handlers
 func (server *Webserver) homeHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/app", http.StatusMovedPermanently)
-}
-
-func (server *Webserver) appHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	var tmpUser *userModel
-
-	userID, err := server.getSessionUserID(r)
-	if err != ErrUnauthorized {
-		if err != nil {
-			server.serverError(w, err)
-			return
-		}
-
-		user, err := server.userStore.GetUser(userID)
-		if err != nil {
-			server.serverError(w, err)
-			return
-		}
-
-		tmpUser = &userModel{
-			Email:     user.Email,
-			FirstName: user.FirstName,
-			LastName:  user.LastName,
-		}
-	}
-
-	userJSON, err := json.Marshal(tmpUser)
-	if err != nil {
-		return
-	}
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     "user-tmp",
-		Value:    string(userJSON),
-		Expires:  time.Now().Add(1 * time.Minute),
-		HttpOnly: false,
-	})
-	http.ServeFile(w, r, "public/index.html")
 }
 
 func (server *Webserver) loginHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
@@ -301,8 +268,8 @@ func (server *Webserver) registerHandler(ctx context.Context, w http.ResponseWri
 func (server *Webserver) resultsHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	params := ws.Params(ctx)
 	year := params.ByName("year")
-	user := getUser(ctx)
-	results, err := server.userResultsStore.GetResults(user.ID)
+	userID := getUserID(ctx)
+	results, err := server.userResultsStore.GetResults(userID)
 	if err != nil {
 		server.serverError(w, err)
 		return
@@ -337,8 +304,8 @@ func (server *Webserver) resultsHandler(ctx context.Context, w http.ResponseWrit
 }
 
 func (server *Webserver) crawlerGetConfigHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	user := getUser(ctx)
-	config, err := server.crawlerConfigStore.GetCrawlerConfig(user.ID)
+	userID := getUserID(ctx)
+	config, err := server.crawlerConfigStore.GetCrawlerConfig(userID)
 	if err != nil {
 		server.serverError(w, err)
 		return
@@ -366,14 +333,14 @@ func (server *Webserver) crawlerSaveConfigHandler(ctx context.Context, w http.Re
 
 	// TODO: validate config
 
-	user := getUser(ctx)
-	config, err := server.crawlerConfigStore.GetCrawlerConfig(user.ID)
+	userID := getUserID(ctx)
+	config, err := server.crawlerConfigStore.GetCrawlerConfig(userID)
 	if err != nil {
 		server.serverError(w, err)
 		return
 	}
 
-	results, err := server.userResultsStore.GetResults(user.ID)
+	results, err := server.userResultsStore.GetResults(userID)
 	if err != nil {
 		server.serverError(w, err)
 		return
@@ -396,8 +363,8 @@ func (server *Webserver) crawlerSaveConfigHandler(ctx context.Context, w http.Re
 }
 
 func (server *Webserver) crawlerGetClassesHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	user := getUser(ctx)
-	results, err := server.userResultsStore.GetResults(user.ID)
+	userID := getUserID(ctx)
+	results, err := server.userResultsStore.GetResults(userID)
 	if err != nil {
 		server.serverError(w, err)
 		return
@@ -418,12 +385,13 @@ func (server *Webserver) crawlerCreateClassHandler(ctx context.Context, w http.R
 		return
 	}
 
-	user := getUser(ctx)
-	results, err := server.userResultsStore.GetResults(user.ID)
+	userID := getUserID(ctx)
+	results, err := server.userResultsStore.GetResults(userID)
 	if err != nil {
 		server.serverError(w, err)
 		return
 	}
+	log.Printf("%+v", results)
 
 	classID := bson.NewObjectId().Hex()
 
@@ -457,8 +425,8 @@ func (server *Webserver) crawlerEditClassHandler(ctx context.Context, w http.Res
 		return
 	}
 
-	user := getUser(ctx)
-	results, err := server.userResultsStore.GetResults(user.ID)
+	userID := getUserID(ctx)
+	results, err := server.userResultsStore.GetResults(userID)
 	if err != nil {
 		server.serverError(w, err)
 		return
@@ -486,8 +454,8 @@ func (server *Webserver) crawlerDeleteClassHandler(ctx context.Context, w http.R
 	params := ws.Params(ctx)
 	classID := params.ByName("classId")
 
-	user := getUser(ctx)
-	results, err := server.userResultsStore.GetResults(user.ID)
+	userID := getUserID(ctx)
+	results, err := server.userResultsStore.GetResults(userID)
 	if err != nil {
 		server.serverError(w, err)
 		return
@@ -520,14 +488,7 @@ func (server *Webserver) authMiddleware(next ws.Handler) ws.Handler {
 			return
 		}
 
-		user, err := server.userStore.GetUser(userID)
-		if err != nil {
-			log.Println(err)
-			server.authError(w)
-			return
-		}
-
-		ctx = context.WithValue(ctx, userKey, user)
+		ctx = context.WithValue(ctx, userKey, userID)
 
 		next.ServeHTTP(ctx, w, r)
 	}
@@ -539,7 +500,7 @@ func (server *Webserver) errorMiddleware(next ws.Handler) ws.Handler {
 	fn := func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
-				log.Printf("panic: %+v", err)
+				log.Printf("panic: %+v\n%s", err, debug.Stack())
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			}
 		}()
@@ -589,6 +550,7 @@ func (server *Webserver) createSession(w http.ResponseWriter, r *http.Request, u
 	}
 
 	session.Values[sessionUserIDKey] = userID
+
 	return session.Save(r, w)
 }
 
@@ -639,12 +601,12 @@ func sendJSON(w http.ResponseWriter, obj interface{}) error {
 	return err
 }
 
-func getUser(ctx context.Context) *api.User {
-	user, ok := ctx.Value(userKey).(*api.User)
+func getUserID(ctx context.Context) string {
+	userID, ok := ctx.Value(userKey).(string)
 	if !ok {
 		panic("No user in context. Make sure the handler is authentified")
 	}
-	return user
+	return userID
 }
 
 // Model helpers
@@ -659,8 +621,4 @@ func getClassesModel(classes []api.Class) []*crawlerConfigClassModel {
 		}
 	}
 	return result
-}
-
-func init() {
-	gob.Register(bson.ObjectId(""))
 }

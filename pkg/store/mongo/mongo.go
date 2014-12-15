@@ -33,21 +33,21 @@ func (s *Store) GetCrawlerConfig(userID string) (*api.CrawlerConfig, error) {
 	db, conn := s.helper.Client()
 	defer conn.Close()
 
-	crawlerConfig := &api.CrawlerConfig{}
+	user := mongoUser{}
 	err := db.C(userKey).
 		FindId(bson.ObjectIdHex(userID)).
 		Select(bson.M{"crawler_config": 1}).
-		One(crawlerConfig)
+		One(&user)
 	if err != nil {
 		return nil, err
 	}
 
-	err = decryptCrawlerConfig(crawlerConfig)
+	err = decryptCrawlerConfig(user.CrawlerConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	return crawlerConfig, err
+	return user.CrawlerConfig, err
 }
 
 // UpdateCrawlerConfig updates the crawler config with the specified config.
@@ -59,21 +59,19 @@ func (s *Store) UpdateCrawlerConfig(crawlerConfig *api.CrawlerConfig) error {
 
 	db, conn := s.helper.Client()
 	defer conn.Close()
-
-	return db.C(userKey).Update(bson.M{"_id": bson.ObjectIdHex(crawlerConfig.UserID), "$set": "crawler_config"}, crawlerConfig)
+	return db.C(userKey).UpdateId(bson.ObjectIdHex(crawlerConfig.UserID), bson.M{"$set": bson.M{"crawler_config": crawlerConfig}})
 }
 
 // GetResults returns results for a user.
 func (s *Store) GetResults(userID string) (*api.Results, error) {
 	db, conn := s.helper.Client()
 	defer conn.Close()
-
-	userResults := api.Results{}
+	user := mongoUser{}
 	err := db.C(userKey).
 		FindId(bson.ObjectIdHex(userID)).
-		Select(bson.M{"results": 1}).
-		One(&userResults)
-	return &userResults, err
+		Select(bson.M{"results.": 1}).
+		One(&user)
+	return user.Results, err
 }
 
 // UpdateResults updates results for a user.
@@ -81,8 +79,7 @@ func (s *Store) UpdateResults(userResults *api.Results) error {
 	db, conn := s.helper.Client()
 	defer conn.Close()
 
-	err := db.C(userKey).Update(bson.M{"_id": bson.ObjectIdHex(userResults.UserID), "$set": "results"}, userResults)
-	return err
+	return db.C(userKey).UpdateId(bson.ObjectIdHex(userResults.UserID), bson.M{"$set": bson.M{"results": userResults}})
 }
 
 // GetUser returns a user with the specified id.
@@ -90,9 +87,9 @@ func (s *Store) GetUser(id string) (*api.User, error) {
 	db, conn := s.helper.Client()
 	defer conn.Close()
 
-	user := &api.User{}
+	user := &mongoUser{}
 	err := db.C(userKey).FindId(bson.ObjectIdHex(id)).Select(bson.M{"user": 1}).One(&user)
-	return user, err
+	return user.User, err
 }
 
 // GetUserForLogin return a user by email with a password hash.
@@ -118,8 +115,12 @@ func (s *Store) ListUsers() ([]*api.User, error) {
 	db, conn := s.helper.Client()
 	defer conn.Close()
 
-	var users []*api.User
-	err := db.C(userKey).Find(nil).Select(bson.M{"user": 1}).All(&users)
+	mongoUsers := []mongoUser{}
+	err := db.C(userKey).Find(nil).Select(bson.M{"_id": 0, "user": 1}).All(&mongoUsers)
+	users := make([]*api.User, len(mongoUsers))
+	for i, u := range mongoUsers {
+		users[i] = u.User
+	}
 	return users, err
 }
 
@@ -128,7 +129,7 @@ func (s *Store) UpdateUser(user *api.User) error {
 	db, conn := s.helper.Client()
 	defer conn.Close()
 
-	return db.C(userKey).Update(bson.M{"_id": bson.ObjectIdHex(user.ID), "$set": "user"}, user)
+	return db.C(userKey).UpdateId(bson.ObjectIdHex(user.ID), bson.M{"$set": bson.M{"user": user}})
 }
 
 // CreateUser adds a new user.

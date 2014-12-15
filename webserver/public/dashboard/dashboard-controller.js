@@ -4,7 +4,7 @@ angular.module('rc.dashboard', ['ngRoute'])
 
 .config(['$routeProvider', function($routeProvider) {
   $routeProvider.when('/dashboard', {
-    title: 'Settings',
+    title: 'Setup',
     templateUrl: 'dashboard/dashboard.html',
     controller: 'DashboardCtrl',
     menu: {
@@ -15,7 +15,9 @@ angular.module('rc.dashboard', ['ngRoute'])
   });
 }])
 
-.controller('DashboardCtrl', ['$scope', 'Config', 'ConfigClass', function($scope, Config, ConfigClass) {
+.controller('DashboardCtrl', ['$scope', '$mdDialog', 'Config', 'ConfigClass',
+    function($scope, $mdDialog, Config, ConfigClass) {
+
   $scope.config = Config.get();
   $scope.classes = ConfigClass.query();
 
@@ -23,16 +25,21 @@ angular.module('rc.dashboard', ['ngRoute'])
     Config.save(config);
   };
 
-  $scope.openAddClassPopup = function() {
-    $scope.newClass = new ConfigClass();
-    $('#addClassPopup').show();
-  };
+  $scope.openAddClassPopup = function(ev) {
 
-  $scope.addClass = function(newClass) {
-    newClass.$save(function(data){
+    $mdDialog.show({
+      controller: AddClassDialogCtrl,
+      templateUrl: 'dashboard/add-class-dialog.tmpl.html',
+      targetEvent: ev
+    })
+    .then(function(answer) {
+      var newClass = new ConfigClass();
+      newClass.name = answer.name;
+      newClass.group = answer.group;
+      newClass.year = answer.year;
+      newClass.$save();
       $scope.classes.push(newClass);
     });
-    $('#addClassPopup').hide();
   };
 
   $scope.deleteClass = function(delClass) {
@@ -43,3 +50,15 @@ angular.module('rc.dashboard', ['ngRoute'])
     });
   };
 }]);
+
+function AddClassDialogCtrl($scope, $mdDialog) {
+  $scope.hide = function() {
+    $mdDialog.hide();
+  };
+  $scope.cancel = function() {
+    $mdDialog.cancel();
+  };
+  $scope.answer = function(answer) {
+    $mdDialog.hide(answer);
+  };
+}

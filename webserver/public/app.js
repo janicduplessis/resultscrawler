@@ -4,6 +4,7 @@
 angular.module('rc', [
   'ngRoute',
   'ngMaterial',
+  'rc.filters',
   'rc.authservice',
   'rc.configservice',
   'rc.resultsservice',
@@ -18,8 +19,8 @@ config(['$routeProvider', '$locationProvider', function($routeProvider, $locatio
   //$locationProvider.html5Mode(true).hashPrefix('!');
 }])
 
-.controller('ApplicationCtrl', ['$scope', '$route', '$location', '$mdSidenav', 'AuthService',
-      function($scope, $route, $location, $mdSidenav, AuthService) {
+.controller('ApplicationCtrl', ['$rootScope', '$scope', '$route', '$location', '$mdSidenav', 'AuthService',
+      function($rootScope, $scope, $route, $location, $mdSidenav, AuthService) {
   var modules = [],
       route,
       key;
@@ -30,21 +31,30 @@ config(['$routeProvider', '$locationProvider', function($routeProvider, $locatio
       modules.push({
         route: key,
         title: route.title,
-        authentified: route.authentified,
-        guest: route.guest
+        authentified: route.menu.authentified,
+        guest: route.menu.guest,
+        order: route.menu.order,
+        selected: false
       });
     }
   }
 
-  $scope.modules = modules;
-  $scope.currentUser = null;
+  $rootScope.modules = modules;
+  $scope.currentUser = AuthService.isAuthenticated();
 
-  $scope.menuClass = function(item) {
-    $location.path().substring(1);
-  };
 
   $scope.setCurrentUser = function(user) {
     $scope.currentUser = user;
+  };
+
+  $scope.displayMenuItem = function(item) {
+    return $scope.currentUser && item.authentified || !$scope.currentUser && item.guest;
+  };
+
+  $scope.toggleMenuItem = function(item) {
+    // Navigation
+    $location.path(item.route);
+    $mdSidenav('left').toggle();
   };
 
   $scope.toggleMenu = function() {
@@ -60,5 +70,10 @@ config(['$routeProvider', '$locationProvider', function($routeProvider, $locatio
         var controllerName = current.$$route.controller;
         var moduleName = controllerName.toLowerCase().substring(0, controllerName.length - 4);
         $rootScope.moduleClass = 'rc-' + moduleName;
+
+        // Selection
+        for(var i = 0; i < $rootScope.modules.length; i++) {
+          $rootScope.modules[i].selected = $rootScope.modules[i].route === current.$$route.originalPath;
+        }
     });
 }]);

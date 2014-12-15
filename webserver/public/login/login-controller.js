@@ -17,8 +17,8 @@ angular.module('rc.login', ['ngRoute'])
   });
 }])
 
-.controller('LoginCtrl', ['$scope', '$rootScope', 'AUTH_EVENTS', 'AuthService',
-      function($scope, $rootScope, AUTH_EVENTS, AuthService) {
+.controller('LoginCtrl', ['$scope', '$rootScope','$location', 'AUTH_EVENTS', 'AuthService',
+      function($scope, $rootScope, $location, AUTH_EVENTS, AuthService) {
 
   $scope.loginInfo = {
     email: '',
@@ -36,6 +36,7 @@ angular.module('rc.login', ['ngRoute'])
     AuthService.login(loginInfo).then(function(user){
       $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
       $scope.setCurrentUser(user);
+      $location.path('/results');
     }, function() {
       $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
     });
@@ -44,6 +45,8 @@ angular.module('rc.login', ['ngRoute'])
   $scope.register = function(registerInfo) {
     AuthService.register(registerInfo).then(function(user){
       $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
+      $scope.setCurrentUser(user);
+      $location.path('/results');
     }, function() {
       $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
     });

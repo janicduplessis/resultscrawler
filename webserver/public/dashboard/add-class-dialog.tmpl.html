@@ -1,0 +1,14 @@
+<md-dialog md-theme="green">
+  	<md-content>
+	  	<h2>Add a class</h2>
+		<form id="addClassPopup" name="addClassForm" ng-submit="answer(newClass)" novalidate>
+			<md-text-float type="text" label="Name" ng-model="newClass.name"></md-text-float>
+			<md-text-float type="text" label="Group" ng-model="newClass.group"></md-text-float>
+			<md-text-float type="text" label="Session" ng-model="newClass.year"></md-text-float>
+			<div class="buttons" layout="row" layout-align="end center">
+				<md-button ng-click="cancel()">Cancel</md-button>
+				<md-button class="md-primary" type="submit">Ok</md-button>
+			</div>
+		</form>
+	</md-content>
+</md-dialog>

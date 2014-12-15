@@ -6,6 +6,36 @@
 	border: none;
 }
 
+/* Page layout */
+@media (min-width: 600px) {
+  .container {
+    width: 100%;
+  }
+}
+
+@media (min-width: 960px) {
+  .container {
+    width: 80%;
+  }
+}
+
+@media (min-width: 1260px) {
+  .container {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (min-width: 1800px) {
+  .container {
+    width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* cards */
 md-card {
   background-color: #FFF;
 }
@@ -34,6 +64,28 @@ md-toolbar .md-toolbar-tools .md-button.md-green-theme:hover button {
 }
 md-toolbar .md-toolbar-tools .md-button.md-green-theme:focus, md-toolbar .md-toolbar-tools .md-button.md-green-theme button:focus {
   background: #2ea86d;
+}
+
+md-backdrop {
+  z-index: 99;
+}
+
+md-dialog .buttons {
+  margin-top: 20px;
+}
+
+md-dialog {
+  width: 90%;
+}
+
+@media (min-width: 600px) {
+  md-dialog {
+    width: 400px;
+  }
+}
+
+.md-dialog-container {
+  z-index: 100;
 }
 
 /*
@@ -69,6 +121,29 @@ md-toolbar .md-toolbar-tools .md-button.md-green-theme:focus, md-toolbar .md-too
     -ms-flex-pack: center;
     justify-content: center;
   }
+}
+
+/*
+ * Sidebar
+ */
+ul.menu {
+  padding: 0;
+  list-style: none;
+  font-size: 17px;
+}
+
+ul.menu li {
+  padding: 10px 5px 10px 30px;
+  cursor: pointer;
+}
+
+ul.menu li:hover {
+  background-color: #F5F5F5;
+}
+
+ul.menu li.selected {
+  background-color: #EFEFEF;
+  color: #3AA03E;
 }
 
 /*
@@ -118,3 +193,77 @@ md-toolbar .md-toolbar-tools .md-button.md-green-theme:focus, md-toolbar .md-too
     align-items: flex-start;
   }
 }
+
+.rc-dashboard md-switch {
+  width: 58px;
+}
+
+.rc-dashboard .add-class-fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+}
+
+.rc-dashboard .no-classes {
+  text-align: center;
+}
+
+.rc-dashboard .no-classes h3 {
+  margin-bottom: 10px;
+}
+
+.rc-dashboard .no-classes p {
+  margin-top: 0;
+  line-height: 1.3em;
+}
+
+.rc-dashboard md-card {
+  padding: 10px 20px;
+}
+
+.rc-dashboard .classes {
+  margin-bottom: 90px;
+}
+
+.rc-dashboard .classes h3 {
+  margin-bottom: 0;
+  line-height: 1.3em;
+}
+
+.rc-dashboard .classes p {
+  margin-top: 0;
+  line-height: 1.3em;
+  clear: both;
+}
+
+.rc-dashboard .classes md-item-content .controls {
+  visibility: hidden;
+}
+
+.rc-dashboard .classes md-item-content:hover .controls {
+  visibility: visible;
+}
+
+.rc-dashboard .config .info {
+  margin-left: 10px;
+  margin-top: 14px;
+  width: 36px;
+  height: 36px;
+}
+
+.rc-dashboard .config .info md-icon {
+  margin-top: 0px;
+}
+
+.rc-dashboard .config .setting {
+  height: 50px;
+}
+
+.rc-dashboard .config .setting.no-info {
+  margin-right: 44px;
+}
+
+.rc-dashboard .config .buttons {
+  margin-top: 20px;
+}
+

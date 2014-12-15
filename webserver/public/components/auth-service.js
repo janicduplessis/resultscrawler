@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('rc.authservice', [])
+angular.module('rc.authservice', ['ngCookies'])
 
 .factory('AuthService', ['$http', 'Session', function($http, Session) {
   var authService = {};
@@ -9,7 +9,7 @@ angular.module('rc.authservice', [])
     return $http
       .post('/api/v1/auth/login', loginInfo)
       .then(function(res) {
-        Session.create(res.data.user);
+        Session.create();
         return res.data.user;
       });
   };
@@ -18,27 +18,30 @@ angular.module('rc.authservice', [])
     return $http
       .post('/api/v1/auth/register', registerInfo)
       .then(function(res) {
-        Session.create(res.data.user);
+        Session.create();
         return res.data.user;
       });
   };
 
   authService.isAuthenticated = function() {
-    return !!Session.user;
+    return Session.authenticated;
   };
 
   return authService;
 }])
 
-.service('Session', function() {
-  this.create = function(user) {
-    this.user = user;
+.service('Session', ['$cookies', function($cookies) {
+  this.authenticated = $cookies.authenticated === 'true';
+  this.create = function() {
+    this.authenticated = true;
+    $cookies.authenticated = 'true';
   };
   this.destroy = function() {
-    this.user = null;
+    this.authenticated = false;
+    delete $cookies.authenticated;
   };
   return this;
-})
+}])
 
 .constant('AUTH_EVENTS', {
   loginSuccess: 'auth-login-success',

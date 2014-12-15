@@ -1,18 +1,20 @@
-<p>Results</p>
+<div class="container">
+  <h2>{{results.year | session}}</h2>
 
-<h2>{{results.year}}</h2>
-
-<div ng-repeat="c in results.classes">
-  <h3>{{c.name}} - {{c.group}}</h3>
-  <div ng-repeat="res in c.results">
-    <div>
-      Name: {{res.name}}
-    </div>
-    <div>
-      Result: {{res.result}}
-    </div>
-    <div>
-      Average: {{res.average}}
-    </div>
+  <div ng-repeat="c in results.classes">
+    <md-card class="results-class">
+      <h3>{{c.name}} - {{c.group}}</h3>
+      <div ng-repeat="res in c.results">
+        <div class="name">
+          Name: {{res.name}}
+        </div>
+        <div class="result">
+          Result: {{res.result}}
+        </div>
+        <div class="average">
+          Average: {{res.average}}
+        </div>
+      </div>
+    </md-card>
   </div>
 </div>

@@ -17,7 +17,7 @@
   <script src="bower_components/html5-boilerplate/js/vendor/modernizr-2.6.2.min.js"></script>
 </head>
 <body ng-controller="ApplicationCtrl" layout="row" md-theme="green">
-  <md-sidenav class="md-sidenav-left md-whiteframe-z2" layout="column" md-component-id="left" md-is-locked-open="$media('sm')">
+  <md-sidenav class="md-sidenav-left md-whiteframe-z2" layout="column" md-component-id="left" md-is-locked-open="!$media('sm')">
     <md-toolbar>
       <div class="md-toolbar-tools">
         <a href="#/home" ng-click="toggleMenu()">Results</a>
@@ -25,11 +25,7 @@
     </md-toolbar>
 
     <ul class="menu">
-      <li ng-if="!currentUser"><a href="#/login" ng-click="toggleMenu()">Sign in</a></li>
-      <li ng-if="currentUser"><a href="#/results" ng-click="toggleMenu()">Results</a></li>
-      <li ng-if="currentUser"><a href="#/dashboard" ng-click="toggleMenu()">Setup</a></li>
-      <li><a href="#/about" ng-click="toggleMenu()">About</a></li>
-      <li ng-if="currentUser"><a href="#/logout" ng-click="toggleMenu()">Logout</a></li>
+      <li ng-repeat="m in modules | orderBy: 'order'" ng-if="displayMenuItem(m)" ng-click="toggleMenuItem(m)" ng-class="{selected: m.selected}">{{m.title}}</li>
     </ul>
   </md-sidenav>
 
@@ -47,6 +43,7 @@
   </div>
   <script src="bower_components/angular/angular.js"></script>
   <script src="bower_components/angular-route/angular-route.js"></script>
+  <script src="bower_components/angular-cookies/angular-cookies.js"></script>
   <script src="bower_components/angular-resource/angular-resource.js"></script>
   <script src="bower_components/angular-aria/angular-aria.js"></script>
   <script src="bower_components/angular-animate/angular-animate.js"></script>
@@ -54,6 +51,7 @@
   <script src="bower_components/angular-material/angular-material.js"></script>
   <script src="bower_components/jquery/dist/jquery.js"></script>
   <script src="app.js"></script>
+  <script src="components/filters.js"></script>
   <script src="components/auth-service.js"></script>
   <script src="components/config-service.js"></script>
   <script src="components/results-service.js"></script>
