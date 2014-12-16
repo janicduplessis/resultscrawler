@@ -6,6 +6,16 @@
 	border: none;
 }
 
+.row {
+  width: 100%;
+}
+
+.row > div {
+  width: 100%;
+  float: left;
+  margin: 0;
+}
+
 /* Page layout */
 @media (min-width: 600px) {
   .container {
@@ -16,6 +26,10 @@
 @media (min-width: 960px) {
   .container {
     width: 80%;
+  }
+
+  .row > .md-6 {
+    width: 50%;
   }
 }
 
@@ -38,6 +52,11 @@
 /* cards */
 md-card {
   background-color: #FFF;
+  padding: 0;
+}
+
+md-card md-content {
+  padding: 20px;
 }
 
 md-card > md-toolbar {
@@ -194,6 +213,9 @@ ul.menu li.selected {
   }
 }
 
+
+/* Dashboard module */
+
 .rc-dashboard md-switch {
   width: 58px;
 }
@@ -267,3 +289,15 @@ ul.menu li.selected {
   margin-top: 20px;
 }
 
+
+/* Results module */
+
+.rc-results .result md-item-content {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.rc-results .results-class h3 {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}

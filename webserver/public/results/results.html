@@ -1,20 +1,37 @@
-<div class="container">
+<div class="container" layout="column">
   <h2>{{results.year | session}}</h2>
 
-  <div ng-repeat="c in results.classes">
-    <md-card class="results-class">
-      <h3>{{c.name}} - {{c.group}}</h3>
-      <div ng-repeat="res in c.results">
-        <div class="name">
-          Name: {{res.name}}
-        </div>
-        <div class="result">
-          Result: {{res.result}}
-        </div>
-        <div class="average">
-          Average: {{res.average}}
-        </div>
-      </div>
-    </md-card>
+  <div class="classes row" flex>
+    <div class="md-6" ng-repeat="c in results.classes">
+      <md-card class="results-class">
+        <md-content class="md-padding">
+          <h3>{{c.name}} - {{c.group}}</h3>
+          <md-list>
+            <md-item class="header">
+              <md-item-content>
+                <h4 flex>Name</h4>
+                <h4 flex>Result</h4>
+                <h4 flex>Average</h4>
+              </md-item-content>
+              <md-divider></md-divider>
+            </md-item>
+            <md-item ng-repeat="res in c.results" class="result">
+              <md-item-content>
+                <div class="name" flex>
+                  {{res.name}}
+                </div>
+                <div class="result" flex>
+                  {{res.result}}
+                </div>
+                <div class="average" flex>
+                  {{res.average}}
+                </div>
+              </md-item-content>
+              <md-divider ng-if="!$last"></md-divider>
+            </md-item>
+          </md-list>
+        </md-content>
+      </md-card>
+    </div>
   </div>
 </div>

@@ -13,7 +13,13 @@ angular.module('rc.login', ['ngRoute'])
       order: 1
     }
   }).when('/logout', {
-    controller: 'LogoutCtrl'
+    title: 'Log out',
+    controller: 'LogoutCtrl',
+    menu: {
+      authentified: true,
+      guest: false,
+      order: 30
+    }
   });
 }])
 
