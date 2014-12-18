@@ -1,9 +1,9 @@
 FROM google/golang
 
-# Install Python.
+# Install wget
 RUN \
   apt-get update && \
-  apt-get install -y python python-dev python-pip python-virtualenv && \
+  apt-get install -y wget && \
   rm -rf /var/lib/apt/lists/*
 
 # Install Node.js and npm
