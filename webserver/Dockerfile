@@ -23,7 +23,7 @@ RUN \
 
 RUN go get github.com/janicduplessis/resultscrawler/webserver
 WORKDIR /gopath/src/github.com/janicduplessis/resultscrawler/webserver
-RUN npm install bower
+RUN npm install -g bower
 RUN bower install
 
 CMD []
