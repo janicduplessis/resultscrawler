@@ -25,7 +25,8 @@ RUN go get github.com/janicduplessis/resultscrawler/webserver
 WORKDIR /gopath/src/github.com/janicduplessis/resultscrawler/webserver
 RUN \
   cd /gopath/src/github.com/janicduplessis/resultscrawler/webserver && \
-  npm install
+  npm install -g bower && \
+  bower --allow-root --config.interactive=false install
 
 CMD []
 ENTRYPOINT ["/gopath/bin/webserver"]
