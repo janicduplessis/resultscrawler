@@ -24,11 +24,6 @@ const (
 var msgTemplatePath = "msgtemplate.html"
 var msgTemplate *template.Template
 
-type userInfo struct {
-	ID         string
-	LastUpdate time.Time
-}
-
 type crawlerUser struct {
 	ID      string
 	Classes []api.Class
@@ -55,9 +50,8 @@ type Scheduler struct {
 	UserResultsStore   results.Store
 	Sender             tools.Sender
 
-	usersInfo []*userInfo
-	queueCh   chan *crawlerUser
-	doneCh    chan bool
+	queueCh chan *crawlerUser
+	doneCh  chan bool
 }
 
 // NewScheduler creates a new scuduler object.
@@ -76,7 +70,6 @@ func NewScheduler(config *SchedulerConfig) *Scheduler {
 		config.UserResultsStore,
 		config.Sender,
 
-		nil,
 		queueCh,
 		doneCh,
 	}
@@ -84,18 +77,6 @@ func NewScheduler(config *SchedulerConfig) *Scheduler {
 
 // Start starts the scheduler
 func (s *Scheduler) Start() {
-	users, err := s.UserStore.ListUsers()
-	if err != nil {
-		log.Fatal(err)
-	}
-	s.usersInfo = make([]*userInfo, len(users))
-	for i, user := range users {
-		s.usersInfo[i] = &userInfo{
-			ID:         user.ID,
-			LastUpdate: time.Now(),
-		}
-	}
-
 	for _, crawler := range s.Crawlers {
 		go s.crawlerLoop(crawler)
 	}
@@ -104,28 +85,28 @@ func (s *Scheduler) Start() {
 }
 
 // Queue tells the scheduler do a run for a user
-func (s *Scheduler) Queue(userID string) {
-	user, err := s.UserStore.GetUser(userID)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	// Get crawler config.
-	crawlerConfig, err := s.CrawlerConfigStore.GetCrawlerConfig(userID)
+func (s *Scheduler) Queue(user *api.User) {
+	// Get the user current results
+	results, err := s.UserResultsStore.GetResults(user.ID)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	// Get the user current results
-	results, err := s.UserResultsStore.GetResults(userID)
+	// Check la update time.
+	if time.Now().Sub(results.LastUpdate) < updateInterval {
+		return
+	}
+
+	// Get crawler config.
+	crawlerConfig, err := s.CrawlerConfigStore.GetCrawlerConfig(user.ID)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
 	s.queueCh <- &crawlerUser{
-		ID:      userID,
+		ID:      user.ID,
 		Classes: results.Classes,
 		Code:    crawlerConfig.Code,
 		Nip:     crawlerConfig.Nip,
@@ -143,6 +124,7 @@ func (s *Scheduler) crawlerLoop(crawler *Crawler) {
 			// Check if results changed
 			newRes := getNewResults(user, results)
 			if len(newRes) > 0 {
+				log.Printf("New results for user %s", user.Email)
 				if len(user.Email) > 0 {
 					err := s.sendEmail(user, newRes)
 					if err != nil {
@@ -156,13 +138,15 @@ func (s *Scheduler) crawlerLoop(crawler *Crawler) {
 						user.Classes[res.ClassIndex].Results = res.Results
 					}
 				}
-				err := s.UserResultsStore.UpdateResults(&api.Results{
-					UserID:  user.ID,
-					Classes: user.Classes,
-				})
-				if err != nil {
-					log.Println(err)
-				}
+			}
+
+			err := s.UserResultsStore.UpdateResults(&api.Results{
+				UserID:     user.ID,
+				Classes:    user.Classes,
+				LastUpdate: time.Now(),
+			})
+			if err != nil {
+				log.Println(err)
 			}
 		}
 	}
@@ -174,12 +158,15 @@ func (s *Scheduler) mainLoop() {
 	for {
 		select {
 		case <-ticker.C:
+			users, err := s.UserStore.ListUsers()
+			if err != nil {
+				log.Println(err)
+				break
+			}
+
 			// Check which users need to update
-			for _, userInfo := range s.usersInfo {
-				if time.Now().Sub(userInfo.LastUpdate) > updateInterval {
-					s.Queue(userInfo.ID)
-					userInfo.LastUpdate = time.Now()
-				}
+			for _, user := range users {
+				s.Queue(user)
 			}
 		case <-s.doneCh:
 			// Stop the program

@@ -1,5 +1,7 @@
 package api
 
+import "time"
+
 type (
 	// CrawlerConfig contains info about the crawler configuration.
 	CrawlerConfig struct {
@@ -20,8 +22,9 @@ type (
 
 	// Results contains all results for a user organized by class.
 	Results struct {
-		UserID  string  `json:"userId"`
-		Classes []Class `json:"classes"`
+		UserID     string    `json:"userId"`
+		LastUpdate time.Time `json:"lastUpdate"`
+		Classes    []Class   `json:"classes"`
 	}
 
 	// Class is an entity for a class.
