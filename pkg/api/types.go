@@ -29,17 +29,26 @@ type (
 
 	// Class is an entity for a class.
 	Class struct {
-		ID      string   `json:"id"`
-		Name    string   `json:"name"`
-		Group   string   `json:"group"`
-		Year    string   `json:"year"`
-		Results []Result `json:"results"`
+		ID      string     `json:"id"`
+		Name    string     `json:"name"`
+		Group   string     `json:"group"`
+		Year    string     `json:"year"`
+		Results []Result   `json:"results"`
+		Total   ResultInfo `json:"total"`
+		Final   string     `json:"final"`
 	}
 
 	// Result is an entity for storing a result
 	Result struct {
-		Name    string `json:"name"`
-		Result  string `json:"result"`
-		Average string `json:"average"`
+		Name     string     `json:"name"`
+		Normal   ResultInfo `json:"normal"`
+		Weighted ResultInfo `json:"weighted"`
+	}
+
+	// ResultInfo contains normal or weighted grades.
+	ResultInfo struct {
+		Result      string `json:"result"`
+		Average     string `json:"average"`
+		StandardDev string `json:"standardDev"`
 	}
 )

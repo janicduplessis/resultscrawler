@@ -1,5 +1,7 @@
 package webserver
 
+import "github.com/janicduplessis/resultscrawler/pkg/api"
+
 type (
 	// requests
 	loginRequest struct {
@@ -26,8 +28,8 @@ type (
 	}
 
 	resultsResponse struct {
-		Year    string              `json:"year"`
-		Classes []*resultClassModel `json:"classes"`
+		Year    string      `json:"year"`
+		Classes []api.Class `json:"classes"`
 	}
 
 	// models
@@ -42,24 +44,5 @@ type (
 		Name  string `json:"name"`
 		Year  string `json:"year"`
 		Group string `json:"group"`
-	}
-
-	crawlerConfigModel struct {
-		Status            bool   `json:"status"`
-		Code              string `json:"code"`
-		Nip               string `json:"nip"`
-		NotificationEmail string `json:"notificationEmail"`
-	}
-
-	resultClassModel struct {
-		Name    string         `json:"name"`
-		Group   string         `json:"group"`
-		Results []*resultModel `json:"results"`
-	}
-
-	resultModel struct {
-		Name    string `json:"name"`
-		Result  string `json:"result"`
-		Average string `json:"average"`
 	}
 )

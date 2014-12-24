@@ -281,19 +281,7 @@ func (server *Webserver) resultsHandler(ctx context.Context, w http.ResponseWrit
 
 	for _, c := range results.Classes {
 		if c.Year == year {
-			newClass := &resultClassModel{
-				Name:    c.Name,
-				Group:   c.Group,
-				Results: make([]*resultModel, len(c.Results)),
-			}
-			for i, result := range c.Results {
-				newClass.Results[i] = &resultModel{
-					Name:    result.Name,
-					Result:  result.Result,
-					Average: result.Average,
-				}
-			}
-			response.Classes = append(response.Classes, newClass)
+			response.Classes = append(response.Classes, c)
 		}
 	}
 
@@ -311,20 +299,14 @@ func (server *Webserver) crawlerGetConfigHandler(ctx context.Context, w http.Res
 		return
 	}
 
-	response := &crawlerConfigModel{
-		Status:            config.Status,
-		Code:              config.Code,
-		Nip:               config.Nip,
-		NotificationEmail: config.NotificationEmail,
-	}
-	err = sendJSON(w, response)
+	err = sendJSON(w, config)
 	if err != nil {
 		server.serverError(w, err)
 	}
 }
 
 func (server *Webserver) crawlerSaveConfigHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	request := &crawlerConfigModel{}
+	request := &api.CrawlerConfig{}
 	err := readJSON(r, request)
 	if err != nil {
 		server.serverError(w, err)

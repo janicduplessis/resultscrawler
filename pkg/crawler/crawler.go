@@ -58,7 +58,7 @@ type (
 
 	runResult struct {
 		ClassIndex int
-		Results    []api.Result
+		Class      *api.Class
 		Err        error
 	}
 )
@@ -139,12 +139,12 @@ func (c *Crawler) runClass(user *crawlerUser, classIndex int, doneCh chan runRes
 	}
 	doneCh <- runResult{
 		ClassIndex: classIndex,
-		Results:    results,
+		Class:      results,
 	}
 }
 
-func parseResponse(resp io.Reader) ([]api.Result, error) {
-	var results []api.Result
+func parseResponse(resp io.Reader) (*api.Class, error) {
+	var results *api.Class
 	doc, err := html.Parse(resp)
 	if err != nil {
 		return nil, err
@@ -172,12 +172,10 @@ func parseResponse(resp io.Reader) ([]api.Result, error) {
 			// Looking for the results table, it has a 'name' attribute
 			// with the value 'form'
 			if n.Type == html.ElementNode && n.Data == "table" {
-				for _, attr := range n.Attr {
-					if attr.Key == "name" && attr.Val == "form" {
-						log.Println("Found results table")
-						results = parseResultsTable(n)
-						done = true
-					}
+				if getAttribute(n, "name") == "form" {
+					log.Println("Found results table")
+					results = parseResultsTable(n)
+					done = true
 				}
 			}
 		} else {
@@ -210,37 +208,108 @@ func parseResponse(resp io.Reader) ([]api.Result, error) {
 	return results, err
 }
 
-func parseResultsTable(node *html.Node) []api.Result {
+func parseResultsTable(node *html.Node) *api.Class {
 	// Get all rows from the table
-	var rows []*html.Node
+	var resRows []*html.Node
+	var otherRows []*html.Node
 	tBody := node.FirstChild.NextSibling
 	for c := tBody.FirstChild; c != nil; c = c.NextSibling {
 		if c.Type == html.ElementNode && c.Data == "tr" {
-			rows = append(rows, c)
+			// Result rows have no bgcolor attribute, other rows have.
+			if hasAttribute(c, "bgcolor") {
+				otherRows = append(otherRows, c)
+			} else {
+				resRows = append(resRows, c)
+			}
 		}
 	}
-	// Remove title rows: first, 2nd and last
-	rows = rows[2 : len(rows)-1]
-	log.Println(fmt.Sprintf("Found %v results", len(rows)))
 
-	// Parse rows
-	results := make([]api.Result, len(rows))
-	for i, row := range rows {
-		results[i] = parseResultRow(row)
+	class := &api.Class{}
+	// Parse other rows
+	// First 2 rows are titles then 3rd row is totals and if there
+	// is a 4th row it is final grade.
+
+	// Total
+	totalRow := parseRow(otherRows[2])
+	class.Total = api.ResultInfo{
+		Result:      totalRow[1],
+		Average:     totalRow[2],
+		StandardDev: totalRow[3],
 	}
-	return results
+
+	// Final grade if available
+	if len(otherRows) > 3 {
+		finalRow := parseRow(otherRows[3])
+		class.Final = finalRow[1]
+	}
+
+	log.Println(fmt.Sprintf("Found %v results", len(resRows)))
+
+	// Parse result rows
+	for _, row := range resRows {
+		res, err := parseResultRow(row)
+		if err == nil {
+			class.Results = append(class.Results, res)
+		}
+	}
+	return class
 }
 
-func parseResultRow(node *html.Node) api.Result {
-	var cols []*html.Node
+func parseResultRow(node *html.Node) (api.Result, error) {
+	cols := parseRow(node)
+	if len(cols) < 7 {
+		return api.Result{}, errors.New("Invalid row")
+	}
+
+	return api.Result{
+		Name: cols[0],
+		Normal: api.ResultInfo{
+			Result:      cols[1],
+			Average:     cols[2],
+			StandardDev: cols[3],
+		},
+		Weighted: api.ResultInfo{
+			Result:      cols[4],
+			Average:     cols[5],
+			StandardDev: cols[6],
+		},
+	}, nil
+}
+
+func parseRow(node *html.Node) (cols []string) {
+	// Get all data from text nodes inside the specified node.
+	var f func(*html.Node) string
+	f = func(n *html.Node) string {
+		str := ""
+		if n.Type == html.TextNode {
+			str += n.Data
+		}
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			str += f(c)
+		}
+		return str
+	}
+
 	for c := node.FirstChild; c != nil; c = c.NextSibling {
 		if c.Type == html.ElementNode && c.Data == "td" {
-			cols = append(cols, c)
+
+			cols = append(cols, strings.TrimSpace(f(c)))
 		}
 	}
-	return api.Result{
-		Name:    strings.TrimSpace(cols[0].FirstChild.Data),
-		Result:  strings.TrimSpace(cols[1].FirstChild.Data),
-		Average: strings.TrimSpace(cols[2].FirstChild.Data),
+
+	return cols
+}
+
+func getAttribute(node *html.Node, attribute string) string {
+	for _, attr := range node.Attr {
+		if attr.Key == attribute {
+			return attr.Val
+		}
 	}
+
+	return ""
+}
+
+func hasAttribute(node *html.Node, attribute string) bool {
+	return len(getAttribute(node, attribute)) > 0
 }

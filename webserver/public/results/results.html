@@ -21,13 +21,39 @@
                   {{res.name}}
                 </div>
                 <div class="result" flex>
-                  {{res.result}}
+                  {{res.normal.result}}
                 </div>
                 <div class="average" flex>
-                  {{res.average}}
+                  {{res.normal.average}}
                 </div>
               </md-item-content>
-              <md-divider ng-if="!$last"></md-divider>
+              <md-divider></md-divider>
+            </md-item>
+            <md-item class="result total">
+              <md-item-content>
+                <div class="name" flex>
+                  Total
+                </div>
+                <div class="result" flex>
+                  {{c.total.result}}
+                </div>
+                <div class="average" flex>
+                  {{c.total.average}}
+                </div>
+              </md-item-content>
+              <md-divider ng-if="c.final"></md-divider>
+            </md-item>
+            <md-item class="result final" ng-if="c.final">
+              <md-item-content>
+                <div class="name" flex>
+                  Final grade
+                </div>
+                <div class="result" flex>
+                  {{c.final}}
+                </div>
+                <div class="average" flex>
+                </div>
+              </md-item-content>
             </md-item>
           </md-list>
         </md-content>

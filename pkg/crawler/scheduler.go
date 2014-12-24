@@ -18,7 +18,7 @@ const (
 	// Time between checks to see if a user needs an update in seconds
 	checkInterval time.Duration = 30 * time.Second
 	// Time between updates for each user in minutes
-	updateInterval time.Duration = 30 * time.Minute
+	updateInterval time.Duration = 1 * time.Minute
 )
 
 var msgTemplatePath = "msgtemplate.html"
@@ -135,7 +135,9 @@ func (s *Scheduler) crawlerLoop(crawler *Crawler) {
 				for _, res := range results {
 					// Ignore results with errors
 					if res.Err == nil {
-						user.Classes[res.ClassIndex].Results = res.Results
+						user.Classes[res.ClassIndex].Results = res.Class.Results
+						user.Classes[res.ClassIndex].Total = res.Class.Total
+						user.Classes[res.ClassIndex].Final = res.Class.Final
 					}
 				}
 			}
@@ -199,8 +201,14 @@ func getNewResults(user *crawlerUser, newResults []runResult) []api.Class {
 			continue
 		}
 
+		var classChanged bool
 		var curResults []api.Result
-		for j, res := range resInfo.Results {
+		for j, res := range resInfo.Class.Results {
+			if user.Classes[i].Final != resInfo.Class.Final ||
+				user.Classes[i].Total.Result != resInfo.Class.Total.Result ||
+				user.Classes[i].Total.Average != resInfo.Class.Total.Average {
+				classChanged = true
+			}
 			if len(user.Classes[i].Results) <= j {
 				// If the is a new result
 				curResults = append(curResults, res)
@@ -208,19 +216,21 @@ func getNewResults(user *crawlerUser, newResults []runResult) []api.Class {
 				// Check if a result changed
 				oldRes := user.Classes[i].Results[j]
 				if oldRes.Name != res.Name ||
-					oldRes.Average != res.Average ||
-					oldRes.Result != res.Result {
+					oldRes.Normal.Average != res.Normal.Average ||
+					oldRes.Normal.Result != res.Normal.Result {
 					curResults = append(curResults, res)
 				}
 			}
 		}
-		if len(curResults) > 0 {
+		if len(curResults) > 0 || classChanged {
 			classInfo := user.Classes[i]
 			resClasses = append(resClasses, api.Class{
 				Name:    classInfo.Name,
 				Group:   classInfo.Group,
 				Year:    classInfo.Year,
 				Results: curResults,
+				Final:   resInfo.Class.Final,
+				Total:   resInfo.Class.Total,
 			})
 		}
 	}
