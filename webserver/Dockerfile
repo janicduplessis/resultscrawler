@@ -22,13 +22,13 @@ RUN \
   echo -e '\n# Node.js\nexport PATH="node_modules/.bin:$PATH"' >> /root/.bashrc
 
 RUN go get github.com/janicduplessis/resultscrawler/webserver
-WORKDIR /usr/src/github.com/janicduplessis/resultscrawler/webserver
+WORKDIR $GOPATH/src/github.com/janicduplessis/resultscrawler/webserver
 RUN \
-  cd /usr/src/github.com/janicduplessis/resultscrawler/webserver && \
+  cd $GOPATH/src/github.com/janicduplessis/resultscrawler/webserver && \
   npm install -g bower && \
   bower --allow-root --config.interactive=false install
 
 CMD []
-ENTRYPOINT ["/usr/bin/webserver"]
+ENTRYPOINT ["$GOPATH/bin/webserver"]
 
 EXPOSE 8080
