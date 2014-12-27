@@ -1,4 +1,4 @@
-FROM google/golang
+FROM golang:1.4
 
 # Install wget
 RUN \
@@ -22,13 +22,13 @@ RUN \
   echo -e '\n# Node.js\nexport PATH="node_modules/.bin:$PATH"' >> /root/.bashrc
 
 RUN go get github.com/janicduplessis/resultscrawler/webserver
-WORKDIR /gopath/src/github.com/janicduplessis/resultscrawler/webserver
+WORKDIR /usr/src/github.com/janicduplessis/resultscrawler/webserver
 RUN \
-  cd /gopath/src/github.com/janicduplessis/resultscrawler/webserver && \
+  cd /usr/src/github.com/janicduplessis/resultscrawler/webserver && \
   npm install -g bower && \
   bower --allow-root --config.interactive=false install
 
 CMD []
-ENTRYPOINT ["/gopath/bin/webserver"]
+ENTRYPOINT ["/usr/bin/webserver"]
 
 EXPOSE 8080
