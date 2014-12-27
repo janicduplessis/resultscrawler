@@ -1,7 +1,7 @@
-FROM google/golang
+FROM golang:1.4
 
 RUN go get github.com/janicduplessis/resultscrawler/crawler
-WORKDIR /gopath/src/github.com/janicduplessis/resultscrawler/crawler
+WORKDIR /usr/src/github.com/janicduplessis/resultscrawler/crawler
 
 CMD []
-ENTRYPOINT ["/gopath/bin/crawler"]
+ENTRYPOINT ["/usr/bin/crawler"]

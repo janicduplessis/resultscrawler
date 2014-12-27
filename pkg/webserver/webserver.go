@@ -322,23 +322,12 @@ func (server *Webserver) crawlerSaveConfigHandler(ctx context.Context, w http.Re
 		return
 	}
 
-	results, err := server.userResultsStore.GetResults(userID)
-	if err != nil {
-		server.serverError(w, err)
-		return
-	}
-
 	config.Code = request.Code
 	config.Nip = request.Nip
 	config.NotificationEmail = request.NotificationEmail
 	config.Status = request.Status
 
 	err = server.crawlerConfigStore.UpdateCrawlerConfig(config)
-	if err != nil {
-		server.serverError(w, err)
-	}
-
-	err = server.userResultsStore.UpdateResults(results)
 	if err != nil {
 		server.serverError(w, err)
 	}
