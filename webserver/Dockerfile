@@ -1,4 +1,4 @@
-FROM golang:1.4
+FROM golang:1.4-wheezy
 
 # Install wget
 RUN \
