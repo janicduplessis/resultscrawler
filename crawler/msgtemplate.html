@@ -18,6 +18,17 @@
           <td style="padding:5px 10px;border:1px solid #333;">{{.Normal.Average}}</td>
         </tr>
       {{end}}
+        <tr>
+          <td style="padding:5px 10px;border:1px solid #333;">Total</td>
+          <td style="padding:5px 10px;border:1px solid #333;">{{.Total.Result}}</td>
+          <td style="padding:5px 10px;border:1px solid #333;">{{.Total.Average}}</td>
+        </tr>
+        {{if gt (len .Final) 0}}
+          <tr>
+            <td style="padding:5px 10px;border:1px solid #333;">Final</td>
+            <td colspan="2" style="padding:5px 10px;border:1px solid #333;">{{.Final}}</td>
+          </tr>
+        {{end}}
     </table>
   {{end}}
 {{end}}

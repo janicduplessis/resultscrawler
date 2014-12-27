@@ -86,8 +86,8 @@ func TestCrawlerErrorNotRegistered(t *testing.T) {
 	}
 }
 
-func getTestUser() *crawlerUser {
-	return &crawlerUser{
+func getTestUser() *User {
+	return &User{
 		ID:    bson.NewObjectId().Hex(),
 		Code:  "aaaaaa",
 		Nip:   "zzzzzzz",

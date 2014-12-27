@@ -15,7 +15,8 @@ import (
 )
 
 const (
-	configFile = "crawler.config.json"
+	configFile  = "crawler.config.json"
+	numCrawlers = 10
 )
 
 type config struct {
@@ -44,9 +45,11 @@ func main() {
 	userInfoStore := mongo.New(mongoHelper)
 	userResultsStore := mongo.New(mongoHelper)
 
-	crawlers := []*crawler.Crawler{
-		crawler.NewCrawler(httpClient),
+	var crawlers []crawler.ResultGetter
+	for i := 0; i < numCrawlers; i++ {
+		crawlers = append(crawlers, crawler.NewCrawler(httpClient))
 	}
+
 	scheduler := crawler.NewScheduler(&crawler.SchedulerConfig{
 		crawlers,
 		userStore,

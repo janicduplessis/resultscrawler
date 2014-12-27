@@ -45,23 +45,15 @@ var (
 	ErrNotRegistered = errors.New("Not listed for this class")
 )
 
-type (
-	// Client interface for sending a request.
-	Client interface {
-		Do(*http.Request) (*http.Response, error)
-	}
+// Client interface for sending a request.
+type Client interface {
+	Do(*http.Request) (*http.Response, error)
+}
 
-	// Crawler for getting all grades of a user on resultats uqam
-	Crawler struct {
-		Client Client
-	}
-
-	runResult struct {
-		ClassIndex int
-		Class      *api.Class
-		Err        error
-	}
-)
+// Crawler for getting all grades of a user on Resultats UQAM website.
+type Crawler struct {
+	Client Client
+}
 
 // NewCrawler creates a new crawler object
 func NewCrawler(client Client) *Crawler {
@@ -71,19 +63,19 @@ func NewCrawler(client Client) *Crawler {
 }
 
 // Run returns the results of all classes for the user
-func (c *Crawler) Run(user *crawlerUser) []runResult {
+func (c *Crawler) Run(user *User) []RunResult {
 	log.Println(fmt.Sprintf("Start looking for results for user %s. User has %v classes.",
 		user.Email, len(user.Classes)))
 
 	// Request results
-	doneCh := make(chan runResult)
+	doneCh := make(chan RunResult)
 	for i := range user.Classes {
 		go c.runClass(user, i, doneCh)
 	}
 
 	// Wait for all results to be done
-	results := make([]runResult, len(user.Classes))
-	for _ = range user.Classes {
+	results := make([]RunResult, len(user.Classes))
+	for range user.Classes {
 		result := <-doneCh
 		if result.Err != nil {
 			log.Println(result.Err.Error())
@@ -96,7 +88,7 @@ func (c *Crawler) Run(user *crawlerUser) []runResult {
 	return results
 }
 
-func (c *Crawler) runClass(user *crawlerUser, classIndex int, doneCh chan runResult) {
+func (c *Crawler) runClass(user *User, classIndex int, doneCh chan RunResult) {
 	class := user.Classes[classIndex]
 	params := url.Values{
 		fieldCode:  {user.Code},
@@ -108,7 +100,7 @@ func (c *Crawler) runClass(user *crawlerUser, classIndex int, doneCh chan runRes
 	requestString := fmt.Sprintf("%s?%s", urlResultats, params.Encode())
 	req, err := http.NewRequest("POST", requestString, nil)
 	if err != nil {
-		doneCh <- runResult{
+		doneCh <- RunResult{
 			ClassIndex: classIndex,
 			Err:        err,
 		}
@@ -120,7 +112,7 @@ func (c *Crawler) runClass(user *crawlerUser, classIndex int, doneCh chan runRes
 	log.Printf("Sending request for %s\n", class.Name)
 	resp, err := c.Client.Do(req)
 	if err != nil {
-		doneCh <- runResult{
+		doneCh <- RunResult{
 			ClassIndex: classIndex,
 			Err:        err,
 		}
@@ -131,13 +123,13 @@ func (c *Crawler) runClass(user *crawlerUser, classIndex int, doneCh chan runRes
 	log.Printf("Parsing response for %s\n", class.Name)
 	results, err := parseResponse(resp.Body)
 	if err != nil {
-		doneCh <- runResult{
+		doneCh <- RunResult{
 			ClassIndex: classIndex,
 			Err:        err,
 		}
 		return
 	}
-	doneCh <- runResult{
+	doneCh <- RunResult{
 		ClassIndex: classIndex,
 		Class:      results,
 	}
@@ -225,6 +217,7 @@ func parseResultsTable(node *html.Node) *api.Class {
 	}
 
 	class := &api.Class{}
+
 	// Parse other rows
 	// First 2 rows are titles then 3rd row is totals and if there
 	// is a 4th row it is final grade.
