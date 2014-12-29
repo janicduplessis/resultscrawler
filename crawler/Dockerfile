@@ -5,3 +5,5 @@ WORKDIR $GOPATH/src/github.com/janicduplessis/resultscrawler/crawler
 
 CMD []
 ENTRYPOINT ["$GOPATH/bin/crawler"]
+
+EXPOSE 587
