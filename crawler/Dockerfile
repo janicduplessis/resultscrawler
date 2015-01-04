@@ -5,5 +5,3 @@ WORKDIR /go/src/github.com/janicduplessis/resultscrawler/crawler
 
 CMD []
 ENTRYPOINT ["/go/bin/crawler"]
-
-EXPOSE 587
