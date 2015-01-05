@@ -8,5 +8,6 @@
     "Name": "<db_name>"
   },
   "AESSecretKey": "iama16charkey123",
-  "SessionKey": "sessionkey1234"
+  "SessionKey": "sessionkey1234",
+  "CrawlerWebserviceURL": "localhost:4321"
 }

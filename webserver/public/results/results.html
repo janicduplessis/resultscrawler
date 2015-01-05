@@ -1,6 +1,9 @@
 <div class="container" layout="column">
-  <h2>{{results.year | session}}</h2>
-
+  <div layout="row">
+    <h2 flex>{{results.year | session}}</h2>
+    <md-button ng-click="changeSession()">Change session</md-button>
+    <md-button ng-click="refresh()">Refresh</md-button>
+  </div>
   <div class="classes row" flex>
     <div class="md-6" ng-repeat="c in results.classes">
       <md-card class="results-class">

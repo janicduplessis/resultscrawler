@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/rpc"
 	"runtime/debug"
 	"time"
 
@@ -27,19 +28,21 @@ import (
 type (
 	// Config contains parameters to initialize the webserver.
 	Config struct {
-		UserStore          user.Store
-		CrawlerConfigStore crawlerconfig.Store
-		UserResultsStore   results.Store
-		SessionKey         string
+		UserStore            user.Store
+		CrawlerConfigStore   crawlerconfig.Store
+		UserResultsStore     results.Store
+		SessionKey           string
+		CrawlerWebserviceURL string
 	}
 
 	// Webserver serves as a global context for the server.
 	Webserver struct {
-		userStore          user.Store
-		crawlerConfigStore crawlerconfig.Store
-		userResultsStore   results.Store
-		router             *ws.Router
-		sessions           *sessions.CookieStore
+		userStore               user.Store
+		crawlerConfigStore      crawlerconfig.Store
+		userResultsStore        results.Store
+		router                  *ws.Router
+		sessions                *sessions.CookieStore
+		crawlerWebserviceClient *rpc.Client
 	}
 
 	key int
@@ -70,12 +73,18 @@ func NewWebserver(config *Config) *Webserver {
 		HttpOnly: true,
 	}
 
+	client, err := rpc.DialHTTP("tcp", config.CrawlerWebserviceURL)
+	if err != nil {
+		log.Printf("Warning, unable to connect to the crawler webservice. Err: %s", err.Error())
+	}
+
 	webserver := &Webserver{
 		config.UserStore,
 		config.CrawlerConfigStore,
 		config.UserResultsStore,
 		router,
 		cs,
+		client,
 	}
 
 	// Define middleware groups
@@ -96,6 +105,8 @@ func NewWebserver(config *Config) *Webserver {
 	router.POST("/api/v1/crawler/class", registeredHandlers.Then(webserver.crawlerCreateClassHandler))
 	router.PUT("/api/v1/crawler/class/:classId", registeredHandlers.Then(webserver.crawlerEditClassHandler))
 	router.DELETE("/api/v1/crawler/class/:classId", registeredHandlers.Then(webserver.crawlerDeleteClassHandler))
+
+	router.POST("/api/v1/crawler/refresh", registeredHandlers.Then(webserver.crawlerRefreshHandler))
 
 	router.POST("/api/v1/auth/login", commonHandlers.Then(webserver.loginHandler))
 	router.POST("/api/v1/auth/register", commonHandlers.Then(webserver.registerHandler))
@@ -444,6 +455,20 @@ func (server *Webserver) crawlerDeleteClassHandler(ctx context.Context, w http.R
 	log.Printf("after: %v", results.Classes)
 
 	err = server.userResultsStore.UpdateResults(results)
+	if err != nil {
+		server.serverError(w, err)
+	}
+}
+
+func (server *Webserver) crawlerRefreshHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	if server.crawlerWebserviceClient == nil {
+		log.Println("Unable to connect to the crawler webservice.")
+		return
+	}
+
+	userID := getUserID(ctx)
+	var reply int
+	err := server.crawlerWebserviceClient.Call("Webservice.Queue", userID, &reply)
 	if err != nil {
 		server.serverError(w, err)
 	}

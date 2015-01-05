@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	configFile = "webserver.config.json"
+	configFile = "config.json"
 )
 
 var (
@@ -23,10 +23,11 @@ var (
 )
 
 type config struct {
-	ServerPort   string
-	Database     *tools.MongoConfig
-	AESSecretKey string // 16 bytes
-	SessionKey   string
+	ServerPort           string
+	Database             *tools.MongoConfig
+	AESSecretKey         string // 16 bytes
+	SessionKey           string
+	CrawlerWebserviceURL string
 }
 
 func main() {
@@ -44,10 +45,11 @@ func main() {
 	userResultsStore := mongo.New(mongoHelper)
 
 	server := webserver.NewWebserver(&webserver.Config{
-		userStore,
-		crawlerConfigStore,
-		userResultsStore,
-		config.SessionKey,
+		UserStore:            userStore,
+		CrawlerConfigStore:   crawlerConfigStore,
+		UserResultsStore:     userResultsStore,
+		SessionKey:           config.SessionKey,
+		CrawlerWebserviceURL: config.CrawlerWebserviceURL,
 	})
 
 	log.Println("Server started")
@@ -62,6 +64,7 @@ func readConfig() *config {
 
 	readFileConfig(conf)
 	readEnvConfig(conf)
+	validateConfig(conf)
 
 	return conf
 }
@@ -115,4 +118,19 @@ func readEnvConfig(config *config) {
 	if len(val) > 0 {
 		config.SessionKey = val
 	}
+	// Crawler webservice
+	val = os.Getenv("CRAWLERSERVER_CRAWLER_WEBSERVICE_URL")
+	if len(val) > 0 {
+		config.CrawlerWebserviceURL = val
+	}
+}
+
+func validateConfig(config *config) {
+	// TODO: actually validate the config.
+	// for now it will just get printed.
+	log.Printf("AES: %v", config.AESSecretKey)
+	log.Printf("db: %+v", config.Database)
+	log.Printf("server port: %v", config.ServerPort)
+	log.Printf("crawler webservice url: %v", config.CrawlerWebserviceURL)
+	log.Printf("session key: %v", config.SessionKey)
 }

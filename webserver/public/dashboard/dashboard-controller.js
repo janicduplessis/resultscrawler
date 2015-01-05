@@ -15,8 +15,8 @@ angular.module('rc.dashboard', ['ngRoute'])
   });
 }])
 
-.controller('DashboardCtrl', ['$scope', '$mdDialog', 'Config', 'ConfigClass',
-    function($scope, $mdDialog, Config, ConfigClass) {
+.controller('DashboardCtrl', ['$scope', '$mdDialog', 'Config', 'ConfigClass', 'Sessions',
+    function($scope, $mdDialog, Config, ConfigClass, Sessions) {
 
   $scope.config = Config.get();
   $scope.classes = ConfigClass.query();
@@ -36,7 +36,7 @@ angular.module('rc.dashboard', ['ngRoute'])
       var newClass = new ConfigClass();
       newClass.name = answer.name;
       newClass.group = answer.group;
-      newClass.year = answer.year;
+      newClass.year = answer.year.value;
       newClass.$save();
       $scope.classes.push(newClass);
     });
@@ -49,16 +49,21 @@ angular.module('rc.dashboard', ['ngRoute'])
       });
     });
   };
-}]);
 
-function AddClassDialogCtrl($scope, $mdDialog) {
-  $scope.hide = function() {
-    $mdDialog.hide();
-  };
-  $scope.cancel = function() {
-    $mdDialog.cancel();
-  };
-  $scope.answer = function(answer) {
-    $mdDialog.hide(answer);
-  };
-}
+  // Not sure how dependency injection works here... Could be cleaner.
+  var sessions = Sessions.list();
+  function AddClassDialogCtrl($scope, $mdDialog) {
+    $scope.sessions = sessions;
+
+    $scope.hide = function() {
+      $mdDialog.hide();
+    };
+    $scope.cancel = function() {
+      $mdDialog.cancel();
+    };
+    $scope.answer = function(answer) {
+      $mdDialog.hide(answer);
+    };
+  }
+
+}]);

@@ -12,5 +12,6 @@
     "User": "<email_user>",
     "Password": "<email_password>"
   },
-  "AESSecretKey": "iama16charkey123"
+  "AESSecretKey": "iama16charkey123",
+  "WebservicePort": "4321"
 }

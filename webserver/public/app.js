@@ -4,7 +4,7 @@
 angular.module('rc', [
   'ngRoute',
   'ngMaterial',
-  'rc.filters',
+  'rc.sessions',
   'rc.authservice',
   'rc.configservice',
   'rc.resultsservice',

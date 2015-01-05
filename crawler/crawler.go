@@ -15,14 +15,15 @@ import (
 )
 
 const (
-	configFile  = "crawler.config.json"
+	configFile  = "config.json"
 	numCrawlers = 10
 )
 
 type config struct {
-	Database     *tools.MongoConfig
-	Email        *tools.EmailConfig
-	AESSecretKey string // 16 bytes
+	Database       *tools.MongoConfig
+	Email          *tools.EmailConfig
+	AESSecretKey   string // 16 bytes
+	WebservicePort string
 }
 
 func main() {
@@ -30,9 +31,6 @@ func main() {
 
 	flag.Parse()
 	config := readConfig()
-	log.Printf("AES: %v", config.AESSecretKey)
-	log.Printf("db: %+v", config.Database)
-	log.Printf("email: %+v", config.Email)
 
 	crypto.Init(config.AESSecretKey)
 
@@ -42,7 +40,7 @@ func main() {
 	httpClient := &http.Client{}
 
 	userStore := mongo.New(mongoHelper)
-	userInfoStore := mongo.New(mongoHelper)
+	crawlerConfigStore := mongo.New(mongoHelper)
 	userResultsStore := mongo.New(mongoHelper)
 
 	var crawlers []crawler.ResultGetter
@@ -51,12 +49,14 @@ func main() {
 	}
 
 	scheduler := crawler.NewScheduler(&crawler.SchedulerConfig{
-		crawlers,
-		userStore,
-		userInfoStore,
-		userResultsStore,
-		emailSender,
+		ResultGetters:      crawlers,
+		UserStore:          userStore,
+		CrawlerConfigStore: crawlerConfigStore,
+		UserResultsStore:   userResultsStore,
+		Sender:             emailSender,
 	})
+
+	crawler.StartWebservice(scheduler, userStore, config.WebservicePort)
 
 	log.Println("Crawler started")
 	scheduler.Start()
@@ -71,6 +71,7 @@ func readConfig() *config {
 
 	readFileConfig(conf)
 	readEnvConfig(conf)
+	validateConfig(conf)
 
 	return conf
 }
@@ -133,4 +134,18 @@ func readEnvConfig(config *config) {
 	if len(val) > 0 {
 		config.AESSecretKey = val
 	}
+	// Webservice
+	val = os.Getenv("CRAWLER_WEBSERVICE_PORT")
+	if len(val) > 0 {
+		config.WebservicePort = val
+	}
+}
+
+func validateConfig(config *config) {
+	// TODO: actually validate the config.
+	// for now it will just get printed.
+	log.Printf("AES: %v", config.AESSecretKey)
+	log.Printf("db: %+v", config.Database)
+	log.Printf("email: %+v", config.Email)
+	log.Printf("webservice port: %v", config.WebservicePort)
 }
