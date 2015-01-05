@@ -1,0 +1,12 @@
+<md-dialog md-theme="green" class="choose-session-dialog">
+  	<md-content>
+	  	<md-list>
+	  		<md-item class="header" ng-repeat="s in sessions" ng-click="changeSession(s.value)">
+              	<md-item-content ng-class="{selected: s.selected}">
+              		{{s.name}}
+          		</md-item-content>
+          		<md-divider ng-if="!$last"></md-divider>
+          	</md-item>
+	  	</md-list>
+	</md-content>
+</md-dialog>

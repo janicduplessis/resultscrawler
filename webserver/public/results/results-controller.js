@@ -15,16 +15,25 @@ angular.module('rc.results', ['ngRoute'])
   });
 }])
 
-.controller('ResultsCtrl', ['$scope', '$timeout', 'Results', function($scope, $timeout, Results) {
-  $scope.session = '20143';
+.controller('ResultsCtrl', ['$scope', '$timeout', '$mdDialog', 'Results', 'Sessions', function($scope, $timeout, $mdDialog, Results, Sessions) {
+  $scope.session = Sessions.getUserCurrent();
   $scope.results = Results.get({year: $scope.session});
 
   $scope.changeYear = function(year) {
     $scope.results = Results.get(year);
   };
 
-  $scope.changeSession = function() {
-
+  $scope.openChangeSessionDialog = function(ev) {
+    $mdDialog.show({
+      controller: 'ChangeSessionDialogCtrl',
+      templateUrl: 'results/choose-session-dialog.tmpl.html',
+      targetEvent: ev
+    })
+    .then(function(answer) {
+      Sessions.setUserCurrent(answer);
+      $scope.session = answer;
+      $scope.results = Results.get({year: $scope.session});
+    });
   };
 
   $scope.refresh = function() {
@@ -38,5 +47,29 @@ angular.module('rc.results', ['ngRoute'])
     }).error(function() {
       //TODO: handle errors here
     });
+  };
+}])
+
+.controller('ChangeSessionDialogCtrl', ['$scope', '$mdDialog', 'Sessions', function($scope, $mdDialog, Sessions) {
+  var sessions = Sessions.list();
+  var curSession = Sessions.getUserCurrent();
+  for(var i = 0; i < sessions.length; i++) {
+    if(sessions[i].value === curSession) {
+      sessions[i].selected = true;
+    } else {
+      sessions[i].selected = false;
+    }
+  }
+
+  $scope.sessions = sessions;
+
+  $scope.hide = function() {
+    $mdDialog.hide();
+  };
+  $scope.cancel = function() {
+    $mdDialog.cancel();
+  };
+  $scope.changeSession = function(answer) {
+    $mdDialog.hide(answer);
   };
 }]);

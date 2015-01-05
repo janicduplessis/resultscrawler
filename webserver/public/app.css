@@ -16,6 +16,23 @@
   margin: 0;
 }
 
+select {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  color: rgba(0, 0, 0, 0.73);
+  display: block;
+  border-width: 0 0 1px 0;
+  padding-top: 2px;
+  line-height: 26px;
+  padding-bottom: 1px;
+  margin: 0;
+  font-size: 100%;
+  font-family: inherit;
+  vertical-align: baseline;
+  height: 30px;
+}
+
 /* Page layout */
 @media (min-width: 600px) {
   .container {
@@ -95,6 +112,10 @@ md-dialog .buttons {
 
 md-dialog {
   width: 90%;
+}
+
+.buttons .md-button {
+  min-width: 70px;
 }
 
 @media (min-width: 600px) {
@@ -300,4 +321,19 @@ ul.menu li.selected {
 .rc-results .results-class h3 {
   margin-top: 5px;
   margin-bottom: 5px;
+}
+
+/* Choose session dialog */
+.choose-session-dialog md-content {
+  padding: 0;
+}
+
+.choose-session-dialog md-item-content {
+  padding: 15px;
+  cursor: pointer;
+}
+
+.choose-session-dialog md-item-content.selected {
+  background-color: #EFEFEF;
+  color: #3AA03E;
 }

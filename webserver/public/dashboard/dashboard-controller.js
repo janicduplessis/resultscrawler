@@ -28,7 +28,7 @@ angular.module('rc.dashboard', ['ngRoute'])
   $scope.openAddClassPopup = function(ev) {
 
     $mdDialog.show({
-      controller: AddClassDialogCtrl,
+      controller: 'AddClassDialogCtrl',
       templateUrl: 'dashboard/add-class-dialog.tmpl.html',
       targetEvent: ev
     })
@@ -49,21 +49,21 @@ angular.module('rc.dashboard', ['ngRoute'])
       });
     });
   };
+}])
 
-  // Not sure how dependency injection works here... Could be cleaner.
+.controller('AddClassDialogCtrl', ['$scope', '$mdDialog', 'Sessions', function($scope, $mdDialog, Sessions) {
   var sessions = Sessions.list();
-  function AddClassDialogCtrl($scope, $mdDialog) {
-    $scope.sessions = sessions;
+  $scope.sessions = sessions;
+  $scope.newClass = {};
+  $scope.newClass.year = sessions[0];
 
-    $scope.hide = function() {
-      $mdDialog.hide();
-    };
-    $scope.cancel = function() {
-      $mdDialog.cancel();
-    };
-    $scope.answer = function(answer) {
-      $mdDialog.hide(answer);
-    };
-  }
-
+  $scope.hide = function() {
+    $mdDialog.hide();
+  };
+  $scope.cancel = function() {
+    $mdDialog.cancel();
+  };
+  $scope.answer = function(answer) {
+    $mdDialog.hide(answer);
+  };
 }]);
