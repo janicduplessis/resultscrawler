@@ -92,13 +92,9 @@ func readFileConfig(config *config) {
 
 func readEnvConfig(config *config) {
 	// DB
-	val := os.Getenv("CRAWLER_DB_HOST")
+	val := os.Getenv("CRAWLER_DB_URL")
 	if len(val) > 0 {
-		config.Database.Host = val
-	}
-	val = os.Getenv("CRAWLER_DB_PORT")
-	if len(val) > 0 {
-		config.Database.Port = val
+		config.Database.URL = val
 	}
 	val = os.Getenv("CRAWLER_DB_USER")
 	if len(val) > 0 {
@@ -113,13 +109,9 @@ func readEnvConfig(config *config) {
 		config.Database.Name = val
 	}
 	// Email
-	val = os.Getenv("CRAWLER_EMAIL_HOST")
+	val = os.Getenv("CRAWLER_EMAIL_URL")
 	if len(val) > 0 {
-		config.Email.Host = val
-	}
-	val = os.Getenv("CRAWLER_EMAIL_PORT")
-	if len(val) > 0 {
-		config.Email.Port = val
+		config.Email.URL = val
 	}
 	val = os.Getenv("CRAWLER_EMAIL_USER")
 	if len(val) > 0 {

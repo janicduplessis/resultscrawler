@@ -89,13 +89,9 @@ func readEnvConfig(config *config) {
 		config.ServerPort = val
 	}
 	// DB
-	val = os.Getenv("CRAWLERSERVER_DB_HOST")
+	val = os.Getenv("CRAWLERSERVER_DB_URL")
 	if len(val) > 0 {
-		config.Database.Host = val
-	}
-	val = os.Getenv("CRAWLERSERVER_DB_PORT")
-	if len(val) > 0 {
-		config.Database.Port = val
+		config.Database.URL = val
 	}
 	val = os.Getenv("CRAWLERSERVER_DB_USER")
 	if len(val) > 0 {

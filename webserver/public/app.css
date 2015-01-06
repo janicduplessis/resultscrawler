@@ -323,6 +323,11 @@ ul.menu li.selected {
   margin-bottom: 5px;
 }
 
+.header-row .md-button {
+  margin-right: 10px;
+  margin-left: 5px;
+}
+
 /* Choose session dialog */
 .choose-session-dialog md-content {
   padding: 0;

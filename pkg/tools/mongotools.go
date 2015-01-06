@@ -1,7 +1,6 @@
 package tools
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -16,8 +15,7 @@ type MongoHelper struct {
 
 // MongoConfig contains the configuration of the database server.
 type MongoConfig struct {
-	Host     string
-	Port     string
+	URL      string
 	Name     string
 	User     string
 	Password string
@@ -32,7 +30,7 @@ type ConnCloser interface {
 func NewMongoHelper(dbConfig *MongoConfig) *MongoHelper {
 	// We need this object to establish a session to our MongoDB.
 	mongoDBDialInfo := &mgo.DialInfo{
-		Addrs:    []string{fmt.Sprintf("%s:%s", dbConfig.Host, dbConfig.Port)},
+		Addrs:    []string{dbConfig.URL},
 		Timeout:  60 * time.Second,
 		Database: dbConfig.Name,
 		Username: dbConfig.User,

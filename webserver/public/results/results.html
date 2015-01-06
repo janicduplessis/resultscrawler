@@ -1,8 +1,8 @@
 <div class="container" layout="column">
-  <div layout="row">
+  <div class="header-row" layout="row" layout-align="center center">
     <h2 flex>{{results.year | session}}</h2>
-    <md-button ng-click="openChangeSessionDialog()">Change session</md-button>
-    <md-button ng-click="refresh()">Refresh</md-button>
+    <md-button class="md-raised" ng-click="openChangeSessionDialog()">Change session</md-button>
+    <md-button class="md-raised" ng-click="refresh()">Refresh</md-button>
   </div>
   <div class="classes row" flex>
     <div class="md-6" ng-repeat="c in results.classes">
