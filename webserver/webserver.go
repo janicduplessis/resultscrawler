@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 
 	"github.com/janicduplessis/resultscrawler/pkg/crypto"
 	"github.com/janicduplessis/resultscrawler/pkg/store/mongo"
@@ -19,7 +18,14 @@ const (
 )
 
 var (
-	envPort = flag.String("port", "8080", "Webserver port")
+	serverPort        = flag.String("port", "", "Server port")
+	dbURL             = flag.String("db-url", "", "DB url")
+	dbUser            = flag.String("db-user", "", "DB user")
+	dbPassword        = flag.String("db-password", "", "DB password")
+	dbName            = flag.String("db-name", "", "DB name")
+	sessionKey        = flag.String("session-key", "", "Session key")
+	aesSecret         = flag.String("aes-secret", "", "AES secret key")
+	crawlerServiceURL = flag.String("crawler-url", "", "Crawler webservice url")
 )
 
 type config struct {
@@ -84,38 +90,38 @@ func readFileConfig(config *config) {
 }
 
 func readEnvConfig(config *config) {
-	val := os.Getenv("CRAWLERSERVER_SERVER_PORT")
+	val := *serverPort
 	if len(val) > 0 {
 		config.ServerPort = val
 	}
 	// DB
-	val = os.Getenv("CRAWLERSERVER_DB_URL")
+	val = *dbUser
 	if len(val) > 0 {
 		config.Database.URL = val
 	}
-	val = os.Getenv("CRAWLERSERVER_DB_USER")
+	val = *dbUser
 	if len(val) > 0 {
 		config.Database.User = val
 	}
-	val = os.Getenv("CRAWLERSERVER_DB_PASSWORD")
+	val = *dbPassword
 	if len(val) > 0 {
 		config.Database.Password = val
 	}
-	val = os.Getenv("CRAWLERSERVER_DB_NAME")
+	val = *dbName
 	if len(val) > 0 {
 		config.Database.Name = val
 	}
 	// AES
-	val = os.Getenv("CRAWLERSERVER_AES_SECRET_KEY")
+	val = *aesSecret
 	if len(val) > 0 {
 		config.AESSecretKey = val
 	}
-	val = os.Getenv("CRAWLERSERVER_SESSION_KEY")
+	val = *sessionKey
 	if len(val) > 0 {
 		config.SessionKey = val
 	}
 	// Crawler webservice
-	val = os.Getenv("CRAWLERSERVER_CRAWLER_WEBSERVICE_URL")
+	val = *crawlerServiceURL
 	if len(val) > 0 {
 		config.CrawlerWebserviceURL = val
 	}

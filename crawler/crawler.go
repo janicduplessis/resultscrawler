@@ -6,17 +6,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/janicduplessis/resultscrawler/pkg/crawler"
 	"github.com/janicduplessis/resultscrawler/pkg/crypto"
 	"github.com/janicduplessis/resultscrawler/pkg/store/mongo"
 	"github.com/janicduplessis/resultscrawler/pkg/tools"
-)
-
-const (
-	configFile  = "config.json"
-	numCrawlers = 10
 )
 
 type config struct {
@@ -25,6 +19,23 @@ type config struct {
 	AESSecretKey   string // 16 bytes
 	WebservicePort string
 }
+
+const (
+	configFile  = "config.json"
+	numCrawlers = 10
+)
+
+var (
+	webservicePort = flag.String("port", "", "Webservice port")
+	dbURL          = flag.String("db-url", "", "DB url")
+	dbUser         = flag.String("db-user", "", "DB user")
+	dbPassword     = flag.String("db-password", "", "DB password")
+	dbName         = flag.String("db-name", "", "DB name")
+	emailURL       = flag.String("email-url", "", "Email url")
+	emailUser      = flag.String("email-user", "", "Email user")
+	emailPassword  = flag.String("email-password", "", "Email password")
+	aesSecret      = flag.String("aes-secret", "", "AES secret key")
+)
 
 func main() {
 	log.SetFlags(log.Lshortfile)
@@ -70,7 +81,7 @@ func readConfig() *config {
 	}
 
 	readFileConfig(conf)
-	readEnvConfig(conf)
+	readFlagConfig(conf)
 	validateConfig(conf)
 
 	return conf
@@ -90,44 +101,44 @@ func readFileConfig(config *config) {
 	}
 }
 
-func readEnvConfig(config *config) {
+func readFlagConfig(config *config) {
 	// DB
-	val := os.Getenv("CRAWLER_DB_URL")
+	val := *dbURL
 	if len(val) > 0 {
 		config.Database.URL = val
 	}
-	val = os.Getenv("CRAWLER_DB_USER")
+	val = *dbUser
 	if len(val) > 0 {
 		config.Database.User = val
 	}
-	val = os.Getenv("CRAWLER_DB_PASSWORD")
+	val = *dbPassword
 	if len(val) > 0 {
 		config.Database.Password = val
 	}
-	val = os.Getenv("CRAWLER_DB_NAME")
+	val = *dbName
 	if len(val) > 0 {
 		config.Database.Name = val
 	}
 	// Email
-	val = os.Getenv("CRAWLER_EMAIL_URL")
+	val = *emailURL
 	if len(val) > 0 {
 		config.Email.URL = val
 	}
-	val = os.Getenv("CRAWLER_EMAIL_USER")
+	val = *emailUser
 	if len(val) > 0 {
 		config.Email.User = val
 	}
-	val = os.Getenv("CRAWLER_EMAIL_PASSWORD")
+	val = *emailPassword
 	if len(val) > 0 {
 		config.Email.Password = val
 	}
 	// AES
-	val = os.Getenv("CRAWLER_AES_SECRET_KEY")
+	val = *aesSecret
 	if len(val) > 0 {
 		config.AESSecretKey = val
 	}
 	// Webservice
-	val = os.Getenv("CRAWLER_WEBSERVICE_PORT")
+	val = *webservicePort
 	if len(val) > 0 {
 		config.WebservicePort = val
 	}
