@@ -95,7 +95,7 @@ func readEnvConfig(config *config) {
 		config.ServerPort = val
 	}
 	// DB
-	val = *dbUser
+	val = *dbURL
 	if len(val) > 0 {
 		config.Database.URL = val
 	}
