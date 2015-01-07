@@ -6,6 +6,7 @@ RUN \
   cd /go/src/github.com/janicduplessis/resultscrawler/webserver && \
   bower --allow-root --config.interactive=false install
 
+CMD []
 ENTRYPOINT ["/go/bin/webserver"]
 
 EXPOSE 8080

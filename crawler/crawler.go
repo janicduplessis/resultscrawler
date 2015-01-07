@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/janicduplessis/resultscrawler/pkg/crawler"
 	"github.com/janicduplessis/resultscrawler/pkg/crypto"
@@ -81,6 +83,7 @@ func readConfig() *config {
 	}
 
 	readFileConfig(conf)
+	readEnvConfig(conf)
 	readFlagConfig(conf)
 	validateConfig(conf)
 
@@ -98,6 +101,51 @@ func readFileConfig(config *config) {
 
 	if err = json.Unmarshal(file, config); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func readEnvConfig(config *config) {
+	// DB
+	val := os.Getenv("RC_DB_SERVICE_HOST")
+	val2 := os.Getenv("RC_DB_SERVICE_PORT")
+	if len(val) > 0 && len(val2) > 0 {
+		config.Database.URL = fmt.Sprintf("%s:%s", val, val2)
+	}
+	val = os.Getenv("RC_DB_USER")
+	if len(val) > 0 {
+		config.Database.User = val
+	}
+	val = os.Getenv("RC_DB_PASSWORD")
+	if len(val) > 0 {
+		config.Database.Password = val
+	}
+	val = os.Getenv("RC_DB_NAME")
+	if len(val) > 0 {
+		config.Database.Name = val
+	}
+	// Email
+	val = os.Getenv("RC_EMAIL_SERVICE_HOST")
+	val2 = os.Getenv("RC_EMAIL_SERVICE_PORT")
+	if len(val) > 0 && len(val2) > 0 {
+		config.Email.URL = fmt.Sprintf("%s:%s", val, val2)
+	}
+	val = os.Getenv("RC_EMAIL_USER")
+	if len(val) > 0 {
+		config.Email.User = val
+	}
+	val = os.Getenv("RC_EMAIL_PASSWORD")
+	if len(val) > 0 {
+		config.Email.Password = val
+	}
+	// AES
+	val = os.Getenv("RC_AES_SECRET_KEY")
+	if len(val) > 0 {
+		config.AESSecretKey = val
+	}
+	// Webservice
+	val = os.Getenv("RC_CRAWLER_PORT")
+	if len(val) > 0 {
+		config.WebservicePort = val
 	}
 }
 

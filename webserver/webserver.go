@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/janicduplessis/resultscrawler/pkg/crypto"
 	"github.com/janicduplessis/resultscrawler/pkg/store/mongo"
@@ -70,6 +71,7 @@ func readConfig() *config {
 
 	readFileConfig(conf)
 	readEnvConfig(conf)
+	readFlagConfig(conf)
 	validateConfig(conf)
 
 	return conf
@@ -90,6 +92,46 @@ func readFileConfig(config *config) {
 }
 
 func readEnvConfig(config *config) {
+	val := os.Getenv("RC_SERVER_PORT")
+	if len(val) > 0 {
+		config.ServerPort = val
+	}
+	// DB
+	val = os.Getenv("RC_DB_SERVICE_HOST")
+	val2 := os.Getenv("RC_DB_SERVICE_PORT")
+	if len(val) > 0 && len(val2) > 0 {
+		config.Database.URL = fmt.Sprintf("%s:%s", val, val2)
+	}
+	val = os.Getenv("RC_DB_USER")
+	if len(val) > 0 {
+		config.Database.User = val
+	}
+	val = os.Getenv("RC_DB_PASSWORD")
+	if len(val) > 0 {
+		config.Database.Password = val
+	}
+	val = os.Getenv("RC_DB_NAME")
+	if len(val) > 0 {
+		config.Database.Name = val
+	}
+	// AES
+	val = os.Getenv("RC_AES_SECRET_KEY")
+	if len(val) > 0 {
+		config.AESSecretKey = val
+	}
+	val = os.Getenv("RC_SESSION_KEY")
+	if len(val) > 0 {
+		config.SessionKey = val
+	}
+	// Crawler webservice
+	val = os.Getenv("RC_CRAWLER_SERVICE_HOST")
+	val2 = os.Getenv("RC_CRAWLER_SERVICE_PORT")
+	if len(val) > 0 && len(val2) > 0 {
+		config.CrawlerWebserviceURL = fmt.Sprintf("%s:%s", val, val2)
+	}
+}
+
+func readFlagConfig(config *config) {
 	val := *serverPort
 	if len(val) > 0 {
 		config.ServerPort = val
