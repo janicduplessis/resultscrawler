@@ -1,12 +1,14 @@
-package com.jduplessis.results;
+package com.jduplessis.results.activities;
 
+import android.accounts.Account;
+import android.accounts.AccountAuthenticatorActivity;
+import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.LoaderManager.LoaderCallbacks;
-import android.content.ContentResolver;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
@@ -15,7 +17,9 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -26,36 +30,41 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONObject;
+import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestFactory;
+import com.google.api.client.http.HttpRequestInitializer;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.http.json.JsonHttpContent;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.JsonObjectParser;
+import com.google.api.client.json.jackson.JacksonFactory;
+import com.jduplessis.results.R;
+import com.jduplessis.results.authenticator.AccountAuthenticator;
+import com.jduplessis.results.models.Login;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLConnection;
+import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.net.HttpCookie;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
+public class LoginActivity extends AccountAuthenticatorActivity implements LoaderCallbacks<Cursor> {
+    public static final String KEY_AUTH_TYPE = "AUTH_TYPE";
+    public static final String KEY_ACCOUNT_TYPE = "com.jduplessis.results";
 
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
+    private static String KEY_PASSWORD = "PASSWORD";
+
+    private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
+    private static final JsonFactory JSON_FACTORY = new JacksonFactory();
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
@@ -66,11 +75,18 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private LoginActivity mActivity = this;
+    private AccountManager mAccountManager;
+    private String mAuthType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_login);
+
+        mAccountManager = AccountManager.get(getBaseContext());
+        mAuthType = getIntent().getStringExtra(KEY_AUTH_TYPE);
 
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.login_email);
@@ -262,13 +278,12 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+    public class UserLoginTask extends AsyncTask<Void, Void, Intent> {
 
         private final String mEmail;
         private final String mPassword;
 
-        private final HttpClient mClient = new DefaultHttpClient();
-        private final String URL_LOGIN = "results.jdupserver.com/api/v1/login";
+        private final String URL_LOGIN = "http://results.jdupserver.com/api/v1/auth/login";
 
         UserLoginTask(String email, String password) {
             mEmail = email;
@@ -276,43 +291,53 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         }
 
         @Override
-        protected Boolean doInBackground(Void... params) {
-            HttpPost loginRequest = new HttpPost(URL_LOGIN);
-
-            HashMap requestData = new HashMap<String, String>() {{
-                put("email", mEmail);
-                put("password", mPassword);
-            }};
-
-            Gson gson = new Gson();
-            String jsonData = gson.toJson(requestData);
-            StringEntity entity = null;
-            try {
-                entity = new StringEntity(jsonData);
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-                return false;
-            }
-            loginRequest.setEntity(entity);
+        protected Intent doInBackground(Void... params) {
+            HttpRequestFactory requestFactory = HTTP_TRANSPORT.createRequestFactory(new HttpRequestInitializer() {
+                @Override
+                public void initialize(HttpRequest request) throws IOException {
+                    request.setParser(new JsonObjectParser(JSON_FACTORY));
+                }
+            });
+            Login.Request requestData = new Login.Request();
+            requestData.email = mEmail;
+            requestData.password = mPassword;
 
             try {
-                mClient.execute(loginRequest);
+                HttpRequest request = requestFactory.buildPostRequest(new GenericUrl(URL_LOGIN), new JsonHttpContent(JSON_FACTORY, requestData));
+
+                Login.Response response = request.execute().parseAs(Login.Response.class);
+
+                if(response.status != Login.CODE_OK) {
+                    return null;
+                }
+                response.authToken = "alloauthtotoyoy";
+                final Intent res = new Intent();
+                res.putExtra(AccountManager.KEY_ACCOUNT_NAME, response.user.email);
+                res.putExtra(AccountManager.KEY_ACCOUNT_TYPE, KEY_ACCOUNT_TYPE);
+                res.putExtra(AccountManager.KEY_AUTHTOKEN, response.authToken);
+                res.putExtra(KEY_PASSWORD, mPassword);
+                return res;
             } catch (IOException e) {
                 e.printStackTrace();
-                return false;
+                return null;
             }
-
-            // TODO: register the new account here.
-            return true;
         }
 
         @Override
-        protected void onPostExecute(final Boolean success) {
+        protected void onPostExecute(final Intent intent) {
             mAuthTask = null;
             showProgress(false);
 
-            if (success) {
-                //finish();
+            if (intent != null) {
+                String accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+                String authToken = intent.getStringExtra(AccountManager.KEY_AUTHTOKEN);
+                String password = intent.getStringExtra(KEY_PASSWORD);
+                final Account account = new Account(accountName, KEY_ACCOUNT_TYPE);
+                mAccountManager.addAccountExplicitly(account, password, null);
+                mAccountManager.setAuthToken(account, mAuthType, authToken);
+                setAccountAuthenticatorResult(intent.getExtras());
+                setResult(RESULT_OK);
+                finish();
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();

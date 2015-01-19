@@ -54,11 +54,11 @@ const (
 	sessionName          = "rc-session"
 
 	// Status for register and login.
-	statusOK           = 0 // Everything is ok.
-	statusInvalidLogin = 1 // Invalid username or password.
-	statusTooMany      = 2 // Too many invalid logins attempts.
-	statusInvalidEmail = 3 // The requested email is already used.
-	statusInvalidInfos = 4 // The registration infos are invalid.
+	statusOK           = itoa // Everything is ok.
+	statusInvalidLogin        // Invalid username or password.
+	statusTooMany             // Too many invalid logins attempts.
+	statusInvalidEmail        // The requested email is already used.
+	statusInvalidInfos        // The registration infos are invalid.
 )
 
 // ErrUnauthorized happens when an unauthorized access occur.

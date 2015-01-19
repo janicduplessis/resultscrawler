@@ -2,10 +2,9 @@
 <resources>
 
     <string name="app_name">Results</string>
-    <string name="title_activity_main">MainActivity</string>
-    <string name="title_section1">Section 1</string>
-    <string name="title_section2">Section 2</string>
-    <string name="title_section3">Section 3</string>
+    <string name="title_section1">Results</string>
+    <string name="title_section2">Setup</string>
+    <string name="title_section3">Log out</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>
@@ -13,5 +12,6 @@
     <string name="login_header">Login</string>
     <string name="register_header">Register</string>
     <string name="action_register">Register</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>
