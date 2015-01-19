@@ -54,7 +54,7 @@ const (
 	sessionName          = "rc-session"
 
 	// Status for register and login.
-	statusOK           = itoa // Everything is ok.
+	statusOK           = iota // Everything is ok.
 	statusInvalidLogin        // Invalid username or password.
 	statusTooMany             // Too many invalid logins attempts.
 	statusInvalidEmail        // The requested email is already used.
