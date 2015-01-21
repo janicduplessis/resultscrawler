@@ -40,6 +40,7 @@ type User struct {
 	Code    string
 	Name    string
 	Email   string
+	DoneCh  chan bool
 }
 
 // RunResult contains the result of a ResultGetter run for a class.
@@ -112,6 +113,13 @@ func (s *Scheduler) Stop() {
 
 // Queue tells the scheduler do a run for a user
 func (s *Scheduler) Queue(user *api.User) {
+	doneCh := make(chan bool)
+	s.QueueAsync(user, doneCh)
+	<-doneCh
+}
+
+// QueueAsync tells the scheduler do a run for a user async
+func (s *Scheduler) QueueAsync(user *api.User, doneCh chan bool) {
 	// Get the user current results
 	results, err := s.userResultsStore.GetResults(user.ID)
 	if err != nil {
@@ -119,44 +127,14 @@ func (s *Scheduler) Queue(user *api.User) {
 		return
 	}
 
-	s.queueInternal(user, results)
+	s.queueInternal(user, results, doneCh)
 }
 
 func (s *Scheduler) crawlerLoop(crawler ResultGetter) {
 	for {
 		select {
 		case user := <-s.queueCh:
-			// Get results
-			results := crawler.Run(user)
-			// Check if results changed
-			newRes := getNewResults(user, results)
-			if len(newRes) > 0 {
-				log.Printf("New results for user %s", user.Email)
-				if len(user.Email) > 0 {
-					err := s.sendEmail(user, newRes)
-					if err != nil {
-						log.Println(err)
-					}
-				}
-				// Update results
-				for _, res := range results {
-					// Ignore results with errors
-					if res.Err == nil {
-						user.Classes[res.ClassIndex].Results = res.Class.Results
-						user.Classes[res.ClassIndex].Total = res.Class.Total
-						user.Classes[res.ClassIndex].Final = res.Class.Final
-					}
-				}
-			}
-
-			err := s.userResultsStore.UpdateResults(&api.Results{
-				UserID:     user.ID,
-				Classes:    user.Classes,
-				LastUpdate: time.Now(),
-			})
-			if err != nil {
-				log.Println(err)
-			}
+			s.run(user, crawler)
 		case <-s.doneCh:
 			return
 		}
@@ -190,7 +168,7 @@ func (s *Scheduler) mainLoop() {
 					continue
 				}
 
-				s.queueInternal(user, results)
+				s.queueInternal(user, results, nil)
 			}
 		case <-s.doneCh:
 			// Stop the program
@@ -199,7 +177,7 @@ func (s *Scheduler) mainLoop() {
 	}
 }
 
-func (s *Scheduler) queueInternal(user *api.User, results *api.Results) {
+func (s *Scheduler) queueInternal(user *api.User, results *api.Results, doneCh chan bool) {
 	// Get crawler config.
 	crawlerConfig, err := s.crawlerConfigStore.GetCrawlerConfig(user.ID)
 	if err != nil {
@@ -214,6 +192,48 @@ func (s *Scheduler) queueInternal(user *api.User, results *api.Results) {
 		Nip:     crawlerConfig.Nip,
 		Email:   crawlerConfig.NotificationEmail,
 		Name:    fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+		DoneCh:  doneCh,
+	}
+}
+
+func (s *Scheduler) run(user *User, crawler ResultGetter) {
+	// Notify the caller when the run is done.
+	defer func() {
+		if user.DoneCh != nil {
+			user.DoneCh <- true
+			close(user.DoneCh)
+		}
+	}()
+	// Get results
+	results := crawler.Run(user)
+	// Check if results changed
+	newRes := getNewResults(user, results)
+	if len(newRes) > 0 {
+		log.Printf("New results for user %s", user.Email)
+		if len(user.Email) > 0 {
+			err := s.sendEmail(user, newRes)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+		// Update results
+		for _, res := range results {
+			// Ignore results with errors
+			if res.Err == nil {
+				user.Classes[res.ClassIndex].Results = res.Class.Results
+				user.Classes[res.ClassIndex].Total = res.Class.Total
+				user.Classes[res.ClassIndex].Final = res.Class.Final
+			}
+		}
+	}
+
+	err := s.userResultsStore.UpdateResults(&api.Results{
+		UserID:     user.ID,
+		Classes:    user.Classes,
+		LastUpdate: time.Now(),
+	})
+	if err != nil {
+		log.Println(err)
 	}
 }
 

@@ -315,7 +315,7 @@ func TestSchedulerLoad(t *testing.T) {
 	go scheduler.Start()
 	wg.Add(100)
 	for i := 0; i < 100; i++ {
-		scheduler.Queue(user)
+		scheduler.QueueAsync(user, nil)
 	}
 
 	wg.Wait()
