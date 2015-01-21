@@ -1,8 +1,15 @@
 package webserver
 
-import "github.com/janicduplessis/resultscrawler/pkg/api"
+import (
+	"fmt"
+	"time"
+
+	"github.com/janicduplessis/resultscrawler/pkg/api"
+)
 
 type (
+	jsonTime time.Time
+
 	// requests
 	loginRequest struct {
 		Email    string `json:"email"`
@@ -28,8 +35,9 @@ type (
 	}
 
 	resultsResponse struct {
-		Year    string      `json:"year"`
-		Classes []api.Class `json:"classes"`
+		Year       string      `json:"year"`
+		Classes    []api.Class `json:"classes"`
+		LastUpdate jsonTime    `json:"lastUpdate"`
 	}
 
 	// models
@@ -46,3 +54,8 @@ type (
 		Group string `json:"group"`
 	}
 )
+
+func (j jsonTime) MarshalJSON() ([]byte, error) {
+	format := time.Time(j).Format("Jan 2, 2006 at 15:04")
+	return []byte(fmt.Sprintf("\"%s\"", format)), nil
+}

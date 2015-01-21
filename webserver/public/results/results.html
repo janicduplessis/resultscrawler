@@ -1,7 +1,9 @@
 <div class="container" layout="column">
   <div class="header-row" layout="row" layout-align="center center">
-    <h2 flex>{{results.year | session}}</h2>
+    <h2>{{results.year | session}}</h2>
     <md-button class="md-raised" ng-click="openChangeSessionDialog()">Change session</md-button>
+    <div flex></div>
+    <div>Last update: {{results.lastUpdate}}</div>
     <md-button class="md-raised" ng-click="refresh()">Refresh</md-button>
   </div>
   <div class="classes row" flex>
