@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"code.google.com/p/go.net/context"
-	"github.com/gorilla/sessions"
+	"github.com/dgrijalva/jwt-go"
 	"labix.org/v2/mgo/bson"
 
 	"github.com/janicduplessis/resultscrawler/pkg/api"
@@ -31,7 +31,8 @@ type (
 		UserStore            user.Store
 		CrawlerConfigStore   crawlerconfig.Store
 		UserResultsStore     results.Store
-		SessionKey           string
+		RSAPublic            []byte
+		RSAPrivate           []byte
 		CrawlerWebserviceURL string
 	}
 
@@ -40,8 +41,9 @@ type (
 		userStore               user.Store
 		crawlerConfigStore      crawlerconfig.Store
 		userResultsStore        results.Store
+		rsaPublic               []byte
+		rsaPrivate              []byte
 		router                  *ws.Router
-		sessions                *sessions.CookieStore
 		crawlerWebserviceClient *rpc.Client
 	}
 
@@ -51,7 +53,7 @@ type (
 const (
 	userKey          key = 1
 	sessionUserIDKey     = "userid"
-	sessionName          = "rc-session"
+	headerName           = "x-access-token"
 
 	// Status for register and login.
 	statusOK           = iota // Everything is ok.
@@ -67,11 +69,6 @@ var ErrUnauthorized = errors.New("Unauthorized access")
 // NewWebserver creates a new webserver object.
 func NewWebserver(config *Config) *Webserver {
 	router := ws.NewRouter()
-	cs := sessions.NewCookieStore([]byte(config.SessionKey))
-	cs.Options = &sessions.Options{
-		Path:     "/",
-		HttpOnly: true,
-	}
 
 	client, err := rpc.DialHTTP("tcp", config.CrawlerWebserviceURL)
 	if err != nil {
@@ -82,8 +79,9 @@ func NewWebserver(config *Config) *Webserver {
 		config.UserStore,
 		config.CrawlerConfigStore,
 		config.UserResultsStore,
+		config.RSAPublic,
+		config.RSAPrivate,
 		router,
-		cs,
 		client,
 	}
 
@@ -179,7 +177,7 @@ func (server *Webserver) loginHandler(ctx context.Context, w http.ResponseWriter
 	}
 
 	// Good password, start the session and returns user info.
-	err = server.createSession(w, r, user.ID)
+	token, err := server.createSession(w, r, user.ID)
 	if err != nil {
 		server.serverError(w, err)
 		return
@@ -187,6 +185,7 @@ func (server *Webserver) loginHandler(ctx context.Context, w http.ResponseWriter
 
 	response := &loginResponse{
 		Status: statusOK,
+		Token:  token,
 		User: &userModel{
 			Email:     user.Email,
 			FirstName: user.FirstName,
@@ -253,7 +252,7 @@ func (server *Webserver) registerHandler(ctx context.Context, w http.ResponseWri
 	}
 
 	// Once registration is succesful create a session.
-	err = server.createSession(w, r, user.ID)
+	token, err := server.createSession(w, r, user.ID)
 	if err != nil {
 		server.serverError(w, err)
 		return
@@ -262,6 +261,7 @@ func (server *Webserver) registerHandler(ctx context.Context, w http.ResponseWri
 	// Returns a status ok response with info about the user.
 	response := &registerResponse{
 		Status: statusOK,
+		Token:  token,
 		User: &userModel{
 			user.Email,
 			user.FirstName,
@@ -524,41 +524,40 @@ func (server *Webserver) logMiddleware(next ws.Handler) ws.Handler {
 
 // Session helpers
 func (server *Webserver) getSessionUserID(r *http.Request) (string, error) {
-	s, err := server.sessions.Get(r, sessionName)
+	tokenHeader := r.Header.Get(headerName)
+	// validate the token
+	token, err := jwt.Parse(tokenHeader, func(token *jwt.Token) (interface{}, error) {
+		return server.rsaPublic, nil
+	})
 	if err != nil {
 		return "", err
 	}
 
-	if s.Values[sessionUserIDKey] == nil {
+	if !token.Valid {
 		return "", ErrUnauthorized
 	}
 
-	userID, ok := s.Values[sessionUserIDKey].(string)
-	if !ok {
+	userID, ok := token.Claims[sessionUserIDKey].(string)
+	if !ok || len(userID) == 0 {
 		return "", ErrUnauthorized
 	}
+
 	return userID, nil
 }
 
-func (server *Webserver) createSession(w http.ResponseWriter, r *http.Request, userID string) error {
-	session, err := server.sessions.Get(r, sessionName)
-	if err != nil {
-		return err
-	}
-
-	session.Values[sessionUserIDKey] = userID
-
-	return session.Save(r, w)
+func (server *Webserver) createSession(w http.ResponseWriter, r *http.Request, userID string) (string, error) {
+	// Create the token
+	token := jwt.New(jwt.GetSigningMethod("RS256"))
+	// Set some claims
+	token.Claims[sessionUserIDKey] = userID
+	// TODO: expire session?
+	// Sign and get the complete encoded token as a string
+	return token.SignedString(server.rsaPrivate)
 }
 
 func (server *Webserver) endSession(w http.ResponseWriter, r *http.Request) error {
-	session, err := server.sessions.Get(r, sessionName)
-	if err != nil {
-		return err
-	}
-
-	delete(session.Values, sessionUserIDKey)
-	return session.Save(r, w)
+	// Nothing to do here anymore.
+	return nil
 }
 
 // Error helpers

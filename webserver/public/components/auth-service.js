@@ -9,7 +9,7 @@ angular.module('rc.authservice', ['ngCookies'])
     return $http
       .post('/api/v1/auth/login', loginInfo)
       .then(function(res) {
-        Session.create();
+        Session.create(res.data.token);
         return res.data.user;
       });
   };
@@ -18,7 +18,7 @@ angular.module('rc.authservice', ['ngCookies'])
     return $http
       .post('/api/v1/auth/register', registerInfo)
       .then(function(res) {
-        Session.create();
+        Session.create(res.data.token);
         return res.data.user;
       });
   };
@@ -30,15 +30,31 @@ angular.module('rc.authservice', ['ngCookies'])
   return authService;
 }])
 
-.service('Session', ['$cookies', function($cookies) {
-  this.authenticated = $cookies.authenticated === 'true';
-  this.create = function() {
+.config(['$httpProvider', function($httpProvider) {
+  $httpProvider.interceptors.push(['Session', function(Session) {
+    return {
+     request: function(config) {
+        if(Session.authenticated) {
+          config.headers['x-access-token'] = Session.token;
+        }
+        return config;
+      }
+    };
+  }]);
+}])
+
+.service('Session', [function() {
+  this.token = localStorage.getItem('token') || null;
+  this.authenticated = !!this.token;
+  this.create = function(token) {
     this.authenticated = true;
-    $cookies.authenticated = 'true';
+    this.token = token;
+    localStorage.setItem('token', token);
   };
   this.destroy = function() {
     this.authenticated = false;
-    delete $cookies.authenticated;
+    this.token = null;
+    localStorage.removeItem('token');
   };
   return this;
 }])

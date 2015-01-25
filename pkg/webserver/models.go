@@ -26,11 +26,13 @@ type (
 	// responses
 	loginResponse struct {
 		Status int        `json:"status"`
+		Token  string     `json:"token"`
 		User   *userModel `json:"user"`
 	}
 
 	registerResponse struct {
 		Status int        `json:"status"`
+		Token  string     `json:"token"`
 		User   *userModel `json:"user"`
 	}
 

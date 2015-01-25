@@ -9,6 +9,7 @@
     "beforeEach": false,
     "afterEach": false,
     "module": false,
-    "inject": false
+    "inject": false,
+    "localStorage": false
   }
 }

@@ -33,7 +33,8 @@ type config struct {
 	ServerPort           string
 	Database             *tools.MongoConfig
 	AESSecretKey         string // 16 bytes
-	SessionKey           string
+	RSAPublic            string
+	RSAPrivate           string
 	CrawlerWebserviceURL string
 }
 
@@ -55,7 +56,8 @@ func main() {
 		UserStore:            userStore,
 		CrawlerConfigStore:   crawlerConfigStore,
 		UserResultsStore:     userResultsStore,
-		SessionKey:           config.SessionKey,
+		RSAPublic:            []byte(config.RSAPublic),
+		RSAPrivate:           []byte(config.RSAPrivate),
 		CrawlerWebserviceURL: config.CrawlerWebserviceURL,
 	})
 
@@ -119,9 +121,14 @@ func readEnvConfig(config *config) {
 	if len(val) > 0 {
 		config.AESSecretKey = val
 	}
-	val = os.Getenv("RC_SESSION_KEY")
+	//RSA
+	val = os.Getenv("RC_RSA_PUBLIC")
 	if len(val) > 0 {
-		config.SessionKey = val
+		config.RSAPublic = val
+	}
+	val = os.Getenv("RC_RSA_PRIVATE")
+	if len(val) > 0 {
+		config.RSAPrivate = val
 	}
 	// Crawler webservice
 	val = os.Getenv("RC_CRAWLER_SERVICE_HOST")
@@ -158,10 +165,6 @@ func readFlagConfig(config *config) {
 	if len(val) > 0 {
 		config.AESSecretKey = val
 	}
-	val = *sessionKey
-	if len(val) > 0 {
-		config.SessionKey = val
-	}
 	// Crawler webservice
 	val = *crawlerServiceURL
 	if len(val) > 0 {
@@ -176,5 +179,4 @@ func validateConfig(config *config) {
 	log.Printf("db: %+v", config.Database)
 	log.Printf("server port: %v", config.ServerPort)
 	log.Printf("crawler webservice url: %v", config.CrawlerWebserviceURL)
-	log.Printf("session key: %v", config.SessionKey)
 }
