@@ -1,4 +1,4 @@
-package com.jduplessis.results.models;
+package com.jduplessis.results.api;
 
 import com.google.api.client.util.Key;
 
@@ -23,7 +23,7 @@ public class Login {
         public int status;
 
         @Key
-        public String authToken;
+        public String token;
 
         @Key
         public User user;

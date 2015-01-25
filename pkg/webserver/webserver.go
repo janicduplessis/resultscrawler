@@ -53,8 +53,10 @@ type (
 const (
 	userKey          key = 1
 	sessionUserIDKey     = "userid"
-	headerName           = "x-access-token"
+	headerName           = "X-Access-Token"
+)
 
+const (
 	// Status for register and login.
 	statusOK           = iota // Everything is ok.
 	statusInvalidLogin        // Invalid username or password.

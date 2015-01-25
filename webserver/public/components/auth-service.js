@@ -35,7 +35,7 @@ angular.module('rc.authservice', ['ngCookies'])
     return {
      request: function(config) {
         if(Session.authenticated) {
-          config.headers['x-access-token'] = Session.token;
+          config.headers['X-Access-Token'] = Session.token;
         }
         return config;
       }

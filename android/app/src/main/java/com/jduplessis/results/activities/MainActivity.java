@@ -5,10 +5,11 @@ import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,10 +20,10 @@ import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 
 import com.jduplessis.results.R;
+import com.jduplessis.results.api.Client;
 
 
-public class MainActivity extends ActionBarActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+public class MainActivity extends ActionBarActivity implements NavigationDrawerFragment.NavigationDrawerCallbacks{
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -33,10 +34,9 @@ public class MainActivity extends ActionBarActivity
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
     private CharSequence mTitle;
-
     private AccountManager mAccountManager;
+    private Client mClient;
 
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -51,6 +51,8 @@ public class MainActivity extends ActionBarActivity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
+        mClient = Client.getInstance();
+
         mAccountManager = AccountManager.get(getBaseContext());
         mAccountManager.getAuthTokenByFeatures(LoginActivity.KEY_ACCOUNT_TYPE, LoginActivity.KEY_AUTH_TYPE, null, this, null, null, new AccountManagerCallback<Bundle>() {
             @Override
@@ -58,9 +60,8 @@ public class MainActivity extends ActionBarActivity
                 Bundle bnd = null;
                 try {
                     bnd = future.getResult();
-                    final String authtoken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
-                    Log.d("rc", "GetTokenForAccount Bundle is " + bnd);
-
+                    final String authToken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
+                    mClient.setAuthToken(authToken);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -70,20 +71,19 @@ public class MainActivity extends ActionBarActivity
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
-        android.app.Fragment
+        Fragment curFragment = null;
         switch (position) {
             case 0:
-
+                curFragment = new ResultsFragment();
                 break;
             case 1:
+                curFragment = new SetupFragment();
                 break;
         }
 
-
-
-        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.container, )
+                .replace(R.id.container, curFragment)
                 .commit();
     }
 

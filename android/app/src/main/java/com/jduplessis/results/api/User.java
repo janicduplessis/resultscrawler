@@ -1,4 +1,4 @@
-package com.jduplessis.results.models;
+package com.jduplessis.results.api;
 
 import com.google.api.client.json.GenericJson;
 import com.google.api.client.util.Key;

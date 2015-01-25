@@ -17,9 +17,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -30,26 +28,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestFactory;
-import com.google.api.client.http.HttpRequestInitializer;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.http.json.JsonHttpContent;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.JsonObjectParser;
-import com.google.api.client.json.jackson.JacksonFactory;
 import com.jduplessis.results.R;
-import com.jduplessis.results.authenticator.AccountAuthenticator;
-import com.jduplessis.results.models.Login;
+import com.jduplessis.results.api.Client;
+import com.jduplessis.results.api.Login;
 
 import java.io.IOException;
-import java.net.CookieHandler;
-import java.net.CookieManager;
-import java.net.HttpCookie;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,8 +46,6 @@ public class LoginActivity extends AccountAuthenticatorActivity implements Loade
 
     private static String KEY_PASSWORD = "PASSWORD";
 
-    private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
-    private static final JsonFactory JSON_FACTORY = new JacksonFactory();
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
@@ -283,8 +264,6 @@ public class LoginActivity extends AccountAuthenticatorActivity implements Loade
         private final String mEmail;
         private final String mPassword;
 
-        private final String URL_LOGIN = "http://results.jdupserver.com/api/v1/auth/login";
-
         UserLoginTask(String email, String password) {
             mEmail = email;
             mPassword = password;
@@ -292,35 +271,23 @@ public class LoginActivity extends AccountAuthenticatorActivity implements Loade
 
         @Override
         protected Intent doInBackground(Void... params) {
-            HttpRequestFactory requestFactory = HTTP_TRANSPORT.createRequestFactory(new HttpRequestInitializer() {
-                @Override
-                public void initialize(HttpRequest request) throws IOException {
-                    request.setParser(new JsonObjectParser(JSON_FACTORY));
-                }
-            });
-            Login.Request requestData = new Login.Request();
-            requestData.email = mEmail;
-            requestData.password = mPassword;
-
+            Client client = Client.getInstance();
+            Login.Response response = null;
             try {
-                HttpRequest request = requestFactory.buildPostRequest(new GenericUrl(URL_LOGIN), new JsonHttpContent(JSON_FACTORY, requestData));
-
-                Login.Response response = request.execute().parseAs(Login.Response.class);
-
-                if(response.status != Login.CODE_OK) {
-                    return null;
-                }
-                response.authToken = "alloauthtotoyoy";
-                final Intent res = new Intent();
-                res.putExtra(AccountManager.KEY_ACCOUNT_NAME, response.user.email);
-                res.putExtra(AccountManager.KEY_ACCOUNT_TYPE, KEY_ACCOUNT_TYPE);
-                res.putExtra(AccountManager.KEY_AUTHTOKEN, response.authToken);
-                res.putExtra(KEY_PASSWORD, mPassword);
-                return res;
+                response = client.login(mEmail, mPassword);
             } catch (IOException e) {
                 e.printStackTrace();
                 return null;
             }
+            if(response.status != Login.CODE_OK) {
+                return null;
+            }
+            final Intent res = new Intent();
+            res.putExtra(AccountManager.KEY_ACCOUNT_NAME, response.user.email);
+            res.putExtra(AccountManager.KEY_ACCOUNT_TYPE, KEY_ACCOUNT_TYPE);
+            res.putExtra(AccountManager.KEY_AUTHTOKEN, response.token);
+            res.putExtra(KEY_PASSWORD, mPassword);
+            return res;
         }
 
         @Override
