@@ -32,6 +32,8 @@ import com.jduplessis.results.R;
 import com.jduplessis.results.api.Client;
 import com.jduplessis.results.api.Login;
 
+import org.w3c.dom.Text;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,11 +51,18 @@ public class LoginActivity extends AccountAuthenticatorActivity implements Loade
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private UserLoginTask mAuthTask = null;
+    private AsyncTask<Void, Void, Intent> mAuthTask = null;
 
     // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
+
+    private EditText mRegEmailView;
+    private EditText mRegPasswordView;
+    private EditText mRegRepeatPasswordView;
+    private EditText mRegFirstNameView;
+    private EditText mRegLastNameView;
+
     private View mProgressView;
     private View mLoginFormView;
     private LoginActivity mActivity = this;
@@ -90,6 +99,31 @@ public class LoginActivity extends AccountAuthenticatorActivity implements Loade
             @Override
             public void onClick(View view) {
                 attemptLogin();
+            }
+        });
+
+        mRegEmailView = (EditText) findViewById(R.id.regEmail);
+        mRegPasswordView = (EditText) findViewById(R.id.regPassword);
+        mRegRepeatPasswordView = (EditText) findViewById(R.id.regRepeatPassword);
+        mRegFirstNameView = (EditText) findViewById(R.id.regFirstName);
+        mRegLastNameView = (EditText) findViewById(R.id.regLastName);
+
+        mRegLastNameView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                if (id == R.id.register || id == EditorInfo.IME_NULL) {
+                    attemptRegister();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        Button registerButton = (Button) findViewById(R.id.reg_submit_button);
+        registerButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                attemptRegister();
             }
         });
 
@@ -151,6 +185,79 @@ public class LoginActivity extends AccountAuthenticatorActivity implements Loade
             // perform the user login attempt.
             showProgress(true);
             mAuthTask = new UserLoginTask(email, password);
+            mAuthTask.execute((Void) null);
+        }
+    }
+
+    public void attemptRegister() {
+        if (mAuthTask != null) {
+            return;
+        }
+
+        // Reset errors.
+        mRegEmailView.setError(null);
+        mRegPasswordView.setError(null);
+        mRegRepeatPasswordView.setError(null);
+        mRegFirstNameView.setError(null);
+        mRegLastNameView.setError(null);
+
+        // Store values at the time of the login attempt.
+        String email = mRegEmailView.getText().toString();
+        String password = mRegPasswordView.getText().toString();
+        String repeatPassword = mRegRepeatPasswordView.getText().toString();
+        String firstName = mRegFirstNameView.getText().toString();
+        String lastName = mRegLastNameView.getText().toString();
+
+        boolean cancel = false;
+        View focusView = null;
+
+
+        // Check for a valid password, if the user entered one.
+        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+            mRegPasswordView.setError(getString(R.string.error_invalid_password));
+            focusView = mRegPasswordView;
+            cancel = true;
+        }
+
+        // Check if passwords match.
+        if (!password.equals(repeatPassword)) {
+            mRegRepeatPasswordView.setError(getString(R.string.error_invalid_password));
+            focusView = mRegRepeatPasswordView;
+            cancel = true;
+        }
+
+        // Check for a valid email address.
+        if (TextUtils.isEmpty(email)) {
+            mRegEmailView.setError(getString(R.string.error_field_required));
+            focusView = mRegEmailView;
+            cancel = true;
+        } else if (!isEmailValid(email)) {
+            mRegEmailView.setError(getString(R.string.error_invalid_email));
+            focusView = mRegEmailView;
+            cancel = true;
+        }
+
+        if(TextUtils.isEmpty(firstName)) {
+            mRegFirstNameView.setError(getString(R.string.error_field_required));
+            focusView = mRegFirstNameView;
+            cancel = true;
+        }
+
+        if(TextUtils.isEmpty(lastName)) {
+            mRegLastNameView.setError(getString(R.string.error_field_required));
+            focusView = mRegLastNameView;
+            cancel = true;
+        }
+
+        if (cancel) {
+            // There was an error; don't attempt login and focus the first
+            // form field with an error.
+            focusView.requestFocus();
+        } else {
+            // Show a progress spinner, and kick off a background task to
+            // perform the user login attempt.
+            showProgress(true);
+            mAuthTask = new UserRegisterTask(email, password, firstName, lastName);
             mAuthTask.execute((Void) null);
         }
     }
@@ -296,15 +403,7 @@ public class LoginActivity extends AccountAuthenticatorActivity implements Loade
             showProgress(false);
 
             if (intent != null) {
-                String accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-                String authToken = intent.getStringExtra(AccountManager.KEY_AUTHTOKEN);
-                String password = intent.getStringExtra(KEY_PASSWORD);
-                final Account account = new Account(accountName, KEY_ACCOUNT_TYPE);
-                mAccountManager.addAccountExplicitly(account, password, null);
-                mAccountManager.setAuthToken(account, mAuthType, authToken);
-                setAccountAuthenticatorResult(intent.getExtras());
-                setResult(RESULT_OK);
-                finish();
+                registerAccount(intent);
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
@@ -316,6 +415,77 @@ public class LoginActivity extends AccountAuthenticatorActivity implements Loade
             mAuthTask = null;
             showProgress(false);
         }
+    }
+
+    /**
+     * Represents an asynchronous login/registration task used to authenticate
+     * the user.
+     */
+    public class UserRegisterTask extends AsyncTask<Void, Void, Intent> {
+
+        private final String mEmail;
+        private final String mPassword;
+        private final String mFirstName;
+        private final String mLastName;
+
+        UserRegisterTask(String email, String password, String firstName, String lastName) {
+            mEmail = email;
+            mPassword = password;
+            mFirstName = firstName;
+            mLastName = lastName;
+        }
+
+        @Override
+        protected Intent doInBackground(Void... params) {
+            Client client = Client.getInstance();
+            Login.Response response = null;
+            try {
+                response = client.register(mEmail, mPassword, mFirstName, mLastName);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+            if(response.status != Login.CODE_OK) {
+                return null;
+            }
+            final Intent res = new Intent();
+            res.putExtra(AccountManager.KEY_ACCOUNT_NAME, response.user.email);
+            res.putExtra(AccountManager.KEY_ACCOUNT_TYPE, KEY_ACCOUNT_TYPE);
+            res.putExtra(AccountManager.KEY_AUTHTOKEN, response.token);
+            res.putExtra(KEY_PASSWORD, mPassword);
+            return res;
+        }
+
+        @Override
+        protected void onPostExecute(final Intent intent) {
+            mAuthTask = null;
+            showProgress(false);
+
+            if (intent != null) {
+                registerAccount(intent);
+            } else {
+                mRegPasswordView.setError(getString(R.string.error_incorrect_password));
+                mRegPasswordView.requestFocus();
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            mAuthTask = null;
+            showProgress(false);
+        }
+    }
+
+    private void registerAccount(final Intent intent) {
+        String accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+        String authToken = intent.getStringExtra(AccountManager.KEY_AUTHTOKEN);
+        String password = intent.getStringExtra(KEY_PASSWORD);
+        final Account account = new Account(accountName, KEY_ACCOUNT_TYPE);
+        mAccountManager.addAccountExplicitly(account, password, null);
+        mAccountManager.setAuthToken(account, mAuthType, authToken);
+        setAccountAuthenticatorResult(intent.getExtras());
+        setResult(RESULT_OK);
+        finish();
     }
 }
 
