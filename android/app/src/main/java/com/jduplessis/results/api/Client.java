@@ -23,6 +23,7 @@ public class Client {
 
     private static final String URL_BASE = "http://results.jdupserver.com/api/v1/";
     private static final String URL_LOGIN = URL_BASE + "auth/login";
+    private static final String URL_REGISTER = URL_BASE + "auth/register";
     private static final String URL_RESULTS = URL_BASE + "results/:session";
 
     private String mAuthToken;
@@ -47,7 +48,22 @@ public class Client {
         requestData.password = password;
 
 
-        HttpRequest request = requestFactory.buildPostRequest(new GenericUrl(URL_LOGIN), new JsonHttpContent(JSON_FACTORY, requestData));
+        HttpRequest request = requestFactory.buildPostRequest(new GenericUrl(URL_LOGIN),
+                new JsonHttpContent(JSON_FACTORY, requestData));
+
+        return request.execute().parseAs(Login.Response.class);
+    }
+
+    public Login.Response register(String email, String password, String firstName, String lastName) throws IOException {
+        HttpRequestFactory requestFactory = getJSONRequestFactory();
+        Register.Request requestData = new Register.Request();
+        requestData.email = email;
+        requestData.password = password;
+        requestData.firstName = firstName;
+        requestData.lastName = lastName;
+
+        HttpRequest request = requestFactory.buildPostRequest(new GenericUrl(URL_REGISTER),
+                new JsonHttpContent(JSON_FACTORY, requestData));
 
         return request.execute().parseAs(Login.Response.class);
     }
