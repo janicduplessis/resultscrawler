@@ -1,7 +1,7 @@
 package com.jduplessis.results.activities;
 
 import android.accounts.Account;
-import android.accounts.AccountAuthenticatorActivity;
+import android.accounts.AccountAuthenticatorResponse;
 import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -17,6 +17,8 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -31,6 +33,7 @@ import android.widget.TextView;
 import com.jduplessis.results.R;
 import com.jduplessis.results.api.Client;
 import com.jduplessis.results.api.Login;
+import com.jduplessis.results.authenticator.AccountAuthenticator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,7 +43,7 @@ import java.util.List;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AccountAuthenticatorActivity implements LoaderCallbacks<Cursor> {
+public class LoginActivity extends ActionBarActivity implements LoaderCallbacks<Cursor> {
     public static final String KEY_AUTH_TYPE = "AUTH_TYPE";
     public static final String KEY_ACCOUNT_TYPE = "com.jduplessis.results";
 
@@ -56,9 +59,10 @@ public class LoginActivity extends AccountAuthenticatorActivity implements Loade
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
-    private LoginActivity mActivity = this;
     private AccountManager mAccountManager;
     private String mAuthType;
+    private AccountAuthenticatorResponse mAccountAuthenticatorResponse;
+    private Bundle mResultBundle = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +72,13 @@ public class LoginActivity extends AccountAuthenticatorActivity implements Loade
 
         mAccountManager = AccountManager.get(getBaseContext());
         mAuthType = getIntent().getStringExtra(KEY_AUTH_TYPE);
+
+        mAccountAuthenticatorResponse =
+                getIntent().getParcelableExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE);
+
+        if (mAccountAuthenticatorResponse != null) {
+            mAccountAuthenticatorResponse.onRequestContinued();
+        }
 
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.login_email);
@@ -95,6 +106,24 @@ public class LoginActivity extends AccountAuthenticatorActivity implements Loade
 
         mLoginFormView = findViewById(R.id.card_login);
         mProgressView = findViewById(R.id.login_progress);
+    }
+
+    public void finish() {
+        if (mAccountAuthenticatorResponse != null) {
+            // send the result bundle back if set, otherwise send an error.
+            if (mResultBundle != null) {
+                mAccountAuthenticatorResponse.onResult(mResultBundle);
+            } else {
+                mAccountAuthenticatorResponse.onError(AccountManager.ERROR_CODE_CANCELED,
+                        "canceled");
+            }
+            mAccountAuthenticatorResponse = null;
+        }
+        super.finish();
+    }
+
+    public final void setAccountAuthenticatorResult(Bundle result) {
+        mResultBundle = result;
     }
 
     private void populateAutoComplete() {

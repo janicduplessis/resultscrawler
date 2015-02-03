@@ -4,59 +4,60 @@ import com.google.api.client.json.GenericJson;
 import com.google.api.client.util.Key;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Janic on 2015-01-25.
  */
 public class Results {
     @Key
-    String lastUpdate;
+    public String lastUpdate;
 
     @Key
-    ArrayList<Class> classes;
+    public List<Class> classes;
 
-    public class Class extends GenericJson {
+    public static class Class extends GenericJson {
         @Key
-        String id;
-
-        @Key
-        String name;
+        public String id;
 
         @Key
-        String group;
+        public String name;
 
         @Key
-        String year;
+        public String group;
 
         @Key
-        ArrayList<Result> results;
+        public String year;
 
         @Key
-        ResultInfo total;
+        public List<Result> results;
+
+        @Key
+        public ResultInfo total;
 
         @Key("final")
-        String finalGrade;
+        public String finalGrade;
     }
 
-    public class Result extends GenericJson {
+    public static class Result extends GenericJson {
         @Key
-        String name;
+        public String name;
 
         @Key
-        ResultInfo normal;
+        public ResultInfo normal;
 
         @Key
-        ResultInfo weighted;
+        public ResultInfo weighted;
     }
 
-    public class ResultInfo extends GenericJson {
+    public static class ResultInfo extends GenericJson {
         @Key
-        String result;
+        public String result;
 
         @Key
-        String average;
+        public String average;
 
         @Key
-        String standardDev;
+        public String standardDev;
     }
 }

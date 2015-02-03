@@ -1,16 +1,22 @@
 package com.jduplessis.results.activities;
 
+import android.content.Context;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.support.v7.app.ActionBarActivity;
 import android.app.Activity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v7.widget.Toolbar;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,10 +25,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jduplessis.results.R;
+
+import java.util.ArrayList;
 
 /**
  * Fragment used for managing interactions for and presentation of a navigation drawer.
@@ -91,25 +101,25 @@ public class NavigationDrawerFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mDrawerListView = (ListView) inflater.inflate(
-                R.layout.fragment_navigation_drawer, container, false);
+        View view = inflater.inflate(R.layout.fragment_navigation_drawer, container, false);
+        mDrawerListView = (ListView)view.findViewById(R.id.list);
         mDrawerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 selectItem(position);
             }
         });
-        mDrawerListView.setAdapter(new ArrayAdapter<String>(
-                getActionBar().getThemedContext(),
-                android.R.layout.simple_list_item_activated_1,
-                android.R.id.text1,
-                new String[]{
-                        getString(R.string.title_section1),
-                        getString(R.string.title_section2),
-                        getString(R.string.title_section3),
-                }));
+
+        ArrayList<Pair<Integer, Integer>> items = new ArrayList<>();
+        items.add(new Pair<>(R.string.title_section1, R.drawable.ic_school_black_24dp));
+        items.add(new Pair<>(R.string.title_section2, R.drawable.ic_settings_black_24dp));
+        items.add(new Pair<>(R.string.title_section3, R.drawable.ic_logout_black_24dp));
+
+        mDrawerListView.setAdapter(new DrawerArrayAdapter(
+                getActivity(),
+                items));
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
-        return mDrawerListView;
+        return view;
     }
 
     public boolean isDrawerOpen() {
@@ -139,7 +149,6 @@ public class NavigationDrawerFragment extends Fragment {
         mDrawerToggle = new ActionBarDrawerToggle(
                 getActivity(),                    /* host Activity */
                 mDrawerLayout,                    /* DrawerLayout object */
-                R.drawable.ic_drawer,             /* nav drawer image to replace 'Up' caret */
                 R.string.navigation_drawer_open,  /* "open drawer" description for accessibility */
                 R.string.navigation_drawer_close  /* "close drawer" description for accessibility */
         ) {
@@ -280,5 +289,36 @@ public class NavigationDrawerFragment extends Fragment {
          * Called when an item in the navigation drawer is selected.
          */
         void onNavigationDrawerItemSelected(int position);
+    }
+
+    private class DrawerArrayAdapter extends ArrayAdapter<Pair<Integer, Integer>> {
+
+        private final Context mContext;
+        private final ArrayList<Pair<Integer, Integer>> mValues;
+
+        public DrawerArrayAdapter(Context context, ArrayList<Pair<Integer, Integer>> values) {
+            super(context, R.layout.layout_drawer_row, values);
+            this.mContext = context;
+            this.mValues = values;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            LayoutInflater inflater = (LayoutInflater) mContext
+                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View rowView = inflater.inflate(R.layout.layout_drawer_row, parent, false);
+
+            TextView textView = (TextView) rowView.findViewById(R.id.label);
+            ImageView imageView = (ImageView) rowView.findViewById(R.id.icon);
+
+            textView.setText(mValues.get(position).first);
+            imageView.setImageResource(mValues.get(position).second);
+            if(mCurrentSelectedPosition == position) {
+                imageView.setColorFilter(getResources().getColor(R.color.primary), PorterDuff.Mode.SRC_ATOP);
+            }
+
+            return rowView;
+        }
+
     }
 }

@@ -38,6 +38,8 @@ public class Client {
         mAuthToken = token;
     }
 
+    public String getAuthToken() {return mAuthToken; }
+
     public Login.Response login(String email, String password) throws IOException {
         HttpRequestFactory requestFactory = getJSONRequestFactory();
         Login.Request requestData = new Login.Request();

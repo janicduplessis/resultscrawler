@@ -39,8 +39,10 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
+        mClient = Client.getInstance();
+
+        setContentView(R.layout.activity_main);
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -51,8 +53,6 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        mClient = Client.getInstance();
-
         mAccountManager = AccountManager.get(getBaseContext());
         mAccountManager.getAuthTokenByFeatures(LoginActivity.KEY_ACCOUNT_TYPE, LoginActivity.KEY_AUTH_TYPE, null, this, null, null, new AccountManagerCallback<Bundle>() {
             @Override
@@ -62,15 +62,24 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
                     bnd = future.getResult();
                     final String authToken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
                     mClient.setAuthToken(authToken);
+                    Log.d("rc", "Set token");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                onAuthReady();
             }
         }, null);
     }
 
+    private void onAuthReady() {
+        onNavigationDrawerItemSelected(0);
+    }
+
     @Override
     public void onNavigationDrawerItemSelected(int position) {
+        if(mClient.getAuthToken() == null) {
+            return;
+        }
         Fragment curFragment = null;
         switch (position) {
             case 0:
