@@ -83,11 +83,19 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         Fragment curFragment = null;
         switch (position) {
             case 0:
+                // Results
                 curFragment = new ResultsFragment();
                 break;
             case 1:
+                // Setup
                 curFragment = new SetupFragment();
                 break;
+            case 2:
+                // Log out
+                mAccountManager.invalidateAuthToken(AccountManager.KEY_AUTHTOKEN, mClient.getAuthToken());
+                recreate();
+                return;
+
         }
 
         FragmentManager fragmentManager = getFragmentManager();

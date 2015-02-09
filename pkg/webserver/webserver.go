@@ -110,6 +110,7 @@ func NewWebserver(config *Config) *Webserver {
 
 	router.POST("/api/v1/auth/login", commonHandlers.Then(webserver.loginHandler))
 	router.POST("/api/v1/auth/register", commonHandlers.Then(webserver.registerHandler))
+	router.POST("/api/v1/auth/logout", registeredHandlers.Then(webserver.logoutHandler))
 
 	return webserver
 }
@@ -276,6 +277,10 @@ func (server *Webserver) registerHandler(ctx context.Context, w http.ResponseWri
 	}
 
 	log.Printf("Succesful registration for user %s", user.Email)
+}
+
+func (server *Webserver) logoutHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+
 }
 
 func (server *Webserver) resultsHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
