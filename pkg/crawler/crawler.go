@@ -224,11 +224,20 @@ func parseResultsTable(node *html.Node) *api.Class {
 
 	// Total
 	totalRow := parseRow(otherRows[2])
-	class.Total = api.ResultInfo{
-		Result:      totalRow[1],
-		Average:     totalRow[2],
-		StandardDev: totalRow[3],
+	if(len(totalRow) > 2) {
+		class.Total = api.ResultInfo{
+			Result:      totalRow[1],
+			Average:     totalRow[2],
+			StandardDev: totalRow[3],
+		}
+	} else {
+		class.Total = api.ResultInfo{
+			Result:      totalRow[1],
+			Average:     "N/A",
+			StandardDev: "N/A",
+		}
 	}
+
 
 	// Final grade if available
 	if len(otherRows) > 3 {
@@ -250,11 +259,8 @@ func parseResultsTable(node *html.Node) *api.Class {
 
 func parseResultRow(node *html.Node) (api.Result, error) {
 	cols := parseRow(node)
-	if len(cols) < 7 {
-		return api.Result{}, errors.New("Invalid row")
-	}
-
-	return api.Result{
+	if len(cols) == 7 {
+		return api.Result{
 		Name: cols[0],
 		Normal: api.ResultInfo{
 			Result:      cols[1],
@@ -267,6 +273,25 @@ func parseResultRow(node *html.Node) (api.Result, error) {
 			StandardDev: cols[6],
 		},
 	}, nil
+	} else if(len(cols) == 3) {
+		return api.Result{
+		Name: cols[0],
+		Normal: api.ResultInfo{
+			Result:      cols[1],
+			Average:     "N/A",
+			StandardDev: "N/A",
+		},
+		Weighted: api.ResultInfo{
+			Result:      cols[2],
+			Average:     "N/A",
+			StandardDev: "N/A",
+		},
+	}, nil
+	} else {
+		return api.Result{}, errors.New("Invalid row")
+	}
+
+
 }
 
 func parseRow(node *html.Node) (cols []string) {
