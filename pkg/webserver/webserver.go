@@ -280,6 +280,7 @@ func (server *Webserver) registerHandler(ctx context.Context, w http.ResponseWri
 }
 
 func (server *Webserver) logoutHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	//userID := getUserID(ctx)
 
 }
 
