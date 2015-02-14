@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/janicduplessis/resultscrawler/pkg/api"
 
@@ -70,7 +71,10 @@ func (c *Crawler) Run(user *User) []RunResult {
 	// Request results
 	doneCh := make(chan RunResult)
 	for i := range user.Classes {
+		// Only update current classes.
+		//if class.Year == getCurrentSession() {
 		go c.runClass(user, i, doneCh)
+		//}
 	}
 
 	// Wait for all results to be done
@@ -135,6 +139,20 @@ func (c *Crawler) runClass(user *User, classIndex int, doneCh chan RunResult) {
 	}
 }
 
+func getCurrentSession() string {
+	now := time.Now()
+	session := 1
+	switch now.Month() {
+	case time.January, time.February, time.March, time.April, time.May:
+		session = 1
+	case time.June, time.July, time.August:
+		session = 2
+	case time.September, time.October, time.November, time.December:
+		session = 3
+	}
+	return fmt.Sprintf("%d%d", now.Year(), session)
+}
+
 func parseResponse(resp io.Reader) (*api.Class, error) {
 	var results *api.Class
 	doc, err := html.Parse(resp)
@@ -166,7 +184,7 @@ func parseResponse(resp io.Reader) (*api.Class, error) {
 			if n.Type == html.ElementNode && n.Data == "table" {
 				if getAttribute(n, "name") == "form" {
 					log.Println("Found results table")
-					results = parseResultsTable(n)
+					results, err = parseResultsTable(n)
 					done = true
 				}
 			}
@@ -200,7 +218,16 @@ func parseResponse(resp io.Reader) (*api.Class, error) {
 	return results, err
 }
 
-func parseResultsTable(node *html.Node) *api.Class {
+type resultIndexes struct {
+	Result       int
+	Average      int
+	StandardDev  int
+	WResult      int
+	WAverage     int
+	WStandardDev int
+}
+
+func parseResultsTable(node *html.Node) (*api.Class, error) {
 	// Get all rows from the table
 	var resRows []*html.Node
 	var otherRows []*html.Node
@@ -216,6 +243,23 @@ func parseResultsTable(node *html.Node) *api.Class {
 		}
 	}
 
+	// Get the indexes based on the number of columns.
+	// Could probably do something prettier but this works well.
+	headersRow := parseRow(otherRows[1])
+	var indexes *resultIndexes
+	switch len(headersRow) {
+	case 3:
+		indexes = &resultIndexes{1, -1, -1, 2, -1, -1}
+	case 5:
+		indexes = &resultIndexes{1, 2, -1, 3, 4, -1}
+	case 7:
+		indexes = &resultIndexes{1, 2, 3, 4, 5, 6}
+	case 9:
+		indexes = &resultIndexes{1, 2, 3, 5, 6, 7}
+	default:
+		return nil, errors.New("Unknown table layout")
+	}
+
 	class := &api.Class{}
 
 	// Parse other rows
@@ -224,20 +268,11 @@ func parseResultsTable(node *html.Node) *api.Class {
 
 	// Total
 	totalRow := parseRow(otherRows[2])
-	if(len(totalRow) > 2) {
-		class.Total = api.ResultInfo{
-			Result:      totalRow[1],
-			Average:     totalRow[2],
-			StandardDev: totalRow[3],
-		}
-	} else {
-		class.Total = api.ResultInfo{
-			Result:      totalRow[1],
-			Average:     "N/A",
-			StandardDev: "N/A",
-		}
+	class.Total = api.ResultInfo{
+		Result:      resAt(indexes.Result, totalRow),
+		Average:     resAt(indexes.Average, totalRow),
+		StandardDev: resAt(indexes.StandardDev, totalRow),
 	}
-
 
 	// Final grade if available
 	if len(otherRows) > 3 {
@@ -249,49 +284,27 @@ func parseResultsTable(node *html.Node) *api.Class {
 
 	// Parse result rows
 	for _, row := range resRows {
-		res, err := parseResultRow(row)
-		if err == nil {
-			class.Results = append(class.Results, res)
-		}
+		res := parseResultRow(row, indexes)
+		class.Results = append(class.Results, res)
 	}
-	return class
+	return class, nil
 }
 
-func parseResultRow(node *html.Node) (api.Result, error) {
+func parseResultRow(node *html.Node, indexes *resultIndexes) api.Result {
 	cols := parseRow(node)
-	if len(cols) == 7 {
-		return api.Result{
+	return api.Result{
 		Name: cols[0],
 		Normal: api.ResultInfo{
-			Result:      cols[1],
-			Average:     cols[2],
-			StandardDev: cols[3],
+			Result:      resAt(indexes.Result, cols),
+			Average:     resAt(indexes.Average, cols),
+			StandardDev: resAt(indexes.StandardDev, cols),
 		},
 		Weighted: api.ResultInfo{
-			Result:      cols[4],
-			Average:     cols[5],
-			StandardDev: cols[6],
+			Result:      resAt(indexes.WResult, cols),
+			Average:     resAt(indexes.WAverage, cols),
+			StandardDev: resAt(indexes.WStandardDev, cols),
 		},
-	}, nil
-	} else if(len(cols) == 3) {
-		return api.Result{
-		Name: cols[0],
-		Normal: api.ResultInfo{
-			Result:      cols[1],
-			Average:     "N/A",
-			StandardDev: "N/A",
-		},
-		Weighted: api.ResultInfo{
-			Result:      cols[2],
-			Average:     "N/A",
-			StandardDev: "N/A",
-		},
-	}, nil
-	} else {
-		return api.Result{}, errors.New("Invalid row")
 	}
-
-
 }
 
 func parseRow(node *html.Node) (cols []string) {
@@ -330,4 +343,11 @@ func getAttribute(node *html.Node, attribute string) string {
 
 func hasAttribute(node *html.Node, attribute string) bool {
 	return len(getAttribute(node, attribute)) > 0
+}
+
+func resAt(index int, cols []string) string {
+	if index == -1 {
+		return "N/A"
+	}
+	return cols[index]
 }

@@ -269,7 +269,8 @@ func getNewResults(user *User, newResults []RunResult) []api.Class {
 		for j, res := range resInfo.Class.Results {
 			if user.Classes[i].Final != resInfo.Class.Final ||
 				user.Classes[i].Total.Result != resInfo.Class.Total.Result ||
-				user.Classes[i].Total.Average != resInfo.Class.Total.Average {
+				user.Classes[i].Total.Average != resInfo.Class.Total.Average ||
+				user.Classes[i].Total.StandardDev != resInfo.Class.Total.StandardDev {
 				classChanged = true
 			}
 			if len(user.Classes[i].Results) <= j {
@@ -280,7 +281,8 @@ func getNewResults(user *User, newResults []RunResult) []api.Class {
 				oldRes := user.Classes[i].Results[j]
 				if oldRes.Name != res.Name ||
 					oldRes.Normal.Average != res.Normal.Average ||
-					oldRes.Normal.Result != res.Normal.Result {
+					oldRes.Normal.Result != res.Normal.Result ||
+					oldRes.Normal.StandardDev != res.Normal.StandardDev {
 					curResults = append(curResults, res)
 				}
 			}
