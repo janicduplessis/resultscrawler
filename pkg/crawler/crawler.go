@@ -46,18 +46,18 @@ var (
 	ErrNotRegistered = errors.New("Not listed for this class")
 )
 
-// Client interface for sending a request.
-type Client interface {
+// ResultGetterClient interface for sending a request to get results.
+type ResultGetterClient interface {
 	Do(*http.Request) (*http.Response, error)
 }
 
 // Crawler for getting all grades of a user on Resultats UQAM website.
 type Crawler struct {
-	Client Client
+	Client ResultGetterClient
 }
 
 // NewCrawler creates a new crawler object
-func NewCrawler(client Client) *Crawler {
+func NewCrawler(client ResultGetterClient) *Crawler {
 	return &Crawler{
 		client,
 	}

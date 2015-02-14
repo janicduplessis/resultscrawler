@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/rpc"
 	"runtime/debug"
 	"time"
 
@@ -28,24 +27,23 @@ import (
 type (
 	// Config contains parameters to initialize the webserver.
 	Config struct {
-		UserStore            user.Store
-		CrawlerConfigStore   crawlerconfig.Store
-		UserResultsStore     results.Store
-		RSAPublic            []byte
-		RSAPrivate           []byte
-		CrawlerWebserviceURL string
+		UserStore          user.Store
+		CrawlerConfigStore crawlerconfig.Store
+		UserResultsStore   results.Store
+		RSAPublic          []byte
+		RSAPrivate         []byte
+		CrawlerClient      api.Crawler
 	}
 
 	// Webserver serves as a global context for the server.
 	Webserver struct {
-		userStore               user.Store
-		crawlerConfigStore      crawlerconfig.Store
-		userResultsStore        results.Store
-		rsaPublic               []byte
-		rsaPrivate              []byte
-		router                  *ws.Router
-		crawlerWebserviceClient *rpc.Client
-		config                  *Config
+		userStore          user.Store
+		crawlerConfigStore crawlerconfig.Store
+		userResultsStore   results.Store
+		rsaPublic          []byte
+		rsaPrivate         []byte
+		router             *ws.Router
+		crawlerClient      api.Crawler
 	}
 
 	key int
@@ -73,11 +71,6 @@ var ErrUnauthorized = errors.New("Unauthorized access")
 func NewWebserver(config *Config) *Webserver {
 	router := ws.NewRouter()
 
-	client, err := rpc.DialHTTP("tcp", config.CrawlerWebserviceURL)
-	if err != nil {
-		log.Printf("Warning, unable to connect to the crawler webservice. Err: %s", err.Error())
-	}
-
 	webserver := &Webserver{
 		config.UserStore,
 		config.CrawlerConfigStore,
@@ -85,8 +78,7 @@ func NewWebserver(config *Config) *Webserver {
 		config.RSAPublic,
 		config.RSAPrivate,
 		router,
-		client,
-		config,
+		config.CrawlerClient,
 	}
 
 	// Define middleware groups
@@ -472,26 +464,8 @@ func (server *Webserver) crawlerDeleteClassHandler(ctx context.Context, w http.R
 }
 
 func (server *Webserver) crawlerRefreshHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	if server.crawlerWebserviceClient == nil {
-		log.Println("Unable to connect to the crawler webservice.")
-		return
-	}
-
 	userID := getUserID(ctx)
-	var reply int
-	err := server.crawlerWebserviceClient.Call("Webservice.Queue", userID, &reply)
-	if err == rpc.ErrShutdown {
-		server.crawlerWebserviceClient, err = rpc.DialHTTP("tcp", server.config.CrawlerWebserviceURL)
-		if err != nil {
-			server.serverError(w, err)
-			return
-		}
-		err = server.crawlerWebserviceClient.Call("Webservice.Queue", userID, &reply)
-		if err != nil {
-			server.serverError(w, err)
-			return
-		}
-	} else if err != nil {
+	if err := server.crawlerClient.Refresh(userID); err != nil {
 		server.serverError(w, err)
 	}
 }

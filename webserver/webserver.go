@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/janicduplessis/resultscrawler/pkg/crawler"
 	"github.com/janicduplessis/resultscrawler/pkg/crypto"
 	"github.com/janicduplessis/resultscrawler/pkg/store/mongo"
 	"github.com/janicduplessis/resultscrawler/pkg/tools"
@@ -52,13 +53,15 @@ func main() {
 	crawlerConfigStore := mongo.New(mongoHelper)
 	userResultsStore := mongo.New(mongoHelper)
 
+	crawlerClient := crawler.NewClient(config.CrawlerWebserviceURL)
+
 	server := webserver.NewWebserver(&webserver.Config{
-		UserStore:            userStore,
-		CrawlerConfigStore:   crawlerConfigStore,
-		UserResultsStore:     userResultsStore,
-		RSAPublic:            []byte(config.RSAPublic),
-		RSAPrivate:           []byte(config.RSAPrivate),
-		CrawlerWebserviceURL: config.CrawlerWebserviceURL,
+		UserStore:          userStore,
+		CrawlerConfigStore: crawlerConfigStore,
+		UserResultsStore:   userResultsStore,
+		RSAPublic:          []byte(config.RSAPublic),
+		RSAPrivate:         []byte(config.RSAPrivate),
+		CrawlerClient:      crawlerClient,
 	})
 
 	log.Println("Server started")

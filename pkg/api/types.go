@@ -3,6 +3,11 @@ package api
 import "time"
 
 type (
+	// The Crawler interface exposes the public crawler api.
+	Crawler interface {
+		Refresh(userID string) error
+	}
+
 	// CrawlerConfig contains info about the crawler configuration.
 	CrawlerConfig struct {
 		UserID            string `json:"userId"`
