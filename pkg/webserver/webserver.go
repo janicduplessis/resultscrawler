@@ -45,6 +45,7 @@ type (
 		rsaPrivate              []byte
 		router                  *ws.Router
 		crawlerWebserviceClient *rpc.Client
+		config                  *Config
 	}
 
 	key int
@@ -85,6 +86,7 @@ func NewWebserver(config *Config) *Webserver {
 		config.RSAPrivate,
 		router,
 		client,
+		config,
 	}
 
 	// Define middleware groups
@@ -478,7 +480,18 @@ func (server *Webserver) crawlerRefreshHandler(ctx context.Context, w http.Respo
 	userID := getUserID(ctx)
 	var reply int
 	err := server.crawlerWebserviceClient.Call("Webservice.Queue", userID, &reply)
-	if err != nil {
+	if err == rpc.ErrShutdown {
+		server.crawlerWebserviceClient, err = rpc.DialHTTP("tcp", server.config.CrawlerWebserviceURL)
+		if err != nil {
+			server.serverError(w, err)
+			return
+		}
+		err = server.crawlerWebserviceClient.Call("Webservice.Queue", userID, &reply)
+		if err != nil {
+			server.serverError(w, err)
+			return
+		}
+	} else if err != nil {
 		server.serverError(w, err)
 	}
 }
