@@ -1,4 +1,4 @@
-pod ‘Chameleonframework’
-pod ‘Alamofire’
+pod 'Chameleonframework'
+pod 'Alamofire'
 
-workspace ‘iOsResultsCrawler’
+workspace 'iOsResultsCrawler'
