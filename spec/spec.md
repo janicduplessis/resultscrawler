@@ -7,7 +7,7 @@ All requests begin with the /api/v1 prefix to specify the version of the api to 
 
 All requests and responses are encoded in the JSON format. No other format is supported for now.
 
-Entities
+Ressources
 ------------
 
 ###CrawlerConfig
@@ -20,6 +20,16 @@ Property name         | Type   | Description
 **code**              | string | The UQAM user identifier.
 **nip**               | string | The UQAM user NIP.
 **notificationEmail** | string | The email for new results notifications.
+
+###CrawlerClass
+The crawler class object represents a class the the crawler will get results for.
+
+Property name         | Type   | Description
+----------------------|--------|----------------
+**id**                | string | The unique identifier of the class.
+**name**              | string | The name of the class. Ex.: MAT1600.
+**year**              | string | The session of the class.
+**group**             | string | The group of the class.
 
 ###Results
 The results object represents all the results for a user.
@@ -51,6 +61,8 @@ API
 ###Authentication
 
 ####Login
+
+Login allows the user to log in.
 
 Endpoint: /api/v1/auth/login
 
@@ -94,29 +106,81 @@ Property name           | Type   | Description
 **notificationToken**   | string | iOS or Android notification token.
 **deviceType**          | int    | The type of device: 0 web, 1 iOS, 2 Android.
 
+Response: 
+
+Property name         | Type   | Description
+----------------------|--------|----------------
+**status**            | int    | Return code. 0: Ok, 3: invalid email, 4: invalid infos.
+**token**             | string | Authentication token, it is used to authenticate user requests it must be included in the X-Access-Token http header.
+**user**              | object | Information about the logged user.
+user.**email**        | string | User email.
+user.**firstName**    | string | User first name.
+user.**lastName**     | string | User last name.
+
 ####Logout
 
 Endpoint: /api/v1/auth/logout
 
 Methods: POST
 
+Required headers: X-Access-Token, the authentication token.
+
+Request body: empty
+
+Response: empty
+
 ###Crawler
 
 ####Configuration
+
+Configuration allows configuration of the crawler. It is used to get and set the user settings.
 
 Endpoint: /api/v1/crawler/config
 
 Methods: GET, POST
 
+Required headers: X-Access-Token, the authentication token.
+
+Ressource: CrawlerConfig
+
 ####Classes
+
+Classes allows getting, adding, editing and deleting classes for the user. It configures the crawler to tell it what classes to try to get results for.
 
 Endpoint: /api/v1/crawler/class/:classId
 
+Methods: GET, POST, PUT, DELETE
+
+Required headers: X-Access-Token, the authentication token.
+
 Params: classId, the id of the class to edit or delete.
 
-Methods: GET, POST, PUT, DELETE
+Ressource: CrawlerClass
 
 ####Refresh
 
+Refresh updates the results for the user. The update will be done when the response is received. Then, the client can call the results endpoint to get the updated data.
+
 Endpoint: /api/v1/crawler/refresh
+
 Methods: POST
+
+Required headers: X-Access-Token, the authentication token.
+
+Request body: empty
+
+Response: empty
+
+###Results
+
+Results returns the Results object for the specified session.
+
+Endpoint: /api/v1/results/:year
+
+Methods: GET
+
+Required headers: X-Access-Token, the authentication token.
+
+Params: year, the session to get results for. It is the year follow by the number of the session. Ex.: 20151 for winter 2015
+
+Ressource: Results
