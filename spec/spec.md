@@ -50,34 +50,6 @@ API
 
 ###Authentication
 
-	registerRequest struct {
-		Email             string `json:"email"`
-		Password          string `json:"password"`
-		FirstName         string `json:"firstName"`
-		LastName          string `json:"lastName"`
-		NotificationToken string `json:"notificationToken"`
-	}
-
-	// responses
-	loginResponse struct {
-		Status int        `json:"status"`
-		Token  string     `json:"token"`
-		User   *userModel `json:"user"`
-	}
-
-	registerResponse struct {
-		Status int        `json:"status"`
-		Token  string     `json:"token"`
-		User   *userModel `json:"user"`
-	}
-
-	resultsResponse struct {
-		Year       string      `json:"year"`
-		Classes    []api.Class `json:"classes"`
-		LastUpdate jsonTime    `json:"lastUpdate"`
-	}
-
-
 ####Login
 
 Endpoint: /api/v1/auth/login
