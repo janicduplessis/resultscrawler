@@ -62,9 +62,18 @@ Property name         | Type   | Description
 ----------------------|--------|----------------
 **email**             | string | User email.
 **password**          | string | User password.
-**deviceType**        | int    | The type of device: 0 web, 1 iOS, 2 Android.
+**deviceType**        | int    | The type of device. 0: web, 1: iOS, 2: Android.
 
 Response: 
+
+Property name         | Type   | Description
+----------------------|--------|----------------
+**status**            | int    | Return code. 0: Ok, 1: invalid login info, 2: too many attempts.
+**token**             | string | Authentication token, it is used to authenticate user requests it must be included in the X-Access-Token http header.
+**user**              | object | Information about the logged user.
+user.**email**        | string | User email.
+user.**firstName**    | string | User first name.
+user.**lastName**     | string | User last name.
 
 ####Register
 
