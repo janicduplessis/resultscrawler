@@ -1,5 +1,4 @@
-platform:ios, '8'
+pod ‘Chameleonframework’
+pod ‘Alamofire’
 
-pod 'ChameleonFramework'
-
-workspace 'iOsResultsCrawler'
+workspace ‘iOsResultsCrawler’
