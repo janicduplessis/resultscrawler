@@ -12,15 +12,17 @@ type (
 
 	// requests
 	loginRequest struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Email      string `json:"email"`
+		Password   string `json:"password"`
+		DeviceType int    `json:"deviceType"`
 	}
 
 	registerRequest struct {
-		Email     string `json:"email"`
-		Password  string `json:"password"`
-		FirstName string `json:"firstName"`
-		LastName  string `json:"lastName"`
+		Email             string `json:"email"`
+		Password          string `json:"password"`
+		FirstName         string `json:"firstName"`
+		LastName          string `json:"lastName"`
+		NotificationToken string `json:"notificationToken"`
 	}
 
 	// responses
