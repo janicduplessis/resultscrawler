@@ -53,16 +53,19 @@ API
 ####Login
 
 Endpoint: /api/v1/auth/login
+
 Methods: POST
 
 ####Register
 
 Endpoint: /api/v1/auth/register
+
 Methods: POST
 
 ####Logout
 
 Endpoint: /api/v1/auth/logout
+
 Methods: POST
 
 ###Crawler
@@ -70,12 +73,15 @@ Methods: POST
 ####Configuration
 
 Endpoint: /api/v1/crawler/config
+
 Methods: GET, POST
 
 ####Classes
 
 Endpoint: /api/v1/crawler/class/:classId
+
 Params: classId, the id of the class to edit or delete.
+
 Methods: GET, POST, PUT, DELETE
 
 ####Refresh
