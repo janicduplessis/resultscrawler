@@ -50,17 +50,68 @@ API
 
 ###Authentication
 
+	registerRequest struct {
+		Email             string `json:"email"`
+		Password          string `json:"password"`
+		FirstName         string `json:"firstName"`
+		LastName          string `json:"lastName"`
+		NotificationToken string `json:"notificationToken"`
+	}
+
+	// responses
+	loginResponse struct {
+		Status int        `json:"status"`
+		Token  string     `json:"token"`
+		User   *userModel `json:"user"`
+	}
+
+	registerResponse struct {
+		Status int        `json:"status"`
+		Token  string     `json:"token"`
+		User   *userModel `json:"user"`
+	}
+
+	resultsResponse struct {
+		Year       string      `json:"year"`
+		Classes    []api.Class `json:"classes"`
+		LastUpdate jsonTime    `json:"lastUpdate"`
+	}
+
+
 ####Login
 
 Endpoint: /api/v1/auth/login
 
 Methods: POST
 
+Request body:
+
+Property name         | Type   | Description
+----------------------|--------|----------------
+**email**             | string | User email.
+**password**          | string | User password.
+**deviceType**        | int    | The type of device: 0 web, 1 iOS, 2 Android.
+
+Response: 
+
 ####Register
+
+Register sends a request to register a user. 
 
 Endpoint: /api/v1/auth/register
 
 Methods: POST
+
+Request body:
+
+Property name           | Type   | Description
+------------------------|--------|----------------
+**email**               | string | User email.
+**password**            | string | User password.
+**firstName**           | string | User first name.
+**lastName**            | string | User last name.
+**notificationToken**   | string | iOS or Android notification token.
+**deviceType**          | int    | The type of device: 0 web, 1 iOS, 2 Android.
 
 ####Logout
 
