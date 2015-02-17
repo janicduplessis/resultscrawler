@@ -71,36 +71,71 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1Qc-vy-ZKX">
-                                <rect key="frame" x="105" y="275" width="150" height="150"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1Qc-vy-ZKX">
+                                <rect key="frame" x="172" y="311" width="100" height="100"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="100" id="1yF-ym-n54"/>
+                                    <constraint firstAttribute="width" constant="100" id="acl-CW-yj1"/>
+                                </constraints>
                                 <state key="normal" title="Courriel">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="U4v-FP-RNi">
-                                <rect key="frame" x="313" y="275" width="150" height="150"/>
-                                <state key="normal" title="Horaire">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                </state>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iJz-bK-ceA">
-                                <rect key="frame" x="105" y="67" width="150" height="150"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iJz-bK-ceA">
+                                <rect key="frame" x="172" y="203" width="100" height="100"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="100" id="HTf-PD-49S"/>
+                                    <constraint firstAttribute="height" constant="100" id="Kq5-MS-1lz"/>
+                                </constraints>
                                 <state key="normal" title="Résultats">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EWy-Sg-4sA">
-                                <rect key="frame" x="313" y="67" width="150" height="150"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EWy-Sg-4sA">
+                                <rect key="frame" x="317" y="203" width="100" height="100"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="100" id="SAB-RB-l2y"/>
+                                    <constraint firstAttribute="width" constant="100" id="jMI-5o-ex1"/>
+                                </constraints>
                                 <state key="normal" title="Mes Cours">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" enabled="NO" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0kV-DZ-thP">
+                                <rect key="frame" x="280" y="59" width="42" height="482"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="U4v-FP-RNi">
+                                <rect key="frame" x="317" y="311" width="100" height="100"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="100" id="7dn-8m-EuH"/>
+                                    <constraint firstAttribute="height" constant="100" id="vOH-L0-IHk"/>
+                                </constraints>
+                                <state key="normal" title="Horaire">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                             </button>
                         </subviews>
                         <color key="backgroundColor" red="0.19376453757286072" green="0.50850099325180054" blue="0.85232251882553101" alpha="1" colorSpace="calibratedRGB"/>
+                        <constraints>
+                            <constraint firstItem="U4v-FP-RNi" firstAttribute="top" secondItem="EWy-Sg-4sA" secondAttribute="bottom" constant="8" id="2VG-xf-8Ek"/>
+                            <constraint firstItem="EWy-Sg-4sA" firstAttribute="leading" secondItem="0kV-DZ-thP" secondAttribute="trailing" constant="-5" id="Am5-uv-02D"/>
+                            <constraint firstAttribute="centerX" secondItem="0kV-DZ-thP" secondAttribute="centerX" constant="-0.5" id="Hvw-WL-I2o"/>
+                            <constraint firstItem="EWy-Sg-4sA" firstAttribute="top" secondItem="9tj-1y-TyR" secondAttribute="bottom" constant="183" id="IUb-LI-aeY"/>
+                            <constraint firstItem="0kV-DZ-thP" firstAttribute="leading" secondItem="1Qc-vy-ZKX" secondAttribute="trailing" constant="8" id="N8t-vQ-Fdl"/>
+                            <constraint firstItem="0kV-DZ-thP" firstAttribute="top" secondItem="9tj-1y-TyR" secondAttribute="bottom" constant="39" id="Syp-BJ-vJC"/>
+                            <constraint firstItem="iJz-bK-ceA" firstAttribute="top" secondItem="9tj-1y-TyR" secondAttribute="bottom" constant="183" id="W8R-Ls-WtL"/>
+                            <constraint firstItem="EWy-Sg-4sA" firstAttribute="leading" secondItem="iJz-bK-ceA" secondAttribute="trailing" constant="45" id="Xut-9H-EzA"/>
+                            <constraint firstItem="U4v-FP-RNi" firstAttribute="leading" secondItem="0kV-DZ-thP" secondAttribute="trailing" constant="-5" id="kg6-j2-Imk"/>
+                            <constraint firstAttribute="centerY" secondItem="0kV-DZ-thP" secondAttribute="centerY" id="qj6-Tf-XrR"/>
+                            <constraint firstItem="1Qc-vy-ZKX" firstAttribute="top" secondItem="iJz-bK-ceA" secondAttribute="bottom" constant="8" id="sP5-Ry-u7I"/>
+                        </constraints>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="z8b-0f-xz7" userLabel="First Responder" sceneMemberID="firstResponder"/>

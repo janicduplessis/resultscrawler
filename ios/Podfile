@@ -1,4 +1,4 @@
 pod 'Chameleonframework'
-pod 'Alamofire'
+
 
 workspace 'iOsResultsCrawler'

@@ -1,13 +1,10 @@
 PODS:
-  - Alamofire (1.1.4)
   - ChameleonFramework (1.1.2)
 
 DEPENDENCIES:
-  - Alamofire
   - Chameleonframework
 
 SPEC CHECKSUMS:
-  Alamofire: 524225da382071ee3e6d0badd0ee4b4dc36740de
   ChameleonFramework: 5d34a29b6db60594a9998f6dfdffa8ac5f05979a
 
 COCOAPODS: 0.35.0
