@@ -64,7 +64,7 @@
         <!--Home View Controller-->
         <scene sceneID="dTY-ip-zDW">
             <objects>
-                <viewController id="Bdx-Qo-4fB" customClass="HomeViewController" customModule="iOsResultsCrawler" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="HomeViewController" id="Bdx-Qo-4fB" customClass="HomeViewController" customModule="iOsResultsCrawler" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="9tj-1y-TyR"/>
                         <viewControllerLayoutGuide type="bottom" id="17r-rv-ozj"/>

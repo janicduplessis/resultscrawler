@@ -10,14 +10,13 @@ import UIKit
 
 class LoginViewController: UIViewController {
     
-    
     @IBOutlet weak var LoginScreenImage: UIImageView!
 
     @IBOutlet weak var codeTextField: UITextField!
     
     @IBOutlet weak var nipTextField: UITextField!
     
-    var client = Client()
+    let client = Client.sharedInstance
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,7 +36,16 @@ class LoginViewController: UIViewController {
         
         if code != nil && nip != nil {
             client.login(code, password: nip, callback: { (response) in
-                
+                if let response = response {
+                    if response.status == LoginStatus.Ok {
+                        // Good login.
+                        let homeViewController = self.storyboard!.instantiateViewControllerWithIdentifier("HomeViewController") as HomeViewController
+                        
+                        self.showViewController(homeViewController, sender: self)
+                    }
+                } else {
+                    // Error
+                }
             })
         }
     }

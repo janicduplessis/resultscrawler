@@ -9,19 +9,18 @@
 import Foundation
 
 struct User {
-    var email: String?
-    var firstName: String?
-    var lastName: String?
+    var email: String
+    var firstName: String
+    var lastName: String
 }
 
-struct LoginRequest {
-    var email: String?
-    var password: String?
-    let deviceType = 1
+enum LoginStatus: Int {
+    case Ok
+    case Invalid
 }
 
 struct LoginResponse {
-    var status: Int?
-    var token: String?
-    var user: User?
+    var status: LoginStatus
+    var token: String
+    var user: User
 }
