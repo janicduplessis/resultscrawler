@@ -23,6 +23,7 @@ type (
 		FirstName         string `json:"firstName"`
 		LastName          string `json:"lastName"`
 		NotificationToken string `json:"notificationToken"`
+		DeviceType        int    `json:"deviceType"`
 	}
 
 	// responses
