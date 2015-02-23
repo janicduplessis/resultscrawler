@@ -303,6 +303,7 @@ func getNewResults(user *User, newResults []RunResult) []api.Class {
 		if len(curResults) > 0 || classChanged {
 			classInfo := user.Classes[i]
 			resClasses = append(resClasses, api.Class{
+				ID:      classInfo.ID,
 				Name:    classInfo.Name,
 				Group:   classInfo.Group,
 				Year:    classInfo.Year,

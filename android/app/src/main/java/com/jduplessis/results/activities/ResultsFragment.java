@@ -2,11 +2,14 @@ package com.jduplessis.results.activities;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.app.ListFragment;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
@@ -29,11 +32,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class ResultsFragment extends ListFragment {
-    private Client mClient;
-    private ResultsTask mResultsTask = null;
     ResultsArrayAdapter mAdapter;
     String mCurrentSession;
     ArrayList<String> mSessions;
+    private Client mClient;
+    private ResultsTask mResultsTask = null;
+    private View mProgressView;
+    private View mContentView;
 
     public ResultsFragment() {
         // Required empty public constructor
@@ -61,6 +66,9 @@ public class ResultsFragment extends ListFragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_results, container, false);
+
+        mProgressView = view.findViewById(R.id.loading_progress);
+        mContentView = view.findViewById(R.id.main_content);
 
         ArrayList<String> sessionNames = new ArrayList<>(mSessions.size());
         for(String session: mSessions) {
@@ -127,6 +135,28 @@ public class ResultsFragment extends ListFragment {
         task.execute();
     }
 
+    public void showProgress(final boolean show) {
+        int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+        mContentView.setVisibility(show ? View.GONE : View.VISIBLE);
+        mContentView.animate().setDuration(shortAnimTime).alpha(
+                show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mContentView.setVisibility(show ? View.GONE : View.VISIBLE);
+            }
+        });
+
+        mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+        mProgressView.animate().setDuration(shortAnimTime).alpha(
+                show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            }
+        });
+    }
+
     public class ResultsTask extends AsyncTask<Void, Void, Results> {
 
         private final String mSession;
@@ -154,13 +184,13 @@ public class ResultsFragment extends ListFragment {
             mAdapter.clear();
             mAdapter.addAll(results.classes);
 
-            //showProgress(false);
+            showProgress(false);
         }
 
         @Override
         protected void onCancelled() {
             mResultsTask = null;
-            //showProgress(false);
+            showProgress(false);
         }
     }
 
@@ -180,14 +210,14 @@ public class ResultsFragment extends ListFragment {
         @Override
         protected void onPostExecute(final Boolean ok) {
             mResultsTask = null;
-            //showProgress(false);
+            showProgress(false);
             updateResults();
         }
 
         @Override
         protected void onCancelled() {
             mResultsTask = null;
-            //showProgress(false);
+            showProgress(false);
         }
     }
 }
