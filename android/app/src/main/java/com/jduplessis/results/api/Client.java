@@ -25,6 +25,7 @@ public class Client {
     private static final String URL_LOGIN = URL_BASE + "auth/login";
     private static final String URL_REGISTER = URL_BASE + "auth/register";
     private static final String URL_RESULTS = URL_BASE + "results/:session";
+    private static final String URL_REFRESH = URL_BASE + "crawler/refresh";
 
     private String mAuthToken;
 
@@ -75,6 +76,13 @@ public class Client {
         HttpRequest request = requestFactory.buildGetRequest(new GenericUrl(url));
         authenticateRequest(request);
         return request.execute().parseAs(Results.class);
+    }
+
+    public void refresh() throws IOException {
+        HttpRequestFactory requestFactory = getJSONRequestFactory();
+        HttpRequest request = requestFactory.buildPostRequest(new GenericUrl(URL_REFRESH), null);
+        authenticateRequest(request);
+        request.execute();
     }
 
     private HttpRequestFactory getJSONRequestFactory() {
