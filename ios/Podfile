@@ -1,4 +1,14 @@
-pod 'Chameleonframework'
+# Uncomment this line to define a global platform for your project
+# platform :ios, '6.0'
 
+target 'iOsResultsCrawler' do
+    
+end
 
-workspace 'iOsResultsCrawler'
+target 'iOsResultsCrawlerTests' do
+
+end
+
+pod 'Alamofire', '~> 1.1'
+pod 'SwiftyJSON', '2.1.3'
+

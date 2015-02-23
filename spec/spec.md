@@ -87,6 +87,30 @@ user.**email**        | string | User email.
 user.**firstName**    | string | User first name.
 user.**lastName**     | string | User last name.
 
+Example:
+
+Request
+```
+GET https://server.com/api/v1/auth/login
+```
+```javascript
+{
+  "email": "example@test.com",
+  "password": "secretpassword",
+  "deviceType": 1
+}
+```
+Response
+```javascript
+{
+  "status": "example@test.com",
+  "token": "authtokenabc1234",
+  "user": {
+    "": "",a
+  }
+}
+```
+
 ####Register
 
 Register sends a request to register a user. 

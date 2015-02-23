@@ -5,6 +5,11 @@
     android:orientation="vertical"
     tools:context="com.jduplessis.results.activities.ResultsFragment">
 
+    <Spinner
+        android:id="@+id/session_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"></Spinner>
+
     <ListView
         android:id="@android:id/list"
         android:layout_width="match_parent"
