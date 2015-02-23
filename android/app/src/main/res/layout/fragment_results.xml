@@ -10,7 +10,9 @@
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp"
+        android:layout_gravity="center"
         android:visibility="gone" />
 
     <LinearLayout
@@ -22,7 +24,8 @@
         <Spinner
             android:id="@+id/session_spinner"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"></Spinner>
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"></Spinner>
 
         <ListView
             android:id="@android:id/list"

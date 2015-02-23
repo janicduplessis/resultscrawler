@@ -41,6 +41,7 @@ public class ResultsArrayAdapter extends ArrayAdapter<Results.Class> {
         TableLayout resultsList = (TableLayout)rowView.findViewById(R.id.tableResults);
         View finalRowView = rowView.findViewById(R.id.rowFinalGrade);
         TextView finalGradeView = (TextView)rowView.findViewById(R.id.txtFinalGrade);
+        View noClassesView = rowView.findViewById(R.id.no_results_txt);
 
         Results.Class c = mValues.get(position);
         classNameView.setText(c.name);
@@ -52,25 +53,30 @@ public class ResultsArrayAdapter extends ArrayAdapter<Results.Class> {
             finalGradeView.setText(c.finalGrade);
         }
 
-        for(int i = 0; i < c.results.size(); i++) {
-            Results.Result res = c.results.get(i);
-            TableRow row = new TableRow(mContext);
-            TextView txtName = new TextView(mContext);
-            txtName.setLayoutParams(new TableRow.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-            txtName.setText(res.name);
-            row.addView(txtName);
+        if(c.results.size() == 0) {
+            resultsList.setVisibility(View.GONE);
+            noClassesView.setVisibility(View.VISIBLE);
+        } else {
+            for (int i = 0; i < c.results.size(); i++) {
+                Results.Result res = c.results.get(i);
+                TableRow row = new TableRow(mContext);
+                TextView txtName = new TextView(mContext);
+                txtName.setLayoutParams(new TableRow.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+                txtName.setText(res.name);
+                row.addView(txtName);
 
-            TextView txtResult = new TextView(mContext);
-            txtResult.setLayoutParams(new TableRow.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-            txtResult.setText(res.normal.result);
-            row.addView(txtResult);
+                TextView txtResult = new TextView(mContext);
+                txtResult.setLayoutParams(new TableRow.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+                txtResult.setText(res.normal.result);
+                row.addView(txtResult);
 
-            TextView txtAverage = new TextView(mContext);
-            txtAverage.setLayoutParams(new TableRow.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-            txtAverage.setText(res.normal.average);
-            row.addView(txtAverage);
+                TextView txtAverage = new TextView(mContext);
+                txtAverage.setLayoutParams(new TableRow.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+                txtAverage.setText(res.normal.average);
+                row.addView(txtAverage);
 
-            resultsList.addView(row, i+1);
+                resultsList.addView(row, i + 1);
+            }
         }
 
         return rowView;

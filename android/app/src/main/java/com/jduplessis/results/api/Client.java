@@ -12,6 +12,7 @@ import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson.JacksonFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Created by Janic on 2015-01-25.
@@ -26,6 +27,8 @@ public class Client {
     private static final String URL_REGISTER = URL_BASE + "auth/register";
     private static final String URL_RESULTS = URL_BASE + "results/:session";
     private static final String URL_REFRESH = URL_BASE + "crawler/refresh";
+    private static final String URL_CRAWLER_CONFIG = URL_BASE + "crawler/config";
+    private static final String URL_CRAWLER_CLASS = URL_BASE + "crawler/class";
 
     private String mAuthToken;
 
@@ -83,6 +86,20 @@ public class Client {
         HttpRequest request = requestFactory.buildPostRequest(new GenericUrl(URL_REFRESH), null);
         authenticateRequest(request);
         request.execute();
+    }
+
+    public CrawlerConfig getCrawlerConfig() throws IOException {
+        HttpRequestFactory requestFactory = getJSONRequestFactory();
+        HttpRequest request = requestFactory.buildGetRequest(new GenericUrl(URL_CRAWLER_CONFIG));
+        authenticateRequest(request);
+        return request.execute().parseAs(CrawlerConfig.class);
+    }
+
+    public ArrayList<CrawlerClass> getConfigClasses() throws IOException {
+        HttpRequestFactory requestFactory = getJSONRequestFactory();
+        HttpRequest request = requestFactory.buildGetRequest(new GenericUrl(URL_CRAWLER_CLASS));
+        authenticateRequest(request);
+        return request.execute().parseAs(CrawlerClass.List.class);
     }
 
     private HttpRequestFactory getJSONRequestFactory() {

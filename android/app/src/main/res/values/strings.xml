@@ -20,5 +20,11 @@
     <string name="results_header_average">Average</string>
     <string name="results_total">Total</string>
     <string name="results_final_grade">Final grade</string>
-
+    <string name="results_no_results">No results</string>
+    <string name="crawler_config">Configuration</string>
+    <string name="crawler_uqam_code">Code</string>
+    <string name="crawler_uqam_nip">Nip</string>
+    <string name="crawler_notification_email">Notification email</string>
+    <string name="crawler_state">State</string>
+    <string name="crawler_classes">Classes</string>
 </resources>

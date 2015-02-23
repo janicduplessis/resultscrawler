@@ -96,7 +96,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
                 .replace(R.id.container, curFragment)
-                .commit();
+                .commitAllowingStateLoss();
 
         onSectionAttached(position);
     }
