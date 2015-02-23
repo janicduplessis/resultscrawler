@@ -1,6 +1,7 @@
 package com.jduplessis.results.api;
 
 import com.google.api.client.json.GenericJson;
+import com.google.api.client.util.DateTime;
 import com.google.api.client.util.Key;
 
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.List;
  */
 public class Results {
     @Key
-    public String lastUpdate;
+    public DateTime lastUpdate;
 
     @Key
     public List<Class> classes;

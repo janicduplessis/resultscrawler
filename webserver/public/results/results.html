@@ -3,7 +3,7 @@
     <h2>{{results.year | session}}</h2>
     <md-button class="md-raised" ng-click="openChangeSessionDialog()">Change session</md-button>
     <div flex></div>
-    <div>Last update: {{results.lastUpdate}}</div>
+    <div>Last update: {{results.lastUpdate | date : 'medium'}}</div>
     <md-button class="md-raised" ng-click="refresh()">Refresh</md-button>
   </div>
   <div class="classes row" flex>

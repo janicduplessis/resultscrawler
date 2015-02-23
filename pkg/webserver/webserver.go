@@ -290,7 +290,7 @@ func (server *Webserver) resultsHandler(ctx context.Context, w http.ResponseWrit
 
 	response := &resultsResponse{
 		Year:       year,
-		LastUpdate: jsonTime(results.LastUpdate),
+		LastUpdate: results.LastUpdate,
 	}
 
 	for _, c := range results.Classes {
