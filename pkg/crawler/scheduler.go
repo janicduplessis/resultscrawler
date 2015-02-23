@@ -209,7 +209,11 @@ func (s *Scheduler) run(user *User, crawler ResultGetter) {
 	// Check if results changed
 	newRes := getNewResults(user, results)
 	if len(newRes) > 0 {
-		log.Printf("New results for user %s", user.Email)
+		var oldRes []api.Class
+		for _, class := range newRes {
+			oldRes = append(oldRes, *getClassByID(class.ID, user.Classes))
+		}
+		log.Printf("New results for user %s. Results: %+v. Old results: %+v", user.Email, newRes, oldRes)
 		if len(user.Email) > 0 {
 			err := s.sendEmail(user, newRes)
 			if err != nil {
@@ -235,6 +239,15 @@ func (s *Scheduler) run(user *User, crawler ResultGetter) {
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func getClassByID(id string, classes []api.Class) *api.Class {
+	for _, class := range classes {
+		if class.ID == id {
+			return &class
+		}
+	}
+	return nil
 }
 
 // sendEmail notifies the user by email when he has new results.
