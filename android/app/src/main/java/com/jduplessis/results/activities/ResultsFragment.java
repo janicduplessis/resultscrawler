@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.jduplessis.results.R;
 import com.jduplessis.results.api.Client;
@@ -29,7 +30,11 @@ import com.jduplessis.results.api.Results;
 import com.jduplessis.results.api.Util;
 
 import java.io.IOException;
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 public class ResultsFragment extends ListFragment {
     ResultsArrayAdapter mAdapter;
@@ -37,9 +42,11 @@ public class ResultsFragment extends ListFragment {
     ArrayList<String> mSessions;
     private Client mClient;
     private AsyncTask mTask = null;
+
     private View mProgressView;
     private boolean mProgressVisible = false;
     private View mContentView;
+    private TextView mLastUpdateView;
 
     public ResultsFragment() {
         // Required empty public constructor
@@ -68,6 +75,7 @@ public class ResultsFragment extends ListFragment {
 
         mProgressView = view.findViewById(R.id.loading_progress);
         mContentView = view.findViewById(R.id.main_content);
+        mLastUpdateView = (TextView)view.findViewById(R.id.last_update_text);
 
         ArrayList<String> sessionNames = new ArrayList<>(mSessions.size());
         for(String session: mSessions) {
@@ -199,6 +207,9 @@ public class ResultsFragment extends ListFragment {
             mTask = null;
             mAdapter.clear();
             mAdapter.addAll(results.classes);
+            Format formatter = SimpleDateFormat.getDateTimeInstance();
+            Date date = new Date(results.lastUpdate.getValue());
+            mLastUpdateView.setText(formatter.format(date));
 
             showProgress(false);
         }

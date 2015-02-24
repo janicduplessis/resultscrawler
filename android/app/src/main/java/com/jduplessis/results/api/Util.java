@@ -32,7 +32,7 @@ public class Util {
 
     public static String getCurrentSession() {
         Date curDate = new Date();
-        Calendar calendar = new GregorianCalendar();
+        Calendar calendar = Calendar.getInstance();
         calendar.setTime(curDate);
         int curMonth = calendar.get(Calendar.MONTH);
         int curYear = calendar.get(Calendar.YEAR);
