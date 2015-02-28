@@ -3,10 +3,10 @@ go:
   - tip
 before_install:
   - go get github.com/axw/gocov/gocov
-  - go get github.com/modocache/gover
+  - curl -sLOf https://raw.githubusercontent.com/rafecolton/fmtpolice/master/coverage
   - go get github.com/mattn/goveralls
   - go get golang.org/x/tools/cmd/cover
 script:
   - go test ./...
-  - $HOME/gopath/bin/gover
+  - bash coverage
   - $HOME/gopath/bin/goveralls -coverprofile=gover.coverprofile -service travis-ci
