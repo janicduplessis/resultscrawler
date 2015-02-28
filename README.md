@@ -8,6 +8,10 @@ UQAM Resultats Crawler
 This application contains two executables, a crawler to fetch data from
 the UQAM website and a webserver to access the data at any time.
 
+The is a web client, built using Angularjs. An iOS and Androit app are also in developpement.
+
+The project is currently running on results.jdupserver.com.
+
 Prerequisites
 ---------------
 Mandatory:
