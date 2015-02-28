@@ -3,13 +3,19 @@ package com.jduplessis.results.activities;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
+import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -18,10 +24,12 @@ import com.jduplessis.results.api.Client;
 import com.jduplessis.results.api.CrawlerClass;
 import com.jduplessis.results.api.CrawlerConfig;
 import com.jduplessis.results.api.Results;
+import com.jduplessis.results.api.Util;
 
 import org.w3c.dom.Text;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SetupFragment extends Fragment {
@@ -32,6 +40,7 @@ public class SetupFragment extends Fragment {
     private TextView mCodeView;
     private TextView mNipView;
     private TextView mNotificationEmail;
+    private LinearLayout mClassesView;
 
     private boolean mProgressVisible = false;
     private View mProgressView;
@@ -58,6 +67,25 @@ public class SetupFragment extends Fragment {
         mNotificationEmail = (TextView)view.findViewById(R.id.notification_email_text);
         mProgressView = view.findViewById(R.id.loading_progress);
         mContentView = view.findViewById(R.id.main_content);
+        mClassesView = (LinearLayout)view.findViewById(R.id.list_classes);
+
+        View.OnFocusChangeListener controlChangedListener = new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(!hasFocus) {
+                    saveCrawlerConfig();
+                }
+            }
+        };
+        mCodeView.setOnFocusChangeListener(controlChangedListener);
+        mNipView.setOnFocusChangeListener(controlChangedListener);
+        mNotificationEmail.setOnFocusChangeListener(controlChangedListener);
+        mStatusSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                saveCrawlerConfig();
+            }
+        });
 
         updateConfig();
 
@@ -84,6 +112,11 @@ public class SetupFragment extends Fragment {
         GetCrawlerClassesTask task2 = new GetCrawlerClassesTask();
         task.execute();
         task2.execute();
+    }
+
+    private void saveCrawlerConfig() {
+        SaveCrawlerConfigTask task = new SaveCrawlerConfigTask();
+        task.execute();
     }
 
     private void showProgress(final boolean show) {
@@ -145,6 +178,22 @@ public class SetupFragment extends Fragment {
         }
     }
 
+    public class SaveCrawlerConfigTask extends AsyncTask<Void, Void, Boolean> {
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            try {
+                // TODO: check if save failed.
+                mClient.saveCrawlerConfig(mStatusSwitch.isChecked(), mCodeView.getText().toString(),
+                        mNipView.getText().toString(), mNotificationEmail.getText().toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+
+            return true;
+        }
+    }
+
     public class GetCrawlerClassesTask extends AsyncTask<Void, Void, List<CrawlerClass>> {
 
         @Override
@@ -164,7 +213,27 @@ public class SetupFragment extends Fragment {
         protected void onPostExecute(final List<CrawlerClass> classes) {
             mTask = null;
 
+            LayoutInflater inflater = (LayoutInflater) getActivity()
+                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
+            mClassesView.removeAllViews();
+            for(int i = 0; i < classes.size(); i++) {
+                CrawlerClass c = classes.get(i);
+                View rowView = inflater.inflate(R.layout.layout_crawler_class, mClassesView, false);
+
+                TextView classNameView = (TextView)rowView.findViewById(R.id.class_name_txt);
+                TextView sessionView = (TextView)rowView.findViewById(R.id.session_txt);
+
+                classNameView.setText(c.name + " - " + c.group);
+                sessionView.setText(Util.formatSession(c.year));
+
+                if(i == classes.size() - 1) {
+                    View divider = rowView.findViewById(R.id.divider);
+                    divider.setVisibility(View.GONE);
+                }
+
+                mClassesView.addView(rowView);
+            }
             showProgress(false);
         }
 

@@ -95,6 +95,19 @@ public class Client {
         return request.execute().parseAs(CrawlerConfig.class);
     }
 
+    public void saveCrawlerConfig(boolean status, String code, String nip, String notificationEmail) throws IOException {
+        CrawlerConfig config = new CrawlerConfig();
+        config.status = status;
+        config.code = code;
+        config.nip = nip;
+        config.notificationEmail = notificationEmail;
+        HttpRequestFactory requestFactory = getJSONRequestFactory();
+        HttpRequest request = requestFactory.buildPostRequest(new GenericUrl(URL_CRAWLER_CONFIG),
+                new JsonHttpContent(JSON_FACTORY, config));
+        authenticateRequest(request);
+        request.execute();
+    }
+
     public ArrayList<CrawlerClass> getConfigClasses() throws IOException {
         HttpRequestFactory requestFactory = getJSONRequestFactory();
         HttpRequest request = requestFactory.buildGetRequest(new GenericUrl(URL_CRAWLER_CLASS));
