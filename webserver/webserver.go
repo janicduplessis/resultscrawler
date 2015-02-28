@@ -36,6 +36,8 @@ type config struct {
 	AESSecretKey         string // 16 bytes
 	RSAPublic            string
 	RSAPrivate           string
+	TLSCert              string
+	TLSPriv              string
 	CrawlerWebserviceURL string
 }
 
@@ -65,7 +67,7 @@ func main() {
 	})
 
 	log.Println("Server started")
-	log.Fatal(server.Start(fmt.Sprintf(":%s", config.ServerPort)))
+	log.Fatal(server.Start(fmt.Sprintf(":%s", config.ServerPort), config.TLSCert, config.TLSPriv))
 	log.Println("Server stopped")
 }
 
@@ -132,6 +134,14 @@ func readEnvConfig(config *config) {
 	val = os.Getenv("RC_RSA_PRIVATE")
 	if len(val) > 0 {
 		config.RSAPrivate = val
+	}
+	val = os.Getenv("RC_TLS_CERT")
+	if len(val) > 0 {
+		config.TLSCert = val
+	}
+	val = os.Getenv("RC_TLS_PRIV")
+	if len(val) > 0 {
+		config.TLSPriv = val
 	}
 	// Crawler webservice
 	val = os.Getenv("RC_CRAWLER_SERVICE_HOST")
