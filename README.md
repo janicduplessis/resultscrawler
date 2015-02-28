@@ -3,9 +3,14 @@ UQAM Resultats Crawler
 
 [![Build Status](https://travis-ci.org/janicduplessis/resultscrawler.svg)](https://travis-ci.org/janicduplessis/resultscrawler)
 [![GoDoc](https://godoc.org/github.com/janicduplessis/resultscrawler?status.svg)](https://godoc.org/github.com/janicduplessis/resultscrawler)
+[![Coverage Status](https://coveralls.io/repos/janicduplessis/resultscrawler/badge.svg)](https://coveralls.io/r/janicduplessis/resultscrawler)
 
 This application contains two executables, a crawler to fetch data from
 the UQAM website and a webserver to access the data at any time.
+
+The is a web client, built using Angularjs. An iOS and Androit app are also in developpement.
+
+The project is currently running on http://results.jdupserver.com.
 
 Prerequisites
 ---------------
