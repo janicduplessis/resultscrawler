@@ -6,9 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"labix.org/v2/mgo/bson"
-
 	"github.com/janicduplessis/resultscrawler/pkg/api"
+	"github.com/janicduplessis/resultscrawler/pkg/store/fakestore"
 )
 
 type FakeCrawler struct{}
@@ -16,88 +15,6 @@ type FakeCrawler struct{}
 func (c *FakeCrawler) Run(user *User) []RunResult {
 	if getResultsFunc != nil {
 		return getResultsFunc()
-	}
-	return nil
-}
-
-type TestUser struct {
-	User          *api.User
-	CrawlerConfig *api.CrawlerConfig
-	Results       *api.Results
-}
-
-type FakeStore struct {
-	Data map[string]*TestUser
-	mut  sync.RWMutex
-}
-
-func (s *FakeStore) GetCrawlerConfig(userID string) (*api.CrawlerConfig, error) {
-	s.mut.RLock()
-	defer s.mut.RUnlock()
-	return s.Data[userID].CrawlerConfig, nil
-}
-
-func (s *FakeStore) UpdateCrawlerConfig(crawlerConfig *api.CrawlerConfig) error {
-	s.mut.Lock()
-	defer s.mut.Unlock()
-	s.Data[crawlerConfig.UserID].CrawlerConfig = crawlerConfig
-	return nil
-}
-
-func (s *FakeStore) GetResults(userID string) (*api.Results, error) {
-	s.mut.RLock()
-	defer s.mut.RUnlock()
-	return s.Data[userID].Results, nil
-}
-
-func (s *FakeStore) UpdateResults(userResults *api.Results) error {
-	s.mut.Lock()
-	defer s.mut.Unlock()
-	s.Data[userResults.UserID].Results = userResults
-	return nil
-}
-
-func (s *FakeStore) GetUser(id string) (*api.User, error) {
-	s.mut.RLock()
-	defer s.mut.RUnlock()
-	return s.Data[id].User, nil
-}
-
-func (s *FakeStore) GetUserForLogin(email string) (*api.User, string, error) {
-	panic("Not implemented")
-}
-
-func (s *FakeStore) ListUsers() ([]*api.User, error) {
-	s.mut.RLock()
-	defer s.mut.RUnlock()
-	var users []*api.User
-	for _, u := range s.Data {
-		users = append(users, u.User)
-	}
-	return users, nil
-}
-
-func (s *FakeStore) UpdateUser(user *api.User) error {
-	s.mut.Lock()
-	defer s.mut.Unlock()
-
-	return nil
-}
-
-func (s *FakeStore) CreateUser(user *api.User, password string) error {
-	s.mut.Lock()
-	defer s.mut.Unlock()
-	user.ID = bson.NewObjectId().Hex()
-	s.Data[user.ID] = &TestUser{
-		user,
-		&api.CrawlerConfig{
-			UserID:            user.ID,
-			Status:            true,
-			NotificationEmail: user.Email,
-		},
-		&api.Results{
-			UserID: user.ID,
-		},
 	}
 	return nil
 }
@@ -325,14 +242,14 @@ func TestSchedulerLoad(t *testing.T) {
 	end()
 }
 
-func start() (*Scheduler, *FakeStore) {
+func start() (*Scheduler, *fakestore.FakeStore) {
 	config := new(SchedulerConfig)
 	for i := 0; i < 10; i++ {
 		config.ResultGetters = append(config.ResultGetters, &FakeCrawler{})
 	}
 
-	store := new(FakeStore)
-	store.Data = make(map[string]*TestUser)
+	store := new(fakestore.FakeStore)
+	store.Data = make(map[string]*fakestore.TestUser)
 
 	config.UserStore = store
 	config.UserResultsStore = store

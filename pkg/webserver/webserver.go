@@ -50,6 +50,15 @@ type (
 )
 
 const (
+	urlBase           = "/api/v1"
+	urlResults        = urlBase + "/results"
+	urlCrawlerConfig  = urlBase + "/crawler/config"
+	urlCrawlerClass   = urlBase + "/crawler/class"
+	urlCrawlerRefresh = urlBase + "/crawler/refresh"
+	urlLogin          = urlBase + "/auth/login"
+	urlRegister       = urlBase + "/auth/register"
+	urlLogout         = urlBase + "/auth/logout"
+
 	userKey          key = 1
 	sessionUserIDKey     = "userid"
 	headerName           = "X-Access-Token"
@@ -90,21 +99,21 @@ func NewWebserver(config *Config) *Webserver {
 
 	// Register routes
 	router.GET("/", commonHandlers.Then(webserver.homeHandler))
-	router.GET("/api/v1/results/:year", registeredHandlers.Then(webserver.resultsHandler))
+	router.GET(urlResults+"/:year", registeredHandlers.Then(webserver.resultsHandler))
 
-	router.GET("/api/v1/crawler/config", registeredHandlers.Then(webserver.crawlerGetConfigHandler))
-	router.POST("/api/v1/crawler/config", registeredHandlers.Then(webserver.crawlerSaveConfigHandler))
+	router.GET(urlCrawlerConfig, registeredHandlers.Then(webserver.crawlerGetConfigHandler))
+	router.POST(urlCrawlerConfig, registeredHandlers.Then(webserver.crawlerSaveConfigHandler))
 
-	router.GET("/api/v1/crawler/class", registeredHandlers.Then(webserver.crawlerGetClassesHandler))
-	router.POST("/api/v1/crawler/class", registeredHandlers.Then(webserver.crawlerCreateClassHandler))
-	router.PUT("/api/v1/crawler/class/:classId", registeredHandlers.Then(webserver.crawlerEditClassHandler))
-	router.DELETE("/api/v1/crawler/class/:classId", registeredHandlers.Then(webserver.crawlerDeleteClassHandler))
+	router.GET(urlCrawlerClass, registeredHandlers.Then(webserver.crawlerGetClassesHandler))
+	router.POST(urlCrawlerClass, registeredHandlers.Then(webserver.crawlerCreateClassHandler))
+	router.PUT(urlCrawlerClass+"/:classId", registeredHandlers.Then(webserver.crawlerEditClassHandler))
+	router.DELETE(urlCrawlerClass+"/:classId", registeredHandlers.Then(webserver.crawlerDeleteClassHandler))
 
-	router.POST("/api/v1/crawler/refresh", registeredHandlers.Then(webserver.crawlerRefreshHandler))
+	router.POST(urlCrawlerRefresh, registeredHandlers.Then(webserver.crawlerRefreshHandler))
 
-	router.POST("/api/v1/auth/login", commonHandlers.Then(webserver.loginHandler))
-	router.POST("/api/v1/auth/register", commonHandlers.Then(webserver.registerHandler))
-	router.POST("/api/v1/auth/logout", registeredHandlers.Then(webserver.logoutHandler))
+	router.POST(urlLogin, commonHandlers.Then(webserver.loginHandler))
+	router.POST(urlRegister, commonHandlers.Then(webserver.registerHandler))
+	router.POST(urlLogout, registeredHandlers.Then(webserver.logoutHandler))
 
 	return webserver
 }
