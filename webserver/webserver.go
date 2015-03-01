@@ -67,7 +67,7 @@ func main() {
 	})
 
 	log.Println("Server started")
-	log.Fatal(server.Start(fmt.Sprintf(":%s", config.ServerPort), config.TLSCert, config.TLSPriv))
+	log.Panic(server.Start(fmt.Sprintf(":%s", config.ServerPort), config.TLSCert, config.TLSPriv))
 	log.Println("Server stopped")
 }
 
