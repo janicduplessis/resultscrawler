@@ -22,7 +22,7 @@ public class Client {
     private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     private static final JsonFactory JSON_FACTORY = new JacksonFactory();
 
-    private static final String URL_BASE = "http://results.jdupserver.com/api/v1/";
+    private static final String URL_BASE = "https://results.jdupserver.com/api/v1/";
     private static final String URL_LOGIN = URL_BASE + "auth/login";
     private static final String URL_REGISTER = URL_BASE + "auth/register";
     private static final String URL_RESULTS = URL_BASE + "results/:session";

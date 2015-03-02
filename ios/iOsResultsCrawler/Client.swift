@@ -15,7 +15,7 @@ private let _instance = Client()
 class Client {
     // Router is used to do a request to the server.
     private enum Router: URLRequestConvertible {
-        private static let baseURL = "http://results.jdupserver.com/api/v1"
+        private static let baseURL = "https://results.jdupserver.com/api/v1"
         
         // stores the authentication token.
         static var authToken: String?
