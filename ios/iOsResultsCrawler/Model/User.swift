@@ -24,3 +24,14 @@ struct LoginResponse {
     var token: String
     var user: User
 }
+
+enum RegisterStatus: Int{
+    case Ok
+    case Invalid
+}
+
+struct RegisterResponse {
+    var status: RegisterStatus
+    var token:String
+    var user: User
+}

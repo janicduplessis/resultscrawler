@@ -24,6 +24,8 @@ class Client {
         case Login(String, String)
         // Get results.
         case Results(String)
+        // Register request.
+        case Register(String,String,String,String)
         
         // URLRequestConvertible protocol.
         var URLRequest: NSURLRequest {
@@ -39,6 +41,15 @@ class Client {
                     return ("/auth/login", .POST, params)
                 case .Results(let session):
                     return ("/results/" + session, .GET, nil)
+                    
+                case .Register (let email, let password, let firstName,let lastName):
+                    let params: [String:AnyObject] = [
+                        "email":email,
+                        "password":password,
+                        "firstName":firstName,
+                        "lastName":lastName,
+                        "deviceType":1]
+                    return ("/auth/register", .POST, params)
                 }
             }()
             
@@ -90,6 +101,28 @@ class Client {
                 token: token,
                 user: User(email: email, firstName: firstName,lastName: lastName)
             ))
+        }
+    }
+    
+    func register (email:String, password:String, firstName:String, lastName:String, callback:(RegisterResponse?)->Void){
+        Alamofire.request(Router.Register(email, password, firstName, lastName)).responseJSON {(_,_,data,error) in
+            if(error != nil){
+                callback(nil)
+                return
+            }
+            var json = JSON(data!)
+            
+            let status = json ["status"].intValue
+            let token = json ["token"].stringValue
+            let user = json ["user"]
+            let email = json ["email"].stringValue
+            let firstName = user ["firstName"].stringValue
+            let lastName = user ["lastName"].stringValue
+            
+            Router.authToken = token
+            
+            callback(RegisterResponse(status: RegisterStatus(rawValue: status)!, token: token, user: User(email: email, firstName: firstName, lastName: lastName)))
+        
         }
     }
     

@@ -16,6 +16,7 @@ class LoginViewController: UIViewController {
     
     @IBOutlet weak var nipTextField: UITextField!
     
+    
     let client = Client.sharedInstance
     
     override func viewDidLoad() {
@@ -29,6 +30,9 @@ class LoginViewController: UIViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
+    
+    
     
     @IBAction func connect() {
         let code = codeTextField.text
@@ -49,4 +53,11 @@ class LoginViewController: UIViewController {
             })
         }
     }
+    
+    
+
+    
+    
+    
+    
 }
