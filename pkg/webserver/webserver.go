@@ -121,7 +121,12 @@ func NewWebserver(config *Config) *Webserver {
 // Start starts the server at address.
 func (server *Webserver) Start(address string, cert string, key string) error {
 	if cert != "" && key != "" {
-		return http.ListenAndServeTLS(address, cert, key, server.router)
+		err := http.ListenAndServeTLS(address, cert, key, server.router)
+		if err != nil {
+			log.Println(err)
+		} else {
+			return nil
+		}
 	}
 
 	return http.ListenAndServe(address, server.router)
