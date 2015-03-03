@@ -119,7 +119,7 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3Vd-LV-yG6">
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3Vd-LV-yG6">
                                 <rect key="frame" x="100" y="136" width="400" height="400"/>
                                 <subviews>
                                     <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Code permanent" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="hbV-e5-ZKq">
@@ -198,8 +198,8 @@
                                         <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Email" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dVF-cp-cYH">
-                                        <rect key="frame" x="179" y="191" width="42" height="21"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Email" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dVF-cp-cYH">
+                                        <rect key="frame" x="179" y="190" width="42" height="23"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Thin" family="Helvetica Neue" pointSize="19"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <nil key="highlightedColor"/>
@@ -252,6 +252,8 @@
                         <color key="backgroundColor" red="0.19376453760000001" green="0.50850099329999998" blue="0.85232251879999998" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
                             <constraint firstAttribute="centerY" secondItem="hSN-QP-qX9" secondAttribute="centerY" constant="215.5" id="Cwd-Vh-Mns"/>
+                            <constraint firstAttribute="centerX" secondItem="3Vd-LV-yG6" secondAttribute="centerX" id="Ghn-lP-hUl"/>
+                            <constraint firstAttribute="centerY" secondItem="3Vd-LV-yG6" secondAttribute="centerY" constant="-36" id="ir4-cT-Ech"/>
                             <constraint firstItem="hSN-QP-qX9" firstAttribute="top" secondItem="qmT-y5-tTT" secondAttribute="bottom" constant="44" id="ozM-qR-un6"/>
                             <constraint firstAttribute="centerX" secondItem="hSN-QP-qX9" secondAttribute="centerX" id="ubE-z7-DEd"/>
                         </constraints>
