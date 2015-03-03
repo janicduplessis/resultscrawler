@@ -263,7 +263,6 @@
                         <outlet property="firstNameTextField" destination="e2X-sE-feY" id="WfW-Kj-fsF"/>
                         <outlet property="lastNameTextField" destination="0Xh-IJ-b7N" id="oMY-A1-ClW"/>
                         <outlet property="passwordTextField" destination="fnm-3y-wv9" id="aOS-5Z-g8b"/>
-                        <outlet property="register" destination="pOR-k4-1Dk" id="uRx-Ri-xcj"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="qHn-eN-AVS" userLabel="First Responder" sceneMemberID="firstResponder"/>
