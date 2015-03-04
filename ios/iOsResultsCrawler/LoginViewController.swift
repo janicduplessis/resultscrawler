@@ -16,6 +16,7 @@ class LoginViewController: UIViewController {
     
     @IBOutlet weak var nipTextField: UITextField!
     
+    @IBOutlet weak var loadingLogin: UIActivityIndicatorView!
     
     let client = Client.sharedInstance
     
@@ -33,31 +34,36 @@ class LoginViewController: UIViewController {
     
     
     
-    
+    //ERREUR AU NIVEAU DE LA CONNECTION, NE S'ARRETE PAS MEME SI COMBINAISON EST MAUVAISE!!!!
     @IBAction func connect() {
         let code = codeTextField.text
         let nip = nipTextField.text
+        self.loadingLogin.startAnimating()
         
-        if code != nil && nip != nil {
+        if code != "" && nip != "" {
             client.login(code, password: nip, callback: { (response) in
                 if let response = response {
                     if response.status == LoginStatus.Ok {
                         // Good login.
+                        self.loadingLogin.stopAnimating()
                         let homeViewController = self.storyboard!.instantiateViewControllerWithIdentifier("HomeViewController") as HomeViewController
                         
                         self.showViewController(homeViewController, sender: self)
                     }
                 } else {
-                    // Error
+                    self.loadingLogin.stopAnimating()
+                    let badLogin = UIAlertController(title: "Échec de connexion", message: "La combinaison du email et du mot de passe n'est pas bonne", preferredStyle: .Alert)
+                    let reessayer = UIAlertAction(title: "Réessayer", style: .Default, handler: { (reessayer) -> Void in
+                        self.dismissViewControllerAnimated(true , completion: nil)
+                    })
+                    badLogin.addAction(reessayer)
+                    
+                    self.presentViewController(badLogin, animated: true, completion: nil)
+                    
                 }
             })
         }
     }
     
-    
 
-    
-    
-    
-    
 }

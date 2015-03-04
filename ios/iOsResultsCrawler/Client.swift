@@ -112,6 +112,7 @@ class Client {
             }
             var json = JSON(data!)
             
+            
             let status = json ["status"].intValue
             let token = json ["token"].stringValue
             let user = json ["user"]

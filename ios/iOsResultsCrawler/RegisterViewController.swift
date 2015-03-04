@@ -18,8 +18,16 @@ class RegisterViewController: UIViewController {
     
     @IBOutlet weak var passwordTextField: UITextField!
     
+    @IBOutlet weak var loading: UIActivityIndicatorView!
     
-    let client = Client.sharedInstance
+    @IBAction func backLoginPage(sender: UIButton) {
+        
+        let loginViewController = LoginViewController()
+        self.dismissViewControllerAnimated(true , completion: nil)  }
+    
+    
+
+      let client = Client.sharedInstance
     
     
     
@@ -45,19 +53,48 @@ class RegisterViewController: UIViewController {
         let email = emailTextField.text
         let password = passwordTextField.text
         
-        if(firstName != nil && lastName != nil && email != nil && password != nil){
+        self.loading.startAnimating()
+        
+        if(firstName != "" && lastName != "" && email != "" && password != ""){
             
             client.register(email, password: password, firstName: firstName, lastName: lastName, callback: {(response) in
+                
                 if let response = response{
                     if response.status == RegisterStatus.Ok{
-                        let loginViewController = self.storyboard!.instantiateViewControllerWithIdentifier("LoginViewController") as LoginViewController
+                       self.loading.stopAnimating()
                         
-                        self.showViewController(loginViewController, sender: self)
-                    }
+                        let signupSuccess = UIAlertController(title: "Compte crée!", message: nil, preferredStyle: .Alert)
+                        
+                        let retour = UIAlertAction(title: "Retour", style: .Default, handler: { (retour) -> Void in
+                        self.dismissViewControllerAnimated(true , completion: nil)
+                            
+                            
+                        })
+                        
+                        signupSuccess.addAction(retour)
+                        self.presentViewController(signupSuccess, animated: true, completion: nil)
+                        }
                 }else{
-                    //erreur
+                    self.loading.stopAnimating()
+                    let signupFail = UIAlertController(title: "Erreur", message: "Champs vides", preferredStyle: .Alert)
+                    let retourSignup = UIAlertAction(title: "Ok", style: .Default, handler: { (retourSignup) -> Void in
+                        self.dismissViewControllerAnimated(true , completion: nil)
+                    })
+                    signupFail.addAction(retourSignup)
+                    self.presentViewController(signupFail, animated: true, completion: nil)
+                    
                 }
             })
+        }
+        else{
+            self.loading.stopAnimating()
+            let signupFail = UIAlertController(title: "Erreur", message: "Champs vides", preferredStyle: .Alert)
+            let retourSignup = UIAlertAction(title: "Ok", style: .Default, handler: { (retourSignup) -> Void in
+                self.dismissViewControllerAnimated(true , completion: nil)
+            })
+            signupFail.addAction(retourSignup)
+            self.presentViewController(signupFail, animated: true, completion: nil)
+            
         }
     }
 
