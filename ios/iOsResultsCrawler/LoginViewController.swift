@@ -33,26 +33,25 @@ class LoginViewController: UIViewController {
     }
     
     
-    
-    //ERREUR AU NIVEAU DE LA CONNECTION, NE S'ARRETE PAS MEME SI COMBINAISON EST MAUVAISE!!!!
-    @IBAction func connect() {
-        let code = codeTextField.text
+        @IBAction func connect() {
+        let code_perm = codeTextField.text
         let nip = nipTextField.text
         self.loadingLogin.startAnimating()
         
-        if code != "" && nip != "" {
-            client.login(code, password: nip, callback: { (response) in
-                if let response = response {
-                    if response.status == LoginStatus.Ok {
-                        // Good login.
+        if code_perm != "" && nip != "" {
+            client.login(code_perm, nip: nip, callback: { (response) in
+                if let response = response{
+                    
                         self.loadingLogin.stopAnimating()
                         let homeViewController = self.storyboard!.instantiateViewControllerWithIdentifier("HomeViewController") as HomeViewController
+                    
+                    
                         
                         self.showViewController(homeViewController, sender: self)
-                    }
+                    
                 } else {
                     self.loadingLogin.stopAnimating()
-                    let badLogin = UIAlertController(title: "Échec de connexion", message: "La combinaison du email et du mot de passe n'est pas bonne", preferredStyle: .Alert)
+                    let badLogin = UIAlertController(title: "Échec de connexion", message: "La combinaison du code permanent et du nip n'est pas bonne", preferredStyle: .Alert)
                     let reessayer = UIAlertAction(title: "Réessayer", style: .Default, handler: { (reessayer) -> Void in
                         self.dismissViewControllerAnimated(true , completion: nil)
                     })

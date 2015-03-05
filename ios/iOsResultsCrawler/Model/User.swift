@@ -9,29 +9,14 @@
 import Foundation
 
 struct User {
-    var email: String
-    var firstName: String
-    var lastName: String
-}
+    var prenom :String
+    var nom: String
 
-enum LoginStatus: Int {
-    case Ok
-    case Invalid
 }
 
 struct LoginResponse {
-    var status: LoginStatus
-    var token: String
+
     var user: User
 }
 
-enum RegisterStatus: Int{
-    case Ok
-    case Invalid
-}
 
-struct RegisterResponse {
-    var status: RegisterStatus
-    var token:String
-    var user: User
-}

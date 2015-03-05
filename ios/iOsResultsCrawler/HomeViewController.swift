@@ -8,6 +8,7 @@
 
 import UIKit
 
+
 class HomeViewController: UIViewController {
     
 
@@ -19,8 +20,12 @@ class HomeViewController: UIViewController {
     
     @IBOutlet weak var grades: UIImageView!
     
+    @IBOutlet weak var bienvenueLabel: UILabel!
+
+   
     
     let client = Client.sharedInstance
+    
     
     override func viewDidLoad() {
         
@@ -35,14 +40,6 @@ class HomeViewController: UIViewController {
         grades.image = UIImage(named:"grades")
         
         
-        
-
-        
-        client.results("20151", callback: { (results) in
-            if let results = results {
-                
-            }
-        })
         
     }
     
