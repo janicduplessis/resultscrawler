@@ -10,7 +10,7 @@ the UQAM website and a webserver to access the data at any time.
 
 The is a web client, built using Angularjs. An iOS and Androit app are also in developpement.
 
-The project is currently running on http://results.jdupserver.com.
+The project is currently running on https://results.jdupserver.com.
 
 Prerequisites
 ---------------
