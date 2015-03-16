@@ -135,7 +135,7 @@ func (server *Webserver) Start(httpPort, httpsPort, cert, key string) {
 				portStr = httpsPort
 			}
 			redirectURL := fmt.Sprintf("https://%s%s%s", strings.TrimSuffix(r.Host, httpPort), portStr, r.RequestURI)
-			log.Printf("Redirecting to https url: %s", redirectURL)
+			log.Printf("Redirecting to https url: %s from %s", redirectURL, r.Host+r.RequestURI)
 			http.Redirect(w, r, redirectURL, http.StatusMovedPermanently)
 		})))
 	} else {
