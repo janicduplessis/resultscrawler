@@ -131,10 +131,10 @@ func (server *Webserver) Start(httpPort, httpsPort, cert, key string) {
 		log.Panic(http.ListenAndServe(":"+httpPort, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Si on n'est pas sur le port 80 ou 443 on va l'inclure explicitement.
 			portStr := ""
-			if strings.HasSuffix(r.Host, httpPort) {
-				portStr = httpsPort
+			if strings.HasSuffix(r.Host, ":"+httpPort) {
+				portStr = ":" + httpsPort
 			}
-			redirectURL := fmt.Sprintf("https://%s%s%s", strings.TrimSuffix(r.Host, httpPort), portStr, r.RequestURI)
+			redirectURL := fmt.Sprintf("https://%s%s%s", strings.TrimSuffix(r.Host, ":"+httpPort), portStr, r.RequestURI)
 			log.Printf("Redirecting to https url: %s from %s", redirectURL, r.Host+r.RequestURI)
 			http.Redirect(w, r, redirectURL, http.StatusMovedPermanently)
 		})))
