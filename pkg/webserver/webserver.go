@@ -131,7 +131,8 @@ func (server *Webserver) Start(httpPort, httpsPort, cert, key string) {
 		log.Panic(http.ListenAndServe(":"+httpPort, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Si on n'est pas sur le port 80 ou 443 on va l'inclure explicitement.
 			portStr := ""
-			if strings.HasSuffix(r.Host, ":"+httpPort) {
+			// TODO: figure out why it doesnt work for prod servers
+			if strings.HasSuffix(r.Host, ":"+httpPort) && false {
 				portStr = ":" + httpsPort
 			}
 			redirectURL := fmt.Sprintf("https://%s%s%s", strings.TrimSuffix(r.Host, ":"+httpPort), portStr, r.RequestURI)
