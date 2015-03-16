@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"net/http"
 	"text/template"
 	"time"
 
@@ -18,11 +19,12 @@ const (
 	// Time between checks to see if a user needs an update in seconds
 	checkInterval time.Duration = 30 * time.Second
 	// Time between updates for each user in minutes
-	updateInterval time.Duration = 10 * time.Minute
+	updateInterval time.Duration = 1 * time.Minute
 )
 
 var (
-	msgTemplatePath = "msgtemplate.html"
+	// MsgTemplatePath is the html template used to render emails.
+	MsgTemplatePath = "msgtemplate.html"
 	msgTemplate     *template.Template
 )
 
@@ -30,6 +32,11 @@ var (
 type ResultGetter interface {
 	// Run fetches results for a user.
 	Run(user *User) []RunResult
+}
+
+// ResultGetterClient interface for sending a request to get results.
+type ResultGetterClient interface {
+	Do(*http.Request) (*http.Response, error)
 }
 
 // User contains info about the user of a ResultGetter run.
@@ -74,7 +81,7 @@ type Scheduler struct {
 // NewScheduler creates a new scuduler object.
 func NewScheduler(config *SchedulerConfig) *Scheduler {
 	if msgTemplate == nil {
-		msgTemplate = template.Must(template.New("msgtemplate.html").ParseFiles(msgTemplatePath))
+		msgTemplate = template.Must(template.New("msgtemplate.html").ParseFiles(MsgTemplatePath))
 	}
 
 	queueCh := make(chan *User, len(config.ResultGetters))

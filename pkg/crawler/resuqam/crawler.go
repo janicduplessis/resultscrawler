@@ -1,4 +1,4 @@
-package crawler
+package resuqam
 
 import (
 	"errors"
@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/janicduplessis/resultscrawler/pkg/api"
+	"github.com/janicduplessis/resultscrawler/pkg/crawler"
 
 	"code.google.com/p/go.net/html"
 )
@@ -46,30 +47,25 @@ var (
 	ErrNotRegistered = errors.New("Not listed for this class")
 )
 
-// ResultGetterClient interface for sending a request to get results.
-type ResultGetterClient interface {
-	Do(*http.Request) (*http.Response, error)
-}
-
 // Crawler for getting all grades of a user on Resultats UQAM website.
 type Crawler struct {
-	Client ResultGetterClient
+	Client crawler.ResultGetterClient
 }
 
 // NewCrawler creates a new crawler object
-func NewCrawler(client ResultGetterClient) *Crawler {
+func NewCrawler() *Crawler {
 	return &Crawler{
-		client,
+		&http.Client{},
 	}
 }
 
 // Run returns the results of all classes for the user
-func (c *Crawler) Run(user *User) []RunResult {
+func (c *Crawler) Run(user *crawler.User) []crawler.RunResult {
 	log.Println(fmt.Sprintf("Start looking for results for user %s. User has %v classes.",
 		user.Email, len(user.Classes)))
 
 	// Request results
-	doneCh := make(chan RunResult)
+	doneCh := make(chan crawler.RunResult)
 	for i := range user.Classes {
 		// Only update current classes.
 		//if class.Year == getCurrentSession() {
@@ -78,7 +74,7 @@ func (c *Crawler) Run(user *User) []RunResult {
 	}
 
 	// Wait for all results to be done
-	results := make([]RunResult, len(user.Classes))
+	results := make([]crawler.RunResult, len(user.Classes))
 	for range user.Classes {
 		result := <-doneCh
 		if result.Err != nil {
@@ -92,7 +88,7 @@ func (c *Crawler) Run(user *User) []RunResult {
 	return results
 }
 
-func (c *Crawler) runClass(user *User, classIndex int, doneCh chan RunResult) {
+func (c *Crawler) runClass(user *crawler.User, classIndex int, doneCh chan crawler.RunResult) {
 	class := user.Classes[classIndex]
 	params := url.Values{
 		fieldCode:  {user.Code},
@@ -104,7 +100,7 @@ func (c *Crawler) runClass(user *User, classIndex int, doneCh chan RunResult) {
 	requestString := fmt.Sprintf("%s?%s", urlResultats, params.Encode())
 	req, err := http.NewRequest("POST", requestString, nil)
 	if err != nil {
-		doneCh <- RunResult{
+		doneCh <- crawler.RunResult{
 			ClassIndex: classIndex,
 			Err:        err,
 		}
@@ -116,7 +112,7 @@ func (c *Crawler) runClass(user *User, classIndex int, doneCh chan RunResult) {
 	log.Printf("Sending request for %s\n", class.Name)
 	resp, err := c.Client.Do(req)
 	if err != nil {
-		doneCh <- RunResult{
+		doneCh <- crawler.RunResult{
 			ClassIndex: classIndex,
 			Err:        err,
 		}
@@ -127,13 +123,13 @@ func (c *Crawler) runClass(user *User, classIndex int, doneCh chan RunResult) {
 	log.Printf("Parsing response for %s\n", class.Name)
 	results, err := parseResponse(resp.Body)
 	if err != nil {
-		doneCh <- RunResult{
+		doneCh <- crawler.RunResult{
 			ClassIndex: classIndex,
 			Err:        err,
 		}
 		return
 	}
-	doneCh <- RunResult{
+	doneCh <- crawler.RunResult{
 		ClassIndex: classIndex,
 		Class:      results,
 	}

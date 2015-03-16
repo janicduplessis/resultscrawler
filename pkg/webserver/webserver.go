@@ -5,11 +5,13 @@ package webserver
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"runtime/debug"
+	"strings"
 	"time"
 
 	"code.google.com/p/go.net/context"
@@ -118,18 +120,22 @@ func NewWebserver(config *Config) *Webserver {
 	return webserver
 }
 
-// Start starts the server at address.
-func (server *Webserver) Start(address string, cert string, key string) error {
-	if cert != "" && key != "" {
-		err := http.ListenAndServeTLS(address, cert, key, server.router)
-		if err != nil {
-			log.Println(err)
-		} else {
-			return nil
-		}
+// Start starts the server at address. Panics if there is an error.
+func (server *Webserver) Start(httpPort, httpsPort, cert, key string) {
+	if len(cert) > 0 && len(key) > 0 {
+		log.Println("Server running using https on port " + httpsPort + ", " + httpPort)
+		// If we are using https, we will serve on the http port too and redirect to https.
+		go func() {
+			log.Panic(http.ListenAndServeTLS(":"+httpsPort, cert, key, server.router))
+		}()
+		log.Panic(http.ListenAndServe(":"+httpPort, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			redirectURL := fmt.Sprintf("https://%s%s%s", strings.TrimSuffix(r.Host, httpPort), httpsPort, r.RequestURI)
+			log.Printf("Redirecting to https url: %s", redirectURL)
+			http.Redirect(w, r, redirectURL, http.StatusMovedPermanently)
+		})))
+	} else {
+		log.Panic(http.ListenAndServe(":"+httpPort, server.router))
 	}
-
-	return http.ListenAndServe(address, server.router)
 }
 
 // Handlers

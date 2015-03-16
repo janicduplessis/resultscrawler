@@ -9,4 +9,4 @@ RUN \
 CMD []
 ENTRYPOINT ["/go/bin/webserver"]
 
-EXPOSE 8080 9898
+EXPOSE 8080 8081

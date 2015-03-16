@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/janicduplessis/resultscrawler/pkg/crawler"
+	"github.com/janicduplessis/resultscrawler/pkg/crawler/mobluqam"
 	"github.com/janicduplessis/resultscrawler/pkg/crypto"
 	"github.com/janicduplessis/resultscrawler/pkg/store/mongo"
 	"github.com/janicduplessis/resultscrawler/pkg/tools"
@@ -50,7 +50,6 @@ func main() {
 	// Inject dependencies
 	emailSender := tools.NewEmailSender(config.Email)
 	mongoHelper := tools.NewMongoHelper(config.Database)
-	httpClient := &http.Client{}
 
 	userStore := mongo.New(mongoHelper)
 	crawlerConfigStore := mongo.New(mongoHelper)
@@ -58,7 +57,7 @@ func main() {
 
 	var crawlers []crawler.ResultGetter
 	for i := 0; i < numCrawlers; i++ {
-		crawlers = append(crawlers, crawler.NewCrawler(httpClient))
+		crawlers = append(crawlers, mobluqam.NewCrawler())
 	}
 
 	scheduler := crawler.NewScheduler(&crawler.SchedulerConfig{

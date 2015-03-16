@@ -1,4 +1,4 @@
-package crawler
+package resuqam
 
 import (
 	"io"
@@ -9,6 +9,7 @@ import (
 	"labix.org/v2/mgo/bson"
 
 	"github.com/janicduplessis/resultscrawler/pkg/api"
+	"github.com/janicduplessis/resultscrawler/pkg/crawler"
 )
 
 type FakeClient struct {
@@ -86,8 +87,8 @@ func TestCrawlerErrorNotRegistered(t *testing.T) {
 	}
 }
 
-func getTestUser() *User {
-	return &User{
+func getTestUser() *crawler.User {
+	return &crawler.User{
 		ID:    bson.NewObjectId().Hex(),
 		Code:  "aaaaaa",
 		Nip:   "zzzzzzz",
@@ -111,11 +112,13 @@ func getCrawler(t *testing.T, fileToCrawl string) *Crawler {
 	client := &FakeClient{
 		Data: data,
 	}
-	return NewCrawler(client)
+	crawler := NewCrawler()
+	crawler.Client = client
+	return crawler
 }
 
 func init() {
 	// Working directory is different in test so we have to fix the path of
 	// the template file.
-	msgTemplatePath = "../../crawler/msgtemplate.html"
+	crawler.MsgTemplatePath = "../../crawler/msgtemplate.html"
 }
