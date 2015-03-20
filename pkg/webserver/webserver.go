@@ -46,6 +46,8 @@ type (
 		rsaPrivate         []byte
 		router             *ws.Router
 		crawlerClient      api.Crawler
+		httpPort           string
+		httpsPort          string
 	}
 
 	key int
@@ -83,13 +85,13 @@ func NewWebserver(config *Config) *Webserver {
 	router := ws.NewRouter()
 
 	webserver := &Webserver{
-		config.UserStore,
-		config.CrawlerConfigStore,
-		config.UserResultsStore,
-		config.RSAPublic,
-		config.RSAPrivate,
-		router,
-		config.CrawlerClient,
+		userStore:          config.UserStore,
+		crawlerConfigStore: config.CrawlerConfigStore,
+		userResultsStore:   config.UserResultsStore,
+		rsaPublic:          config.RSAPublic,
+		rsaPrivate:         config.RSAPrivate,
+		router:             router,
+		crawlerClient:      config.CrawlerClient,
 	}
 
 	// Define middleware groups
@@ -122,26 +124,30 @@ func NewWebserver(config *Config) *Webserver {
 
 // Start starts the server at address. Panics if there is an error.
 func (server *Webserver) Start(httpPort, httpsPort, cert, key string) {
+	server.httpPort = httpPort
+	server.httpsPort = httpsPort
 	if len(cert) > 0 && len(key) > 0 {
 		log.Println("Server running using https on port " + httpsPort + ", " + httpPort)
 		// If we are using https, we will serve on the http port too and redirect to https.
 		go func() {
 			log.Panic(http.ListenAndServeTLS(":"+httpsPort, cert, key, server.router))
 		}()
-		log.Panic(http.ListenAndServe(":"+httpPort, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Si on n'est pas sur le port 80 ou 443 on va l'inclure explicitement.
-			portStr := ""
-			// TODO: figure out why it doesnt work for prod servers
-			if strings.HasSuffix(r.Host, ":"+httpPort) && false {
-				portStr = ":" + httpsPort
-			}
-			redirectURL := fmt.Sprintf("https://%s%s%s", strings.TrimSuffix(r.Host, ":"+httpPort), portStr, r.RequestURI)
-			log.Printf("Redirecting to https url: %s from %s", redirectURL, r.Host+r.RequestURI)
-			http.Redirect(w, r, redirectURL, http.StatusMovedPermanently)
-		})))
+		log.Panic(http.ListenAndServe(":"+httpPort, http.HandlerFunc(server.redirectHTTPS)))
 	} else {
 		log.Panic(http.ListenAndServe(":"+httpPort, server.router))
 	}
+}
+
+func (server *Webserver) redirectHTTPS(w http.ResponseWriter, r *http.Request) {
+	// Si on n'est pas sur le port 80 ou 443 on va l'inclure explicitement.
+	portStr := ""
+	// TODO: figure out why it doesnt work for prod servers
+	if strings.HasSuffix(r.Host, ":"+server.httpPort) {
+		portStr = ":" + server.httpsPort
+	}
+	redirectURL := fmt.Sprintf("https://%s%s%s", strings.TrimSuffix(r.Host, ":"+server.httpPort), portStr, r.RequestURI)
+	log.Printf("Redirecting to https url: %s from %s", redirectURL, r.Host+r.RequestURI)
+	http.Redirect(w, r, redirectURL, http.StatusMovedPermanently)
 }
 
 // Handlers

@@ -120,5 +120,5 @@ func getCrawler(t *testing.T, fileToCrawl string) *Crawler {
 func init() {
 	// Working directory is different in test so we have to fix the path of
 	// the template file.
-	crawler.MsgTemplatePath = "../../crawler/msgtemplate.html"
+	crawler.MsgTemplatePath = "../../../crawler/msgtemplate.html"
 }
