@@ -24,7 +24,7 @@ const (
 
 var (
 	// MsgTemplatePath is the html template used to render emails.
-	MsgTemplatePath = "msgtemplate.html"
+	msgTemplatePath = "msgtemplate.html"
 	msgTemplate     *template.Template
 )
 
@@ -81,7 +81,7 @@ type Scheduler struct {
 // NewScheduler creates a new scuduler object.
 func NewScheduler(config *SchedulerConfig) *Scheduler {
 	if msgTemplate == nil {
-		msgTemplate = template.Must(template.New("msgtemplate.html").ParseFiles(MsgTemplatePath))
+		msgTemplate = template.Must(template.New("msgtemplate.html").ParseFiles(msgTemplatePath))
 	}
 
 	queueCh := make(chan *User, len(config.ResultGetters))

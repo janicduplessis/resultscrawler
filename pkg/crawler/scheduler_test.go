@@ -263,3 +263,9 @@ func end() {
 	getResultsFunc = nil
 	sendFunc = nil
 }
+
+func init() {
+	// Working directory is different in test so we have to fix the path of
+	// the template file.
+	msgTemplatePath = "../../crawler/msgtemplate.html"
+}
