@@ -19,7 +19,7 @@ const (
 	// Time between checks to see if a user needs an update in seconds
 	checkInterval time.Duration = 30 * time.Second
 	// Time between updates for each user in minutes
-	updateInterval time.Duration = 1 * time.Minute
+	updateInterval time.Duration = 10 * time.Minute
 )
 
 var (

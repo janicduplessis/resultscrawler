@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/janicduplessis/resultscrawler/pkg/api"
 	"github.com/janicduplessis/resultscrawler/pkg/crawler"
 )
 
@@ -69,7 +70,7 @@ func (c *Crawler) Run(user *crawler.User) []crawler.RunResult {
 
 func (c *Crawler) runClass(user *crawler.User, classIndex int, doneCh chan crawler.RunResult) {
 	class := user.Classes[classIndex]
-
+	log.Printf("Sending request for %s\n", class.Name)
 	params := url.Values{
 		fieldCode:  {user.Code},
 		fieldNip:   {user.Nip},
@@ -112,9 +113,9 @@ func (c *Crawler) runClass(user *crawler.User, classIndex int, doneCh chan crawl
 		}
 		return
 	}
-
-	results := &resultsResponse{}
-	err = json.Unmarshal(respData, results)
+	log.Printf("Parsing response for %s\n", class.Name)
+	resultsResponse := &resultsResponse{}
+	err = json.Unmarshal(respData, resultsResponse)
 	if err != nil {
 		doneCh <- crawler.RunResult{
 			ClassIndex: classIndex,
@@ -122,5 +123,116 @@ func (c *Crawler) runClass(user *crawler.User, classIndex int, doneCh chan crawl
 		}
 		return
 	}
-	log.Printf("%+v", *results)
+	results := parseResponse(resultsResponse)
+
+	doneCh <- crawler.RunResult{
+		ClassIndex: classIndex,
+		Class:      results,
+	}
+}
+
+type resultIndexes struct {
+	Result       int
+	Average      int
+	StandardDev  int
+	WResult      int
+	WAverage     int
+	WStandardDev int
+}
+
+func parseResponse(response *resultsResponse) *api.Class {
+	class := &api.Class{}
+
+	headersRow := response.Normal[0]
+	hasWeighted := len(response.Weighted) > 0
+
+	var indexes *resultIndexes
+	switch len(headersRow) {
+	case 2:
+		if hasWeighted {
+			indexes = &resultIndexes{1, -1, -1, 1, -1, -1}
+		} else {
+			indexes = &resultIndexes{1, -1, -1, -1, -1, -1}
+		}
+	case 3:
+		if hasWeighted {
+			indexes = &resultIndexes{1, 2, -1, 1, 2, -1}
+		} else {
+			indexes = &resultIndexes{1, -1, -1, 2, -1, -1}
+		}
+	case 4:
+		if hasWeighted {
+			indexes = &resultIndexes{1, 2, 3, 1, 2, 3}
+		} else {
+			indexes = &resultIndexes{1, 2, 3, -1, -1, -1}
+		}
+	default:
+		log.Println("Invalid layout")
+		return class
+	}
+
+	nResults := response.Normal[1:]
+	var wResults [][]string
+	if hasWeighted {
+		wResults = response.Weighted[1:]
+	} else {
+		wResults = nResults
+	}
+
+	hasFinal := wResults[len(wResults)-1][0] == "Note:"
+
+	var totalRow []string
+	if hasFinal {
+		totalRow = wResults[len(wResults)-2]
+	} else {
+		totalRow = wResults[len(wResults)-1]
+	}
+
+	class.Total = api.ResultInfo{
+		Result:      resAt(indexes.Result, totalRow),
+		Average:     resAt(indexes.Average, totalRow),
+		StandardDev: resAt(indexes.StandardDev, totalRow),
+	}
+
+	// If we have the final grade row it will be after total in weighted results.
+	if hasFinal {
+		finalRow := wResults[len(wResults)-1]
+		class.Final = finalRow[1]
+		wResults = wResults[:len(wResults)-2]
+	} else {
+		wResults = wResults[:len(wResults)-1]
+	}
+
+	if !hasWeighted {
+		nResults = wResults
+	}
+
+	results := make([]api.Result, len(nResults))
+	for i := range nResults {
+		nRes := nResults[i]
+		wRes := wResults[i]
+		results[i] = api.Result{
+			Name: nRes[0],
+			Normal: api.ResultInfo{
+				Result:      resAt(indexes.Result, nRes),
+				Average:     resAt(indexes.Average, nRes),
+				StandardDev: resAt(indexes.StandardDev, nRes),
+			},
+			Weighted: api.ResultInfo{
+				Result:      resAt(indexes.WResult, wRes),
+				Average:     resAt(indexes.WAverage, wRes),
+				StandardDev: resAt(indexes.WStandardDev, wRes),
+			},
+		}
+	}
+
+	class.Results = results
+	return class
+}
+
+func resAt(index int, cols []string) string {
+	if index == -1 || len(cols[index]) == 0 {
+		return "N/A"
+	}
+	return cols[index]
 }
